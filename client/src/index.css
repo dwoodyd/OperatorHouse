@@ -1,3 +1,10 @@
+/* =============================================================================
+   GhostDesk — Obsidian Intelligence Design System
+   Design Philosophy: Dark Brutalism meets Luxury Editorial
+   Palette: Obsidian (#0A0A0B) + Amber (#F5A623) + Off-white (#E8E6E0)
+   Fonts: Playfair Display (headings) | DM Sans (body) | Fira Code (data)
+   ============================================================================= */
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -40,77 +47,61 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: 'DM Sans', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'Fira Code', monospace;
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --radius: 0.25rem;
+  /* Obsidian Intelligence Dark Theme */
+  --background: oklch(0.09 0.005 280);
+  --foreground: oklch(0.92 0.008 65);
+  --card: oklch(0.12 0.006 280);
+  --card-foreground: oklch(0.92 0.008 65);
+  --popover: oklch(0.12 0.006 280);
+  --popover-foreground: oklch(0.92 0.008 65);
+  /* Amber primary */
+  --primary: oklch(0.72 0.18 65);
+  --primary-foreground: oklch(0.09 0.005 280);
+  --secondary: oklch(0.16 0.006 280);
+  --secondary-foreground: oklch(0.75 0.008 65);
+  --muted: oklch(0.16 0.006 280);
+  --muted-foreground: oklch(0.52 0.012 280);
+  --accent: oklch(0.18 0.008 280);
+  --accent-foreground: oklch(0.92 0.008 65);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.72 0.18 65);
+  /* Charts — amber spectrum */
+  --chart-1: oklch(0.72 0.18 65);
+  --chart-2: oklch(0.65 0.15 55);
+  --chart-3: oklch(0.55 0.12 50);
+  --chart-4: oklch(0.45 0.10 45);
+  --chart-5: oklch(0.35 0.08 40);
+  /* Sidebar */
+  --sidebar: oklch(0.11 0.006 280);
+  --sidebar-foreground: oklch(0.85 0.008 65);
+  --sidebar-primary: oklch(0.72 0.18 65);
+  --sidebar-primary-foreground: oklch(0.09 0.005 280);
+  --sidebar-accent: oklch(0.16 0.006 280);
+  --sidebar-accent-foreground: oklch(0.92 0.008 65);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.72 0.18 65);
+  /* Custom GhostDesk tokens */
+  --amber: #F5A623;
+  --amber-dim: rgba(245, 166, 35, 0.15);
+  --amber-glow: rgba(245, 166, 35, 0.08);
+  --obsidian: #0A0A0B;
+  --surface: #111116;
+  --surface-raised: #18181E;
+  --text-primary: #E8E6E0;
+  --text-secondary: #7A7A8A;
+  --text-muted: #4A4A5A;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-amber: rgba(245, 166, 35, 0.3);
 }
 
 @layer base {
@@ -119,59 +110,216 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+  }
+  code, .font-mono {
+    font-family: 'Fira Code', monospace;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
   [type="submit"]:not(:disabled),
-  [type="reset"]:not(:disabled),
   a[href],
-  select:not(:disabled),
-  input[type="checkbox"]:not(:disabled),
-  input[type="radio"]:not(:disabled) {
+  select:not(:disabled) {
     @apply cursor-pointer;
+  }
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(245, 166, 35, 0.2);
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 166, 35, 0.4);
   }
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
-
   .flex {
     min-height: 0;
     min-width: 0;
   }
-
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
-
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1440px;
     }
+  }
+
+  /* GhostDesk specific components */
+  .ghost-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-left: 2px solid var(--amber);
+    transition: all 150ms ease;
+  }
+  .ghost-card:hover {
+    background: var(--surface-raised);
+    border-color: rgba(255,255,255,0.1);
+    border-left-color: var(--amber);
+    box-shadow: 0 0 20px var(--amber-glow);
+  }
+  .amber-pulse {
+    animation: amberPulse 2s ease-in-out infinite;
+  }
+  @keyframes amberPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--amber-dim); }
+    50% { opacity: 0.7; box-shadow: 0 0 20px rgba(245, 166, 35, 0.3); }
+  }
+  .ghost-input {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .ghost-input:focus {
+    border-color: var(--border-amber);
+    box-shadow: 0 0 0 2px var(--amber-glow);
+    outline: none;
+  }
+  .ghost-input::placeholder {
+    color: var(--text-muted);
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.active {
+    background: #4ADE80;
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+  .status-dot.processing {
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber-dim);
+    animation: statusPulse 1s ease-in-out infinite;
+  }
+  .status-dot.idle {
+    background: var(--text-muted);
+  }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .amber-rule {
+    height: 1px;
+    background: linear-gradient(90deg, var(--amber) 0%, transparent 100%);
+    opacity: 0.4;
+  }
+  .data-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .data-value {
+    font-family: 'Fira Code', monospace;
+    color: var(--amber);
+  }
+  .ghost-badge {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--border-amber);
+    color: var(--amber);
+    background: var(--amber-glow);
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 150ms ease;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+  .sidebar-item.active {
+    background: var(--amber-glow);
+    color: var(--amber);
+    border-left-color: var(--amber);
+  }
+  .pipeline-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    padding: 12px;
+    transition: all 150ms ease;
+    cursor: pointer;
+  }
+  .pipeline-card:hover {
+    border-color: var(--border-amber);
+    box-shadow: 0 0 12px var(--amber-glow);
+  }
+  .typewriter {
+    overflow: hidden;
+    border-right: 2px solid var(--amber);
+    white-space: nowrap;
+    animation: typing 2s steps(40, end), blink 0.75s step-end infinite;
+  }
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  @keyframes blink {
+    from, to { border-color: transparent; }
+    50% { border-color: var(--amber); }
+  }
+  .fade-in-up {
+    animation: fadeInUp 0.4s ease forwards;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .count-up {
+    font-family: 'Fira Code', monospace;
+  }
+  /* Grain texture overlay */
+  .grain-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+    z-index: 1;
   }
 }
