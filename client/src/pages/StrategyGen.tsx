@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — Strategy Generator (Phase 2: Real AI)
+   Operator House — Strategy Generator (Phase 2: Real AI)
    Calls strategies.generate, renders structured output, saves to DB.
    No mock data. No simulated typewriter.
    ============================================================================= */
@@ -108,7 +108,7 @@ export default function StrategyGen() {
   };
 
   return (
-    <AppLayout title="Strategy Generator" subtitle="Soul Engineer document engine — AI-grounded strategy">
+    <AppLayout title="Strategy Generator" subtitle="Operator document engine — AI-grounded strategy">
       <div className="p-6">
         {/* Tab Bar */}
         <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
@@ -254,7 +254,7 @@ export default function StrategyGen() {
 
               {generateStrategy.isPending && (
                 <div className="p-3 space-y-1.5" style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)' }}>
-                  {["Loading Soul Engineer framework...", "Pulling vault context...", "Analyzing client situation...", "Mapping engineering solutions...", "Crafting strategy document..."].map((step, i) => (
+                  {["Loading Operator framework...", "Pulling vault context...", "Analyzing client situation...", "Mapping engineering solutions...", "Crafting strategy document..."].map((step, i) => (
                     <div key={i} className="flex items-center gap-2" style={{ color: 'var(--text-muted)', fontSize: '11px', fontFamily: 'Fira Code, monospace' }}>
                       <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)', animationDelay: `${i * 0.3}s` }} />
                       {step}
@@ -306,7 +306,7 @@ export default function StrategyGen() {
                         <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', color: 'var(--text-primary)' }}>{result.title}</span>
                       </div>
                       <div className="data-label mt-0.5">
-                        {TEMPLATES.find(t => t.id === result.outputType)?.label} · Soul Engineer v2.0
+                        {TEMPLATES.find(t => t.id === result.outputType)?.label} · Operator v2.0
                         {result.citations.length > 0 && ` · ${result.citations.length} source${result.citations.length > 1 ? "s" : ""}`}
                       </div>
                     </div>

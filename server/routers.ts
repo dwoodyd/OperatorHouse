@@ -13,6 +13,7 @@ import {
   updateVaultItem, upsertUserProfile,
 } from "./db";
 import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
+import { invokeLLM } from "./_core/llm";
 
 export const appRouter = router({
   system: systemRouter,
@@ -391,6 +392,64 @@ export const appRouter = router({
           daysSince: Math.floor((Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
         }));
     }),
+  }),
+
+  operator: router({
+    chat: protectedProcedure
+      .input(z.object({
+        message: z.string().min(1).max(2000),
+        history: z.array(z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string(),
+        })).optional().default([]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Inject live context from the user's data
+        const [leads, deals, vaultItems] = await Promise.all([
+          getLeads(ctx.user.id),
+          getPipelineDeals(ctx.user.id),
+          getVaultItems(ctx.user.id),
+        ]);
+        const activeDeals = deals.filter((d) => d.stage !== 'Closed');
+        const staleDeals = activeDeals.filter((d) => {
+          const days = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+          return days > 7;
+        });
+        const contextBlock = [
+          `Operator: ${ctx.user.name ?? 'Unknown'}`,
+          `Active leads: ${leads.length} (${leads.filter(l => l.intentScore !== null && l.intentScore >= 80).length} high-intent)`,
+          `Lead statuses: ${leads.map(l => l.status).filter((v, i, a) => a.indexOf(v) === i).join(', ')}`,
+          `Pipeline: ${activeDeals.length} active deals, ${staleDeals.length} stale (>7d no activity)`,
+          `Pipeline value: $${activeDeals.reduce((s, d) => s + (d.value ?? 0), 0).toLocaleString()}`,
+          `Vault: ${vaultItems.length} items (${vaultItems.map(v => v.type).filter((v, i, a) => a.indexOf(v) === i).join(', ')})`,
+          activeDeals.length > 0 ? `Top deals: ${activeDeals.slice(0, 3).map(d => `${d.title} (${d.stage}, $${(d.value ?? 0).toLocaleString()})`).join('; ')}` : '',
+        ].filter(Boolean).join('\n');
+
+        const systemPrompt = `You are The Operator — the AI strategist powering Operator House, the command center for ${ctx.user.name ?? 'this operator'}.
+
+You have full context on their business. Be direct, strategic, and actionable. No filler. Respond in markdown.
+
+## Live Context
+${contextBlock}`;
+
+        const messages = [
+          { role: 'system' as const, content: systemPrompt },
+          ...input.history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+          { role: 'user' as const, content: input.message },
+        ];
+
+        const response = await invokeLLM({ messages });
+        const reply = response.choices[0].message.content as string;
+
+        // Log the interaction as an activity
+        await logActivity({
+          userId: ctx.user.id,
+          activityType: 'operator_chat',
+          summary: `Command Line: "${input.message.slice(0, 80)}${input.message.length > 80 ? '...' : ''}"`,
+        });
+
+        return { reply };
+      }),
   }),
 });
 

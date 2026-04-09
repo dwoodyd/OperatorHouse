@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — Client Pipeline (CRM)
+   Operator House — Client Pipeline (CRM)
    Obsidian Intelligence: Kanban-style client deal pipeline — real data
    ============================================================================= */
 

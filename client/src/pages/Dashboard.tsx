@@ -1,6 +1,6 @@
 /* =============================================================================
-   GhostDesk — Dashboard (Command Center) — Phase 3 Premium
-   Glassmorphism + Ghost Briefing + Next-Best-Action + Stale Deal Alerts
+   Operator House — Dashboard (Command Center) — Phase 3 Premium
+   Glassmorphism + Operator Briefing + Next-Best-Action + Stale Deal Alerts
    ============================================================================= */
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
@@ -68,7 +68,7 @@ function MetricCard({ label, value, suffix, icon: Icon, trend, color = "var(--am
   );
 }
 
-/* ── Ghost Briefing Panel ─────────────────────────────────────────────────── */
+/* ── Operator Briefing Panel ─────────────────────────────────────────────────── */
 function GhostBriefingPanel() {
   const utils = trpc.useUtils();
   const { data: latest } = trpc.briefings.latest.useQuery();
@@ -83,7 +83,7 @@ function GhostBriefingPanel() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Ghost size={13} style={{ color: 'var(--amber)' }} />
-          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Briefing</span>
+          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Operator Briefing</span>
           {latest && (
             <span className="ghost-badge" style={{ fontSize: 9 }}>
               {new Date(latest.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -124,7 +124,7 @@ function GhostBriefingPanel() {
         </div>
       ) : (
         <div className="text-center py-4">
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>No briefing yet. Generate your first Ghost Briefing.</p>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>No briefing yet. Generate your first Operator Briefing.</p>
           <button
             onClick={() => generate.mutate()}
             disabled={generate.isPending}
@@ -274,11 +274,11 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', boxShadow: '0 0 8px rgba(74,222,128,0.7)', animation: 'statusPulse 2s ease-in-out infinite' }} />
                 <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                  Ghost Active — Soul Engineer OS
+                  Operator Active — Operator House
                 </span>
               </div>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-                Your Ghost is working.<br />
+                Your Operator is working.<br />
                 <span className="text-amber-gradient">90% done before you start.</span>
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 10, maxWidth: 420, lineHeight: 1.6 }}>
@@ -408,11 +408,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Soul Engineer Framework Pillars */}
+        {/* Operator Framework Pillars */}
         <div className="glass-panel fade-in-up" style={{ animationDelay: '0.35s', opacity: 0 }}>
           <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Soul Engineer Framework — Active Pillars</div>
-            <div className="data-label mt-0.5">The Ghost operates through these three lenses</div>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Operator Framework — Active Pillars</div>
+            <div className="data-label mt-0.5">The Operator works through these three lenses</div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[

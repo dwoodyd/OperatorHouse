@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — Obsidian Intelligence Design System
+   Operator House — Obsidian Intelligence Design System
    Design Philosophy: Dark Brutalism meets Luxury Editorial
    Palette: Obsidian (#0A0A0B) + Amber (#F5A623) + Off-white (#E8E6E0)
    Fonts: Playfair Display (headings) | DM Sans (body) | Fira Code (data)
@@ -90,7 +90,7 @@
   --sidebar-accent-foreground: oklch(0.92 0.008 65);
   --sidebar-border: oklch(1 0 0 / 6%);
   --sidebar-ring: oklch(0.72 0.18 65);
-  /* Custom GhostDesk tokens */
+  /* Custom Operator House tokens */
   --amber: #F5A623;
   --amber-bright: #FFB938;
   --amber-dim: rgba(245, 166, 35, 0.18);
@@ -184,7 +184,7 @@
     }
   }
 
-  /* GhostDesk specific components */
+  /* Operator House specific components */
   /* Premium glass card */
   .ghost-card {
     background: var(--surface-glass);

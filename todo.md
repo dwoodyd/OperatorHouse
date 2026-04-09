@@ -58,3 +58,13 @@
 - [ ] Add team/multi-user support
 - [ ] Add white-label option for resellers
 - [ ] Add export options (PDF/Markdown for strategies, CSV for pipeline)
+
+## Rebrand + Chat Sidebar
+- [x] Rename app from GhostDesk to Operator House: Your Operator HQ
+- [x] Update sidebar logo, title, and subtitle copy
+- [x] Update all page titles, subtitles, and in-app copy
+- [x] Rename "Ghost" references to Operator-brand equivalents
+- [x] Update VITE_APP_TITLE secret to "Operator House" (built-in, updated via index.html title)
+- [x] Build AI chat sidebar (The Operator / Command Line) wired to real LLM
+- [x] Add chat sidebar toggle button to topbar (CMD button in topbar)
+- [x] Wire chat to context-aware system prompt using user's pipeline/lead data

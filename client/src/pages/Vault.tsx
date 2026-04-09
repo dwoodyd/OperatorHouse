@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — The Vault (Knowledge Base)
+   Operator House — The Vault (Knowledge Base)
    Obsidian Intelligence: Knowledge archive — real data
    ============================================================================= */
 

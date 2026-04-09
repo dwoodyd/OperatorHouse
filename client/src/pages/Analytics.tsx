@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — Analytics
+   Operator House — Analytics
    Obsidian Intelligence: Revenue, lead, and performance dashboard
    ============================================================================= */
 
@@ -100,7 +100,7 @@ export default function Analytics() {
               Revenue & Performance Intelligence
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              6-month rolling view of your Ghost Consultant operation
+              6-month rolling view of your The Operator operation
             </p>
           </div>
         </div>

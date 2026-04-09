@@ -1,14 +1,15 @@
 /* =============================================================================
-   GhostDesk — AppLayout (Phase 3 Premium)
+   Operator House — AppLayout (Phase 3 Premium)
    Glassmorphism sidebar + frosted topbar + gradient logo
    ============================================================================= */
 import { useState } from "react";
 import { useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Ghost, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare,
+  BarChart3, Ghost, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import CommandLine from "./CommandLine";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Command Center",    path: "/dashboard" },
@@ -29,11 +30,12 @@ interface AppLayoutProps {
 export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [commandLineOpen, setCommandLineOpen] = useState(false);
   const { user } = useAuth();
 
   const initials = user?.name
     ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "GD";
+    : "OH";
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--obsidian-deep)' }}>
@@ -93,14 +95,14 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   whiteSpace: 'nowrap',
                 }}
               >
-                GhostDesk
+                Operator House
               </div>
               <div style={{
                 fontFamily: 'Fira Code, monospace', fontSize: '9px',
                 letterSpacing: '0.15em', textTransform: 'uppercase',
                 color: 'var(--text-muted)', marginTop: '2px',
               }}>
-                Soul Engineer OS
+                YOUR OPERATOR HQ
               </div>
             </div>
           )}
@@ -172,7 +174,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
-                  {user.name ?? "Ghost Operator"}
+                  {user.name ?? "Operator"}
                 </div>
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'Fira Code, monospace' }}>
                   {user.role === 'admin' ? 'ADMIN' : 'OPERATOR'}
@@ -257,9 +259,44 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 fontFamily: 'Fira Code, monospace', fontSize: '10px',
                 letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--amber)',
               }}>
-                Soul Engineer
+                Operator HQ
               </span>
             </div>
+            {/* Command Line toggle */}
+            <button
+              onClick={() => setCommandLineOpen(true)}
+              className="flex items-center gap-2"
+              title="Open Command Line"
+              style={{
+                height: '36px',
+                padding: '0 12px',
+                background: commandLineOpen ? 'rgba(245,166,35,0.12)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${commandLineOpen ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
+                borderRadius: '6px',
+                color: commandLineOpen ? 'var(--amber)' : 'var(--text-secondary)',
+                transition: 'all 180ms ease',
+                boxShadow: commandLineOpen ? '0 0 14px rgba(245,166,35,0.15)' : 'none',
+              }}
+              onMouseEnter={e => {
+                if (!commandLineOpen) {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.borderColor = 'var(--border-amber)';
+                  el.style.color = 'var(--amber)';
+                  el.style.boxShadow = '0 0 12px rgba(245,166,35,0.12)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!commandLineOpen) {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.borderColor = 'var(--border-subtle)';
+                  el.style.color = 'var(--text-secondary)';
+                  el.style.boxShadow = 'none';
+                }
+              }}
+            >
+              <Terminal size={13} />
+              <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '11px', letterSpacing: '0.06em' }}>CMD</span>
+            </button>
             <button
               className="flex items-center justify-center"
               style={{
@@ -293,6 +330,9 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           {children}
         </main>
       </div>
+
+      {/* Command Line AI Chat Sidebar */}
+      <CommandLine open={commandLineOpen} onClose={() => setCommandLineOpen(false)} />
     </div>
   );
 }

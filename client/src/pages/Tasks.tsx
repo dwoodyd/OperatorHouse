@@ -1,5 +1,5 @@
 /* =============================================================================
-   GhostDesk — Tasks
+   Operator House — Tasks
    Ghost-suggested task management with priority, due dates, and client linking
    ============================================================================= */
 import { useState } from "react";

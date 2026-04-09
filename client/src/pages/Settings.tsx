@@ -45,7 +45,7 @@ export default function Settings() {
   };
 
   return (
-    <AppLayout title="Settings" subtitle="Manage your GhostDesk profile and preferences">
+    <AppLayout title="Settings" subtitle="Manage your Operator House profile and preferences">
       <div className="max-w-2xl mx-auto space-y-6 p-6">
         {/* Account Info */}
         <div className="glass-panel p-6 space-y-4">
@@ -89,7 +89,7 @@ export default function Settings() {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Soul Engineer LLC"
+                  placeholder="Operator LLC"
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-colors"
                   style={{
                     background: 'var(--obsidian)',

@@ -1,6 +1,6 @@
 /* =============================================================================
-   GhostDesk — Lead Intelligence
-   Obsidian Intelligence: AI-powered Soul Engineer lead audit — real AI
+   Operator House — Lead Intelligence
+   Obsidian Intelligence: AI-powered Operator lead audit — real AI
    ============================================================================= */
 
 import { useState } from "react";
@@ -30,7 +30,7 @@ export default function LeadIntel() {
     onSuccess: () => {
       utils.leads.list.invalidate();
       utils.dashboard.metrics.invalidate();
-      toast.success("Soul Engineer Audit complete");
+      toast.success("Operator Audit complete");
       setInput("");
     },
     onError: (err) => toast.error(err.message || "Analysis failed"),
@@ -45,7 +45,7 @@ export default function LeadIntel() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   return (
-    <AppLayout title="Lead Intelligence" subtitle="Soul Engineer Audit — AI-powered lead analysis">
+    <AppLayout title="Lead Intelligence" subtitle="Operator Audit — AI-powered lead analysis">
       <div className="p-6 space-y-6">
 
         {/* Input Panel */}
@@ -93,7 +93,7 @@ export default function LeadIntel() {
           {analyzeLead.isPending && (
             <div className="mt-3 flex items-center gap-2" style={{ color: 'var(--amber)', fontSize: '12px', fontFamily: 'Fira Code, monospace' }}>
               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)' }} />
-              Ghost is running the Soul Engineer Audit...
+              Operator is running the Operator Audit...
             </div>
           )}
         </div>
@@ -106,7 +106,7 @@ export default function LeadIntel() {
         ) : !leads?.length ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Target size={32} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No leads analyzed yet. Paste a lead above to run the first Soul Engineer Audit.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No leads analyzed yet. Paste a lead above to run the first Operator Audit.</p>
           </div>
         ) : (
           <div className="space-y-3">
