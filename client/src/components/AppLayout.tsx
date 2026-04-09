@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Command Center", path: "/", shortcut: "D" },
+  { icon: LayoutDashboard, label: "Command Center", path: "/dashboard", shortcut: "D" },
   { icon: Search, label: "Lead Intelligence", path: "/leads", shortcut: "L" },
   { icon: GitBranch, label: "Client Pipeline", path: "/pipeline", shortcut: "P" },
   { icon: FileText, label: "Strategy Generator", path: "/strategy", shortcut: "S" },

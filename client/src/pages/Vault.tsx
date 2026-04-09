@@ -1,311 +1,179 @@
 /* =============================================================================
-   GhostDesk — The Vault
-   Obsidian Intelligence: Personal knowledge base / framework storage
+   GhostDesk — The Vault (Knowledge Base)
+   Obsidian Intelligence: Knowledge archive — real data
    ============================================================================= */
 
-import { useState } from "react";
+import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Archive, Plus, Search, Tag, Clock, FileText, Mic, BookOpen, Zap } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { Plus, Search, Archive, Loader2, X, Trash2, FileText, BookOpen, Mic, Layout, FlaskConical, StickyNote } from "lucide-react";
 import { toast } from "sonner";
 
-const VAULT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/ghostdesk-vault-bg-mRkhFPFtM7jXHLyASwTSvS.webp";
+type VaultType = "framework" | "case_study" | "voice_note" | "template" | "research" | "note";
 
-const CATEGORIES = ["All", "Framework", "Case Study", "Voice Note", "Template", "Research"];
-
-const VAULT_ITEMS = [
-  {
-    id: "v1",
-    title: "Soul Engineer Framework — Core System Prompt",
-    category: "Framework",
-    tags: ["Core", "AI Consulting", "Identity"],
-    excerpt: "You are the Ghost Consultant, the digital twin and autonomous strategist. Every business problem is a structural or purpose-based problem. Apply the three pillars: Internal Structure, Creative Flow, The Vault.",
-    wordCount: 847,
-    lastUpdated: "2 days ago",
-    type: "text",
-  },
-  {
-    id: "v2",
-    title: "TechFlow Solutions — Implementation Case Study",
-    category: "Case Study",
-    tags: ["AI Implementation", "B2B", "Won"],
-    excerpt: "90-day AI implementation sprint for a B2B consulting firm. Deployed lead intelligence pipeline, onboarding assistant, and content engine. Result: 4 hours/week saved, 8x content output, $12K closed.",
-    wordCount: 1240,
-    lastUpdated: "1 week ago",
-    type: "text",
-  },
-  {
-    id: "v3",
-    title: "Voice Note — AI Consulting Positioning Strategy",
-    category: "Voice Note",
-    tags: ["Positioning", "Pricing", "Strategy"],
-    excerpt: "Recorded during a morning session. Key insight: the premium positioning isn't about the tools — it's about the framework. Clients pay for the Soul Engineer lens, not the AI implementation.",
-    wordCount: 320,
-    lastUpdated: "3 days ago",
-    type: "audio",
-    duration: "4:32",
-  },
-  {
-    id: "v4",
-    title: "Ghost Consultant — Outreach Email Template",
-    category: "Template",
-    tags: ["Email", "Outreach", "Template"],
-    excerpt: "Subject: Your AI architecture has a structural problem. Opening: I've been watching [Company] for the past few weeks, and I noticed something that most consultants would miss...",
-    wordCount: 280,
-    lastUpdated: "5 days ago",
-    type: "text",
-  },
-  {
-    id: "v5",
-    title: "2026 AI Consulting Market Research",
-    category: "Research",
-    tags: ["Market", "Trends", "Opportunity"],
-    excerpt: "The AI consulting market is projected to reach $48B by 2027. Key insight: 73% of SMBs want AI implementation but lack internal expertise. The gap between demand and supply is the opportunity.",
-    wordCount: 2100,
-    lastUpdated: "1 week ago",
-    type: "text",
-  },
-  {
-    id: "v6",
-    title: "90/10 Rule — The Ghost Consultant Principle",
-    category: "Framework",
-    tags: ["Core", "Workflow", "Automation"],
-    excerpt: "The Ghost completes 90% of the strategy, research, and drafting. The final 10% — the Soul Signature — is reserved for DeWayne. This is the core value proposition: you only do the work that requires you.",
-    wordCount: 560,
-    lastUpdated: "4 days ago",
-    type: "text",
-  },
-];
-
-const TYPE_ICONS: Record<string, React.ElementType> = {
-  text: FileText,
-  audio: Mic,
+const TYPE_META: Record<VaultType, { label: string; icon: React.ElementType; color: string }> = {
+  framework: { label: "Framework", icon: BookOpen, color: "#F5A623" },
+  case_study: { label: "Case Study", icon: FileText, color: "#60A5FA" },
+  voice_note: { label: "Voice Note", icon: Mic, color: "#A78BFA" },
+  template: { label: "Template", icon: Layout, color: "#4ADE80" },
+  research: { label: "Research", icon: FlaskConical, color: "#F472B6" },
+  note: { label: "Note", icon: StickyNote, color: "#6B6B7A" },
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Framework: "#F5A623",
-  "Case Study": "#4ADE80",
-  "Voice Note": "#60A5FA",
-  Template: "#A78BFA",
-  Research: "#F472B6",
-};
+const VAULT_TYPES: VaultType[] = ["framework", "case_study", "voice_note", "template", "research", "note"];
 
 export default function Vault() {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
-
-  const filtered = VAULT_ITEMS.filter((item) => {
-    const matchCategory = activeCategory === "All" || item.category === activeCategory;
-    const matchSearch = !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
+  const utils = trpc.useUtils();
+  const { data: items, isLoading } = trpc.vault.list.useQuery();
+  const createItem = trpc.vault.create.useMutation({
+    onSuccess: () => {
+      utils.vault.list.invalidate();
+      toast.success("Item saved to Vault");
+      setShowForm(false);
+      setForm({ title: "", type: "note", textContent: "", tags: "" });
+    },
+    onError: () => toast.error("Failed to save item"),
   });
+  const deleteItem = trpc.vault.delete.useMutation({
+    onSuccess: () => { utils.vault.list.invalidate(); toast.success("Item removed"); },
+    onError: () => toast.error("Failed to delete item"),
+  });
+
+  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState<VaultType | "all">("all");
+  const [form, setForm] = useState({ title: "", type: "note" as VaultType, textContent: "", tags: "" });
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const filtered = items?.filter((item) => {
+    const matchesSearch = !search || item.title.toLowerCase().includes(search.toLowerCase()) || (item.textContent ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchesType = filterType === "all" || item.type === filterType;
+    return matchesSearch && matchesType;
+  }) ?? [];
 
   return (
     <AppLayout title="The Vault" subtitle="Your living knowledge archive">
-      <div className="p-6 space-y-6">
-
-        {/* Hero */}
-        <div
-          className="relative overflow-hidden"
-          style={{
-            background: `url(${VAULT_BG}) center/cover no-repeat`,
-            minHeight: '140px',
-            border: '1px solid var(--border-subtle)',
-          }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.95) 0%, rgba(10,10,11,0.7) 100%)' }}
-          />
-          <div className="relative z-10 p-6 flex items-center justify-between">
-            <div>
-              <div className="ghost-badge mb-2">Knowledge Archive — Active</div>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                The Vault
-              </h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px', maxWidth: '400px' }}>
-                Your frameworks, case studies, voice notes, and templates. The Ghost draws from this archive to ensure every strategy sounds like you.
-              </p>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-1 flex-wrap">
+            <div className="relative" style={{ minWidth: "200px" }}>
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
+              <input type="text" placeholder="Search vault..." value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "var(--surface)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-center">
-                <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '28px', fontWeight: 500, color: 'var(--amber)' }}>
-                  {VAULT_ITEMS.length}
-                </div>
-                <div className="data-label">Items</div>
-              </div>
-              <div className="text-center ml-4">
-                <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '28px', fontWeight: 500, color: 'var(--amber)' }}>
-                  {VAULT_ITEMS.reduce((sum, i) => sum + i.wordCount, 0).toLocaleString()}
-                </div>
-                <div className="data-label">Words</div>
-              </div>
+            <div className="flex items-center gap-1 flex-wrap">
+              <button onClick={() => setFilterType("all")} className="px-3 py-1.5 rounded text-xs font-medium"
+                style={{ background: filterType === "all" ? "var(--amber)" : "var(--surface)", color: filterType === "all" ? "#0A0A0F" : "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>All</button>
+              {VAULT_TYPES.map((t) => {
+                const meta = TYPE_META[t];
+                return (
+                  <button key={t} onClick={() => setFilterType(filterType === t ? "all" : t)} className="px-3 py-1.5 rounded text-xs font-medium"
+                    style={{ background: filterType === t ? meta.color : "var(--surface)", color: filterType === t ? "#0A0A0F" : "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>
+                    {meta.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-
-        {/* Search + Filter */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-48">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search the vault..."
-              className="ghost-input w-full pl-9 pr-4 py-2.5 text-sm"
-              style={{ borderRadius: '2px' }}
-            />
-          </div>
-          <div className="flex gap-2">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className="px-3 py-2 text-xs transition-all duration-150"
-                style={{
-                  background: activeCategory === cat ? 'var(--amber-glow)' : 'var(--surface)',
-                  border: `1px solid ${activeCategory === cat ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
-                  color: activeCategory === cat ? 'var(--amber)' : 'var(--text-secondary)',
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontWeight: activeCategory === cat ? 600 : 400,
-                }}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => toast.info("Add to Vault coming soon")}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm transition-all duration-150"
-            style={{
-              background: 'var(--amber)',
-              color: 'var(--obsidian)',
-              fontWeight: 600,
-              fontFamily: 'DM Sans, sans-serif',
-            }}
-          >
-            <Plus size={14} />
-            Add to Vault
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold flex-shrink-0"
+            style={{ background: "var(--amber)", color: "#0A0A0F", fontFamily: "DM Sans, sans-serif" }}>
+            <Plus size={14} /> Add Item
           </button>
         </div>
 
-        {/* Vault Items */}
-        <div className="space-y-3">
-          {filtered.map((item) => {
-            const TypeIcon = TYPE_ICONS[item.type] || FileText;
-            const isExpanded = expandedItem === item.id;
-            return (
-              <div
-                key={item.id}
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-subtle)',
-                  borderLeft: `2px solid ${CATEGORY_COLORS[item.category] || 'var(--amber)'}`,
-                }}
-              >
-                <div
-                  className="flex items-start gap-4 px-5 py-4 cursor-pointer"
-                  onClick={() => setExpandedItem(isExpanded ? null : item.id)}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <div
-                    className="flex-shrink-0 flex items-center justify-center mt-0.5"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      background: `${CATEGORY_COLORS[item.category]}15`,
-                      border: `1px solid ${CATEGORY_COLORS[item.category]}30`,
-                    }}
-                  >
-                    <TypeIcon size={14} style={{ color: CATEGORY_COLORS[item.category] }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                        {item.title}
-                      </span>
-                      <span
-                        className="ghost-badge"
-                        style={{
-                          color: CATEGORY_COLORS[item.category],
-                          borderColor: `${CATEGORY_COLORS[item.category]}40`,
-                          background: `${CATEGORY_COLORS[item.category]}10`,
-                        }}
-                      >
-                        {item.category}
-                      </span>
+        {showForm && (
+          <div className="rounded-xl p-5 space-y-3" style={{ background: "var(--surface)", border: "1px solid var(--border-amber)" }}>
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ fontFamily: "Playfair Display, serif", fontSize: "15px", color: "var(--text-primary)" }}>New Vault Item</span>
+              <button onClick={() => setShowForm(false)}><X size={14} style={{ color: "var(--text-muted)" }} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+                className="col-span-2 px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
+              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as VaultType })}
+                className="px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }}>
+                {VAULT_TYPES.map((t) => <option key={t} value={t}>{TYPE_META[t].label}</option>)}
+              </select>
+              <input type="text" placeholder="Tags (comma separated)" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                className="px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
+              <textarea placeholder="Content / notes..." value={form.textContent} onChange={(e) => setForm({ ...form, textContent: e.target.value })}
+                rows={4} className="col-span-2 px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
+            </div>
+            <button onClick={() => {
+              if (!form.title.trim()) return toast.error("Title is required");
+              createItem.mutate({ title: form.title, type: form.type, textContent: form.textContent || undefined,
+                tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined });
+            }} disabled={createItem.isPending} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold"
+              style={{ background: "var(--amber)", color: "#0A0A0F", fontFamily: "DM Sans, sans-serif" }}>
+              {createItem.isPending ? <Loader2 size={12} className="animate-spin" /> : <Archive size={12} />} Save to Vault
+            </button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={24} className="animate-spin" style={{ color: "var(--amber)" }} />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Archive size={32} style={{ color: "var(--text-muted)", opacity: 0.4 }} />
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+              {search || filterType !== "all" ? "No items match your filter." : "Your Vault is empty. Start adding frameworks, case studies, and templates."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((item) => {
+              const meta = TYPE_META[item.type as VaultType] ?? TYPE_META.note;
+              const Icon = meta.icon;
+              const isOpen = expanded === item.id;
+              return (
+                <div key={item.id} className="rounded-xl group cursor-pointer transition-all"
+                  style={{ background: "var(--surface)", border: `1px solid ${isOpen ? meta.color + "60" : "var(--border-subtle)"}` }}
+                  onClick={() => setExpanded(isOpen ? null : item.id)}>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: meta.color + "20" }}>
+                          <Icon size={13} style={{ color: meta.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", fontFamily: "DM Sans, sans-serif" }} className="truncate">{item.title}</div>
+                          <div style={{ fontSize: "10px", color: meta.color, fontFamily: "Fira Code, monospace", marginTop: "2px" }}>{meta.label}</div>
+                        </div>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); deleteItem.mutate({ id: item.id }); }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <Trash2 size={12} style={{ color: "var(--text-muted)" }} />
+                      </button>
                     </div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                      {item.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                        <Clock size={10} />
-                        <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '10px' }}>{item.lastUpdated}</span>
-                      </div>
-                      <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                        <BookOpen size={10} />
-                        <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '10px' }}>
-                          {item.type === 'audio' ? item.duration : `${item.wordCount.toLocaleString()} words`}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {item.tags.map((tag) => (
-                          <div key={tag} className="flex items-center gap-0.5" style={{ color: 'var(--text-muted)' }}>
-                            <Tag size={9} />
-                            <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '10px' }}>{tag}</span>
-                          </div>
+                    {item.tags && Array.isArray(item.tags) && (item.tags as string[]).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {(item.tags as string[]).slice(0, 3).map((tag) => (
+                          <span key={tag} className="px-2 py-0.5 rounded text-xs"
+                            style={{ background: "var(--obsidian)", color: "var(--text-muted)", fontFamily: "Fira Code, monospace" }}>{tag}</span>
                         ))}
                       </div>
+                    )}
+                    {isOpen && item.textContent && (
+                      <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                        <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{item.textContent}</p>
+                      </div>
+                    )}
+                    <div style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "8px", fontFamily: "Fira Code, monospace" }}>
+                      {new Date(item.updatedAt).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
-
-                {isExpanded && (
-                  <div
-                    className="px-5 pb-4 fade-in-up"
-                    style={{ borderTop: '1px solid var(--border-subtle)' }}
-                  >
-                    <div className="pt-4">
-                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                        {item.excerpt} [Full content would be displayed here in the production version, loaded from your knowledge base.]
-                      </p>
-                      <div className="flex gap-2 mt-4">
-                        <button
-                          onClick={() => toast.success("Item injected into Ghost framework")}
-                          className="flex items-center gap-2 px-3 py-2 text-xs"
-                          style={{
-                            background: 'var(--amber)',
-                            color: 'var(--obsidian)',
-                            fontWeight: 600,
-                            fontFamily: 'DM Sans, sans-serif',
-                          }}
-                        >
-                          <Zap size={11} />
-                          Use in Strategy
-                        </button>
-                        <button
-                          onClick={() => toast.info("Edit coming soon")}
-                          className="flex items-center gap-2 px-3 py-2 text-xs"
-                          style={{
-                            border: '1px solid var(--border-subtle)',
-                            color: 'var(--text-secondary)',
-                            fontFamily: 'DM Sans, sans-serif',
-                          }}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
+              );
+            })}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

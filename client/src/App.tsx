@@ -10,16 +10,20 @@ import Pipeline from "./pages/Pipeline";
 import StrategyGen from "./pages/StrategyGen";
 import Vault from "./pages/Vault";
 import Analytics from "./pages/Analytics";
-
+import Settings from "./pages/Settings";
+import Home from "./pages/Home";
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/leads" component={LeadIntel} />
       <Route path="/pipeline" component={Pipeline} />
       <Route path="/strategy" component={StrategyGen} />
       <Route path="/vault" component={Vault} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

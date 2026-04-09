@@ -1,432 +1,219 @@
 /* =============================================================================
    GhostDesk — Lead Intelligence
-   Obsidian Intelligence: Paste URL/email → get Soul Engineer audit of prospect
+   Obsidian Intelligence: AI-powered Soul Engineer lead audit — real AI
    ============================================================================= */
 
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Search, Zap, ExternalLink, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { Target, Loader2, Trash2, ChevronDown, ChevronUp, Brain, AlertTriangle, Map, Star, Music, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-const SAMPLE_LEADS = [
-  {
-    id: "L-001",
-    name: "Marcus Chen",
-    company: "TechFlow Solutions",
-    source: "LinkedIn",
-    intentScore: 8.4,
-    stage: "Analysis",
-    vibeCheck: "Founder in scaling phase. Internal structure is fragmented — 3 different tools for lead management, no unified system. High intent to implement AI but unclear on where to start.",
-    painPoints: ["Manual lead qualification taking 4+ hours/week", "No consistent client onboarding process", "Brand voice inconsistent across platforms"],
-    engineeringMap: [
-      "Deploy GhostDesk pipeline to automate lead scoring and outreach",
-      "Build a RAG-based onboarding assistant trained on their service docs",
-      "Implement content repurposing workflow: 1 video → 8 platform assets"
-    ],
-    legacyPlay: "Position TechFlow as the first AI-native consulting firm in their niche by building a public 'AI Implementation Playbook' — a living document that becomes a lead magnet and establishes thought leadership.",
-    nextBeat: "Schedule a 30-minute 'AI Audit' call. Come prepared with their current tech stack mapped against the Soul Engineer framework.",
-    addedDate: "2 hours ago",
-  },
-  {
-    id: "L-002",
-    name: "Aisha Williams",
-    company: "Apex Creative Agency",
-    source: "Reddit",
-    intentScore: 9.2,
-    stage: "Proposal",
-    vibeCheck: "Agency owner frustrated with content production bottlenecks. High creative output but low distribution efficiency. Ready to invest in AI solutions immediately.",
-    painPoints: ["Content production takes 3x longer than it should", "Client reporting is manual and inconsistent", "Team communication scattered across 5 platforms"],
-    engineeringMap: [
-      "Implement ClipOS-style content repurposing pipeline for their client deliverables",
-      "Build automated client reporting dashboard pulling from their project management tools",
-      "Deploy unified team inbox with AI-suggested responses"
-    ],
-    legacyPlay: "Create an 'Agency AI Transformation' case study documenting their journey. License this as a template to other agencies — recurring revenue stream.",
-    nextBeat: "Send the preliminary strategy doc and request a voice note response. High close probability — move to proposal stage.",
-    addedDate: "5 hours ago",
-  },
-  {
-    id: "L-003",
-    name: "Jordan Rivera",
-    company: "NextGen Ventures",
-    source: "X (Twitter)",
-    intentScore: 6.5,
-    stage: "Discovery",
-    vibeCheck: "Early-stage founder exploring AI options. Not yet clear on specific pain points. Needs education before solution. Lower immediate priority but worth nurturing.",
-    painPoints: ["General 'AI FOMO' — wants to implement but doesn't know where", "Limited budget for initial implementation", "No technical co-founder"],
-    engineeringMap: [
-      "Start with a low-cost AI audit to identify the highest-leverage automation",
-      "Recommend starting with one workflow automation (email responses or content)",
-      "Provide a 30-day implementation roadmap with clear milestones"
-    ],
-    legacyPlay: "Offer a 'Founder AI Sprint' — a 2-week intensive that gets them from zero to one working automation. Document the process as a case study.",
-    nextBeat: "Add to nurture sequence. Send the 'AI Readiness Assessment' as a free resource. Follow up in 2 weeks.",
-    addedDate: "1 day ago",
-  },
-];
-
 const SCORE_COLOR = (score: number) => {
-  if (score >= 8.5) return "#4ADE80";
-  if (score >= 7) return "#F5A623";
+  if (score >= 8) return "#4ADE80";
+  if (score >= 6) return "#F5A623";
   return "#6B6B7A";
 };
 
-const STAGE_COLORS: Record<string, string> = {
-  Discovery: "#6B6B7A",
-  Analysis: "#F5A623",
-  Proposal: "#4ADE80",
-  Closed: "#A78BFA",
-};
+const SECTION_META = [
+  { key: "vibeCheck", label: "Vibe Check", icon: Brain, color: "#F5A623" },
+  { key: "painPoints", label: "Pain Points", icon: AlertTriangle, color: "#F472B6" },
+  { key: "engineeringMap", label: "Engineering Map", icon: Map, color: "#60A5FA" },
+  { key: "legacyPlay", label: "Legacy Play", icon: Star, color: "#A78BFA" },
+  { key: "nextBeat", label: "Next Beat", icon: Music, color: "#4ADE80" },
+];
 
 export default function LeadIntel() {
-  const [inputValue, setInputValue] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [expandedLead, setExpandedLead] = useState<string | null>("L-001");
-  const [analysisStep, setAnalysisStep] = useState(0);
+  const utils = trpc.useUtils();
+  const { data: leads, isLoading } = trpc.leads.list.useQuery();
+  const analyzeLead = trpc.leads.analyze.useMutation({
+    onSuccess: () => {
+      utils.leads.list.invalidate();
+      utils.dashboard.metrics.invalidate();
+      toast.success("Soul Engineer Audit complete");
+      setInput("");
+    },
+    onError: (err) => toast.error(err.message || "Analysis failed"),
+  });
+  const deleteLead = trpc.leads.delete.useMutation({
+    onSuccess: () => { utils.leads.list.invalidate(); toast.success("Lead removed"); },
+    onError: () => toast.error("Failed to delete lead"),
+  });
 
-  const ANALYSIS_STEPS = [
-    "Scanning public presence...",
-    "Identifying pain points of purpose...",
-    "Applying Soul Engineer framework...",
-    "Generating Engineering Map...",
-    "Drafting Legacy Play...",
-    "Analysis complete.",
-  ];
-
-  const handleAnalyze = () => {
-    if (!inputValue.trim()) {
-      toast.error("Please enter a URL, LinkedIn profile, or email to analyze.");
-      return;
-    }
-    setIsAnalyzing(true);
-    setAnalysisStep(0);
-    const interval = setInterval(() => {
-      setAnalysisStep((prev) => {
-        if (prev >= ANALYSIS_STEPS.length - 1) {
-          clearInterval(interval);
-          setIsAnalyzing(false);
-          toast.success("Lead analysis complete! Review the Soul Engineer audit below.");
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 700);
-  };
+  const [input, setInput] = useState("");
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   return (
-    <AppLayout title="Lead Intelligence" subtitle="Soul Engineer Audit Engine">
+    <AppLayout title="Lead Intelligence" subtitle="Soul Engineer Audit — AI-powered lead analysis">
       <div className="p-6 space-y-6">
 
-        {/* Input Section */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
-          <div className="p-5" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Analyze a Lead
-            </h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Paste a URL, LinkedIn profile, email, or any lead context. The Ghost will run a full Soul Engineer audit.
-            </p>
+        {/* Input Panel */}
+        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            Analyze a New Lead
           </div>
-          <div className="p-5">
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <Search
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
-                  style={{ color: 'var(--text-muted)' }}
-                />
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                  placeholder="https://linkedin.com/in/... or paste email or company name"
-                  className="ghost-input w-full pl-9 pr-4 py-3 text-sm"
-                  style={{ borderRadius: '2px' }}
-                />
-              </div>
-              <button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing}
-                className="flex items-center gap-2 px-5 py-3 transition-all duration-150"
-                style={{
-                  background: isAnalyzing ? 'var(--amber-dim)' : 'var(--amber)',
-                  color: 'var(--obsidian)',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  fontFamily: 'DM Sans, sans-serif',
-                  opacity: isAnalyzing ? 0.7 : 1,
-                  minWidth: '140px',
-                }}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <span className="status-dot processing" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Zap size={14} />
-                    Run Audit
-                  </>
-                )}
-              </button>
+          <div className="data-label mb-4">Paste a LinkedIn URL, company URL, email, or describe the prospect</div>
+          <div className="flex gap-3">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="e.g. https://linkedin.com/in/marcus-chen — CEO of TechFlow Solutions, B2B SaaS, 50 employees, recently raised Series A..."
+              rows={3}
+              className="flex-1 px-4 py-3 rounded-lg text-sm outline-none resize-none"
+              style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
+            />
+            <button
+              onClick={() => {
+                if (!input.trim()) return toast.error("Enter a lead URL or description");
+                analyzeLead.mutate({ input: input.trim() });
+              }}
+              disabled={analyzeLead.isPending}
+              className="flex flex-col items-center justify-center gap-2 px-5 py-3 text-sm font-semibold flex-shrink-0 transition-all"
+              style={{
+                background: analyzeLead.isPending ? 'var(--surface-raised)' : 'var(--amber)',
+                color: analyzeLead.isPending ? 'var(--text-muted)' : '#0A0A0F',
+                fontFamily: 'DM Sans, sans-serif',
+                minWidth: '120px',
+              }}
+            >
+              {analyzeLead.isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span style={{ fontSize: '11px' }}>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Target size={16} />
+                  <span>Analyze</span>
+                </>
+              )}
+            </button>
+          </div>
+          {analyzeLead.isPending && (
+            <div className="mt-3 flex items-center gap-2" style={{ color: 'var(--amber)', fontSize: '12px', fontFamily: 'Fira Code, monospace' }}>
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)' }} />
+              Ghost is running the Soul Engineer Audit...
             </div>
-
-            {/* Analysis Progress */}
-            {isAnalyzing && (
-              <div className="mt-4 p-4 fade-in-up" style={{ background: 'var(--amber-glow)', border: '1px solid var(--border-amber)' }}>
-                <div className="space-y-1.5">
-                  {ANALYSIS_STEPS.map((step, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2"
-                      style={{ opacity: i <= analysisStep ? 1 : 0.2, transition: 'opacity 300ms ease' }}
-                    >
-                      <div
-                        style={{
-                          width: '6px',
-                          height: '6px',
-                          borderRadius: '50%',
-                          background: i < analysisStep ? '#4ADE80' : i === analysisStep ? 'var(--amber)' : 'var(--text-muted)',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontFamily: 'Fira Code, monospace',
-                          fontSize: '12px',
-                          color: i === analysisStep ? 'var(--amber)' : i < analysisStep ? '#4ADE80' : 'var(--text-muted)',
-                        }}
-                      >
-                        {step}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Lead List */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+        {/* Leads List */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--amber)' }} />
+          </div>
+        ) : !leads?.length ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Target size={32} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No leads analyzed yet. Paste a lead above to run the first Soul Engineer Audit.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between mb-1">
+              <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', color: 'var(--text-primary)' }}>
                 Recent Audits
               </span>
-              <span className="data-label ml-3">{SAMPLE_LEADS.length} leads analyzed</span>
+              <span className="data-label">{leads.length} leads analyzed</span>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            {SAMPLE_LEADS.map((lead) => (
-              <div
-                key={lead.id}
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-subtle)',
-                  borderLeft: `2px solid ${SCORE_COLOR(lead.intentScore)}`,
-                }}
-              >
-                {/* Lead Header */}
+            {leads.map((lead) => {
+              const audit = lead.analysisJson as Record<string, string> | null;
+              const isOpen = expanded === lead.id;
+              return (
                 <div
-                  className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-                  onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
-                  style={{ transition: 'background 150ms ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  key={lead.id}
+                  className="rounded-xl overflow-hidden group"
+                  style={{ background: 'var(--surface)', border: `1px solid ${isOpen ? 'var(--border-amber)' : 'var(--border-subtle)'}` }}
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                        {lead.name}
-                      </span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        — {lead.company}
-                      </span>
-                      <span
-                        className="ghost-badge"
-                        style={{
-                          color: STAGE_COLORS[lead.stage],
-                          borderColor: `${STAGE_COLORS[lead.stage]}50`,
-                          background: `${STAGE_COLORS[lead.stage]}10`,
-                        }}
-                      >
-                        {lead.stage}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 mt-1">
-                      <span className="data-label">Source: {lead.source}</span>
-                      <span className="data-label">{lead.addedDate}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <div className="data-label mb-0.5">Intent Score</div>
-                      <div
-                        style={{
-                          fontFamily: 'Fira Code, monospace',
-                          fontSize: '20px',
-                          fontWeight: 500,
-                          color: SCORE_COLOR(lead.intentScore),
-                          lineHeight: 1,
-                        }}
-                      >
-                        {lead.intentScore}
-                      </div>
-                    </div>
-                    {expandedLead === lead.id ? (
-                      <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
-                    ) : (
-                      <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded Audit */}
-                {expandedLead === lead.id && (
+                  {/* Lead Header */}
                   <div
-                    className="fade-in-up"
-                    style={{ borderTop: '1px solid var(--border-subtle)' }}
+                    className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+                    onClick={() => setExpanded(isOpen ? null : lead.id)}
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                      {/* Left: Vibe Check + Pain Points */}
-                      <div className="p-5" style={{ borderRight: '1px solid var(--border-subtle)' }}>
-                        <div className="mb-4">
-                          <div className="data-label mb-2" style={{ color: 'var(--amber)' }}>01 — The Vibe Check</div>
-                          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                            {lead.vibeCheck}
-                          </p>
-                        </div>
-                        <div>
-                          <div className="data-label mb-2">Pain Points of Purpose</div>
-                          <div className="space-y-1.5">
-                            {lead.painPoints.map((pain, i) => (
-                              <div key={i} className="flex items-start gap-2">
-                                <div
-                                  style={{
-                                    width: '4px',
-                                    height: '4px',
-                                    borderRadius: '50%',
-                                    background: 'var(--amber)',
-                                    marginTop: '6px',
-                                    flexShrink: 0,
-                                  }}
-                                />
-                                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{pain}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right: Engineering Map + Legacy Play */}
-                      <div className="p-5">
-                        <div className="mb-4">
-                          <div className="data-label mb-2" style={{ color: 'var(--amber)' }}>02 — The Engineering Map</div>
-                          <div className="space-y-2">
-                            {lead.engineeringMap.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2">
-                                <span
-                                  style={{
-                                    fontFamily: 'Fira Code, monospace',
-                                    fontSize: '11px',
-                                    color: 'var(--amber)',
-                                    opacity: 0.6,
-                                    flexShrink: 0,
-                                    marginTop: '2px',
-                                  }}
-                                >
-                                  {String(i + 1).padStart(2, '0')}
-                                </span>
-                                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="mb-4">
-                          <div className="data-label mb-2" style={{ color: 'var(--amber)' }}>03 — The Legacy Play</div>
-                          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                            {lead.legacyPlay}
-                          </p>
-                        </div>
-                        <div
-                          className="p-3"
-                          style={{ background: 'var(--amber-glow)', border: '1px solid var(--border-amber)' }}
-                        >
-                          <div className="data-label mb-1" style={{ color: 'var(--amber)' }}>04 — The Next Beat</div>
-                          <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                            {lead.nextBeat}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
                     <div
-                      className="flex items-center gap-3 px-5 py-3"
-                      style={{ borderTop: '1px solid var(--border-subtle)', background: 'var(--surface-raised)' }}
+                      className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ background: 'var(--obsidian)', border: '1px solid var(--border-subtle)' }}
                     >
+                      <Target size={16} style={{ color: 'var(--amber)' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }} className="truncate">
+                        {(audit?.name as string) || (lead.rawInput ?? "").slice(0, 60)}
+                      </div>
+                      {audit?.company && (
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>{audit.company as string}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      {lead.intentScore != null && (
+                        <div className="text-center">
+                          <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '20px', fontWeight: 700, color: SCORE_COLOR(lead.intentScore), lineHeight: 1 }}>
+                            {lead.intentScore.toFixed(1)}
+                          </div>
+                          <div className="data-label">Intent</div>
+                        </div>
+                      )}
                       <button
-                        onClick={() => toast.success("Strategy doc generation started")}
-                        className="flex items-center gap-2 px-4 py-2 text-xs transition-all duration-150"
-                        style={{
-                          background: 'var(--amber)',
-                          color: 'var(--obsidian)',
-                          fontWeight: 600,
-                          fontFamily: 'DM Sans, sans-serif',
-                        }}
+                        onClick={(e) => { e.stopPropagation(); deleteLead.mutate({ id: lead.id }); }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <Zap size={12} />
-                        Generate Strategy Doc
+                        <Trash2 size={13} style={{ color: 'var(--text-muted)' }} />
                       </button>
-                      <button
-                        onClick={() => toast.success("Voice briefing generated")}
-                        className="flex items-center gap-2 px-4 py-2 text-xs transition-all duration-150"
-                        style={{
-                          border: '1px solid var(--border-subtle)',
-                          color: 'var(--text-secondary)',
-                          fontFamily: 'DM Sans, sans-serif',
-                        }}
-                      >
-                        Voice Briefing
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(JSON.stringify(lead, null, 2));
-                          toast.success("Audit copied to clipboard");
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 text-xs transition-all duration-150"
-                        style={{
-                          border: '1px solid var(--border-subtle)',
-                          color: 'var(--text-secondary)',
-                          fontFamily: 'DM Sans, sans-serif',
-                        }}
-                      >
-                        <Copy size={12} />
-                        Copy Audit
-                      </button>
-                      <button
-                        onClick={() => toast.info("Opening in new tab")}
-                        className="flex items-center gap-2 px-4 py-2 text-xs ml-auto transition-all duration-150"
-                        style={{
-                          color: 'var(--text-muted)',
-                          fontFamily: 'DM Sans, sans-serif',
-                        }}
-                      >
-                        <ExternalLink size={12} />
-                        View Full Profile
-                      </button>
+                      {isOpen ? <ChevronUp size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />}
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
 
+                  {/* Expanded Audit */}
+                  {isOpen && audit && (
+                    <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      {SECTION_META.map((section) => {
+                        const content = audit[section.key];
+                        if (!content) return null;
+                        const Icon = section.icon;
+                        const isSectionOpen = expandedSection === `${lead.id}-${section.key}`;
+                        return (
+                          <div key={section.key} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                            <div
+                              className="flex items-center gap-3 px-5 py-3 cursor-pointer"
+                              onClick={() => setExpandedSection(isSectionOpen ? null : `${lead.id}-${section.key}`)}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                            >
+                              <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: section.color + '20' }}>
+                                <Icon size={12} style={{ color: section.color }} />
+                              </div>
+                              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }}>
+                                {section.label}
+                              </span>
+                              <div className="flex-1" />
+                              {isSectionOpen ? <ChevronUp size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />}
+                            </div>
+                            {isSectionOpen && (
+                              <div className="px-5 pb-4">
+                                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                                  {content}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <div className="px-5 py-3 flex items-center gap-2">
+                        <Plus size={12} style={{ color: 'var(--amber)' }} />
+                        <button
+                          onClick={() => toast.info("Add to Pipeline — coming soon")}
+                          style={{ fontSize: '12px', color: 'var(--amber)', fontFamily: 'DM Sans, sans-serif' }}
+                        >
+                          Add to Pipeline
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

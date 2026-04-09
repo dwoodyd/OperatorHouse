@@ -3,9 +3,11 @@
    Obsidian Intelligence: Overview of all key metrics and recent activity
    ============================================================================= */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import AppLayout from "@/components/AppLayout";
+import { trpc } from "@/lib/trpc";
+import { Loader2 } from "lucide-react";
 import {
   TrendingUp,
   Users,
@@ -40,28 +42,22 @@ function useCountUp(target: number, duration = 1500) {
   return count;
 }
 
-const METRICS = [
-  { label: "Active Leads", value: 12, suffix: "", icon: Target, trend: "+3 this week" },
-  { label: "Strategies Generated", value: 47, suffix: "", icon: Brain, trend: "+8 this month" },
-  { label: "Pipeline Value", value: 94, suffix: "K", icon: TrendingUp, trend: "+$12K this week" },
-  { label: "Hours Saved", value: 156, suffix: "h", icon: Clock, trend: "This month" },
-];
+const STAGE_COLORS: Record<string, string> = {
+  Discovery: "#6B6B7A",
+  Analysis: "#F5A623",
+  Strategy: "#F5A623",
+  Proposal: "#4ADE80",
+  Closed: "#4ADE80",
+};
 
-const RECENT_ACTIVITY = [
-  { time: "2h ago", action: "Strategy generated", client: "TechFlow Solutions", status: "ready", score: 8.4 },
-  { time: "5h ago", action: "Lead analyzed", client: "Marcus Chen — Founder", status: "review", score: 7.1 },
-  { time: "1d ago", action: "Voice briefing sent", client: "Apex Creative Agency", status: "sent", score: 9.2 },
-  { time: "1d ago", action: "Deep dive completed", client: "SoulBrand Collective", status: "closed", score: 8.8 },
-  { time: "2d ago", action: "Lead discovered", client: "NextGen Ventures", status: "new", score: 6.5 },
-];
-
-const PIPELINE_PREVIEW = [
-  { stage: "Discovery", count: 4, color: "#6B6B7A" },
-  { stage: "Analysis", count: 3, color: "#F5A623" },
-  { stage: "Strategy", count: 2, color: "#F5A623" },
-  { stage: "Proposal", count: 2, color: "#4ADE80" },
-  { stage: "Closed", count: 1, color: "#4ADE80" },
-];
+const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+  lead_created: "Lead added",
+  deal_created: "Deal created",
+  deal_stage_changed: "Deal stage updated",
+  client_created: "Client added",
+  vault_item_created: "Vault item saved",
+  strategy_generated: "Strategy generated",
+};
 
 const STATUS_COLORS: Record<string, string> = {
   ready: "#4ADE80",
@@ -71,7 +67,7 @@ const STATUS_COLORS: Record<string, string> = {
   new: "#6B6B7A",
 };
 
-function MetricCard({ label, value, suffix, icon: Icon, trend }: typeof METRICS[0]) {
+function MetricCard({ label, value, suffix, icon: Icon, trend }: { label: string; value: number; suffix: string; icon: React.ElementType; trend: string }) {
   const count = useCountUp(value);
   return (
     <div className="ghost-card p-5 fade-in-up">
@@ -95,11 +91,22 @@ function MetricCard({ label, value, suffix, icon: Icon, trend }: typeof METRICS[
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { data: metrics, isLoading: metricsLoading } = trpc.dashboard.metrics.useQuery();
+  const { data: pipelineDeals } = trpc.pipeline.list.useQuery();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Derive pipeline stage counts from real data
+  const PIPELINE_STAGES = ["Discovery", "Analysis", "Strategy", "Proposal", "Closed"];
+  const pipelineStageCounts = PIPELINE_STAGES.map((stage) => ({
+    stage,
+    count: pipelineDeals?.filter((d) => d.stage === stage).length ?? 0,
+    color: STAGE_COLORS[stage],
+  }));
+  const totalDeals = pipelineDeals?.length ?? 0;
 
   return (
     <AppLayout title="Command Center" subtitle="Soul Engineer OS — Active">
@@ -190,9 +197,22 @@ export default function Dashboard() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {METRICS.map((m) => (
-            <MetricCard key={m.label} {...m} />
-          ))}
+          {metricsLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="ghost-card p-5 fade-in-up flex items-center justify-center" style={{ minHeight: '100px' }}>
+                <Loader2 size={16} className="animate-spin" style={{ color: 'var(--amber)' }} />
+              </div>
+            ))
+          ) : (
+            [
+              { label: "Active Leads", value: metrics?.totalLeads ?? 0, suffix: "", icon: Target, trend: "Total leads" },
+              { label: "Strategies Generated", value: metrics?.strategiesGenerated ?? 0, suffix: "", icon: Brain, trend: "All time" },
+              { label: "Pipeline Value", value: Math.round((metrics?.pipelineValue ?? 0) / 1000), suffix: "K", icon: TrendingUp, trend: "Total pipeline" },
+              { label: "Active Deals", value: metrics?.activeDeals ?? 0, suffix: "", icon: Clock, trend: "In pipeline" },
+            ].map((m) => (
+              <MetricCard key={m.label} {...m} />
+            ))
+          )}
         </div>
 
         {/* Two-column layout */}
@@ -225,37 +245,34 @@ export default function Dashboard() {
               </button>
             </div>
             <div>
-              {RECENT_ACTIVITY.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 px-5 py-3 transition-all duration-150 cursor-pointer"
-                  style={{
-                    borderBottom: i < RECENT_ACTIVITY.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: STATUS_COLORS[item.status], flexShrink: 0 }} />
-                  <div className="flex-1 min-w-0">
-                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>
-                      {item.client}
-                    </div>
-                    <div className="data-label mt-0.5">{item.action}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div
-                      style={{
-                        fontFamily: 'Fira Code, monospace',
-                        fontSize: '12px',
-                        color: item.score >= 8 ? '#4ADE80' : item.score >= 7 ? 'var(--amber)' : 'var(--text-muted)',
-                      }}
-                    >
-                      {item.score.toFixed(1)}
-                    </div>
-                    <div className="data-label">{item.time}</div>
-                  </div>
+              {!metrics?.recentActivities?.length ? (
+                <div className="px-5 py-8 text-center" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+                  No activity yet. Start by adding a lead or creating a deal.
                 </div>
-              ))}
+              ) : (
+                metrics.recentActivities.map((item, i) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 px-5 py-3 transition-all duration-150 cursor-pointer"
+                    style={{
+                      borderBottom: i < metrics.recentActivities.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--amber)', flexShrink: 0 }} />
+                    <div className="flex-1 min-w-0">
+                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                        {item.summary ?? ACTIVITY_TYPE_LABELS[item.activityType] ?? item.activityType}
+                      </div>
+                      <div className="data-label mt-0.5">{item.activityType.replace(/_/g, ' ')}</div>
+                    </div>
+                    <div className="data-label">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -273,10 +290,10 @@ export default function Dashboard() {
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Pipeline Overview
               </div>
-              <div className="data-label mt-0.5">12 active clients</div>
+              <div className="data-label mt-0.5">{totalDeals} active deals</div>
             </div>
             <div className="p-5 space-y-4">
-              {PIPELINE_PREVIEW.map((stage) => (
+              {pipelineStageCounts.map((stage) => (
                 <div key={stage.stage}>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="data-label">{stage.stage}</span>
@@ -294,7 +311,7 @@ export default function Dashboard() {
                     <div
                       style={{
                         height: '100%',
-                        width: `${(stage.count / 12) * 100}%`,
+                        width: totalDeals > 0 ? `${(stage.count / totalDeals) * 100}%` : '0%',
                         background: stage.color,
                         borderRadius: '2px',
                         transition: 'width 1s ease',

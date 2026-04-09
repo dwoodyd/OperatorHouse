@@ -4,6 +4,8 @@
    ============================================================================= */
 
 import AppLayout from "@/components/AppLayout";
+import { trpc } from "@/lib/trpc";
+import { Loader2 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
@@ -47,16 +49,37 @@ const CUSTOM_TOOLTIP_STYLE = {
   color: '#E8E6E0',
 };
 
-const TOP_METRICS = [
-  { label: "Total Revenue (6mo)", value: "$104.3K", change: "+34%", positive: true },
-  { label: "Avg Deal Size", value: "$18.2K", change: "+12%", positive: true },
-  { label: "Lead → Close Rate", value: "31%", change: "+8%", positive: true },
-  { label: "Avg Close Time", value: "18 days", change: "-4 days", positive: true },
-  { label: "Ghost Efficiency", value: "92%", change: "+5%", positive: true },
-  { label: "Hours Saved/Month", value: "156h", change: "+22h", positive: true },
-];
-
 export default function Analytics() {
+  const { data: analyticsData, isLoading } = trpc.analytics.data.useQuery();
+  const { data: metrics } = trpc.dashboard.metrics.useQuery();
+
+  const revenueData = REVENUE_DATA; // static fallback — extend analytics router to add monthly revenue
+  const leadSourceData = (analyticsData?.leadsBySource ?? LEAD_SOURCE_DATA).map((s, i) => ({
+    name: (s as { sourceType?: string; name?: string }).sourceType ?? (s as { name?: string }).name ?? 'Unknown',
+    value: (s as { count?: number; value?: number }).count ?? (s as { value?: number }).value ?? 0,
+    color: ["#60A5FA", "#F5A623", "#4ADE80", "#A78BFA", "#F472B6"][i % 5],
+  }));
+  const weeklyActivity = WEEKLY_ACTIVITY; // static fallback — extend analytics router to add weekly data
+
+  const topMetrics = [
+    { label: "Total Pipeline Value", value: metrics?.pipelineValue ? `$${(metrics.pipelineValue / 1000).toFixed(1)}K` : "$0", change: "live", positive: true },
+    { label: "Total Leads", value: String(metrics?.totalLeads ?? 0), change: "live", positive: true },
+    { label: "Strategies Built", value: String(metrics?.strategiesGenerated ?? 0), change: "live", positive: true },
+    { label: "Active Deals", value: String(metrics?.activeDeals ?? 0), change: "live", positive: true },
+    { label: "Ghost Efficiency", value: "90%", change: "target", positive: true },
+    { label: "Hours Saved/Month", value: `${Math.round((metrics?.strategiesGenerated ?? 0) * 3)}h`, change: "live", positive: true },
+  ];
+
+  if (isLoading) {
+    return (
+      <AppLayout title="Analytics" subtitle="Performance intelligence dashboard">
+        <div className="flex items-center justify-center py-40">
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--amber)' }} />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout title="Analytics" subtitle="Performance intelligence dashboard">
       <div className="p-6 space-y-6">
@@ -84,7 +107,7 @@ export default function Analytics() {
 
         {/* Top Metrics Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {TOP_METRICS.map((metric) => (
+          {topMetrics.map((metric) => (
             <div
               key={metric.label}
               style={{
