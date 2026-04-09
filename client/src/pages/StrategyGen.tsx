@@ -1,380 +1,419 @@
 /* =============================================================================
-   GhostDesk — Strategy Generator
-   Obsidian Intelligence: AI generates Soul Engineer strategy docs
+   GhostDesk — Strategy Generator (Phase 2: Real AI)
+   Calls strategies.generate, renders structured output, saves to DB.
+   No mock data. No simulated typewriter.
    ============================================================================= */
-
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { FileText, Zap, Copy, Download, ChevronDown } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 
 const TEMPLATES = [
-  { id: "full", label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
-  { id: "quick", label: "Quick Audit", desc: "Pain points + 3 AI solutions + immediate next step" },
-  { id: "deck", label: "Slide Deck Shell", desc: "5-slide structure ready for your brand colors" },
-  { id: "email", label: "Outreach Email", desc: "Personalized first-touch email in your voice" },
+  { id: "full" as const, label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
+  { id: "quick" as const, label: "Quick Audit", desc: "Pain points + 3 AI solutions + immediate next step" },
+  { id: "deck" as const, label: "Slide Deck Shell", desc: "5-slide structure ready for your brand colors" },
+  { id: "email" as const, label: "Outreach Email", desc: "Personalized first-touch email in your voice" },
 ];
 
 const INDUSTRIES = [
   "Creative Agency", "Tech Startup", "Solo Founder", "Real Estate", "Healthcare",
-  "E-commerce", "Coaching / Consulting", "Media / Publishing", "Finance", "Other"
+  "E-commerce", "Coaching / Consulting", "Media / Publishing", "Finance", "Other",
 ];
 
-const SAMPLE_OUTPUT = `# Soul Engineer Strategy — TechFlow Solutions
+type OutputType = "full" | "quick" | "deck" | "email";
 
-**Prepared by:** Ghost Consultant  
-**Framework:** Soul Engineer v2.0  
-**Date:** March 19, 2026  
-**Confidence Score:** 8.4/10
-
----
-
-## 01 — The Vibe Check
-
-Marcus Chen and TechFlow Solutions are at a critical inflection point. The business has strong product-market fit and a growing client base, but the internal structure is fracturing under growth pressure. Three separate lead management tools, inconsistent onboarding, and a brand voice that shifts depending on which team member is writing — these are not operational problems. They are **structural problems of purpose**.
-
-The core tension: Marcus wants to scale, but the systems he's built are designed for a solo operator. The AI implementation he's seeking isn't just about efficiency — it's about rebuilding the internal architecture so the business can grow without Marcus being the single point of failure.
-
----
-
-## 02 — The Engineering Map
-
-**Tool 1: Unified Lead Intelligence Pipeline**  
-Deploy a lead scoring and qualification system that automatically pulls from LinkedIn, email, and social mentions. Every lead gets a Soul Engineer audit score (1–10) before Marcus sees it. He only engages with leads scoring 7+. Estimated time savings: 4 hours/week.
-
-**Tool 2: AI-Powered Onboarding Assistant**  
-Build a RAG-based assistant trained on TechFlow's service documentation, past client deliverables, and Marcus's communication style. New clients get a personalized onboarding experience that feels like Marcus wrote it — because the AI learned from him.
-
-**Tool 3: Content Repurposing Engine**  
-One recorded client call or podcast appearance becomes: 3 LinkedIn posts, 2 email newsletters, 1 YouTube short, and a blog post. All in Marcus's voice. Estimated content output increase: 8x with no additional time investment.
-
----
-
-## 03 — The Legacy Play
-
-The real opportunity here isn't just operational efficiency — it's **category creation**. TechFlow has the chance to become the first AI-native consulting firm in the B2B SaaS implementation space. The play: build a public "AI Implementation Playbook" — a living document updated monthly with real case studies from TechFlow's client work.
-
-This becomes a lead magnet, a thought leadership asset, and eventually a paid product. In 18 months, this playbook is what TechFlow is known for — not just the services they provide.
-
----
-
-## 04 — The Next Beat
-
-**Immediate action:** Schedule a 30-minute "AI Architecture Audit" call with Marcus. Come prepared with:
-- His current tech stack mapped against the Soul Engineer framework
-- 3 specific automation opportunities ranked by ROI
-- A rough timeline for a 90-day implementation sprint
-
-**Proposed offer:** AI Implementation Sprint — $12,000 for 90 days. Deliverables: unified lead pipeline, onboarding assistant, and content engine. Ongoing retainer: $2,500/month for maintenance and optimization.
-
----
-
-*Generated by GhostDesk — Soul Engineer Framework*`;
+interface StrategyResult {
+  title: string;
+  outputType: OutputType;
+  content: string;
+  citations: Array<{ type: string; id: number; title: string }>;
+  missingContext: string | null;
+}
 
 export default function StrategyGen() {
-  const [selectedTemplate, setSelectedTemplate] = useState("full");
+  const utils = trpc.useUtils();
+  const { data: clients } = trpc.clients.list.useQuery();
+  const { data: strategies, isLoading: strategiesLoading } = trpc.strategies.list.useQuery();
+
+  const [selectedTemplate, setSelectedTemplate] = useState<OutputType>("full");
   const [clientName, setClientName] = useState("");
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState("");
   const [context, setContext] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [output, setOutput] = useState("");
-  const [genStep, setGenStep] = useState(0);
+  const [selectedClientId, setSelectedClientId] = useState<number | undefined>(undefined);
+  const [result, setResult] = useState<StrategyResult | null>(null);
+  const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
 
-  const GEN_STEPS = [
-    "Loading Soul Engineer framework...",
-    "Analyzing client context...",
-    "Applying Internal Structure lens...",
-    "Mapping Engineering solutions...",
-    "Crafting Legacy Play...",
-    "Finalizing strategy document...",
-    "Document ready.",
-  ];
+  const generateStrategy = trpc.strategies.generate.useMutation({
+    onSuccess: (data) => {
+      setResult(data.strategy as StrategyResult);
+      utils.strategies.list.invalidate();
+      utils.dashboard.metrics.invalidate();
+      toast.success("Strategy generated and saved");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Generation failed. Please retry.");
+    },
+  });
 
   const handleGenerate = () => {
     if (!clientName.trim() || !company.trim()) {
-      toast.error("Please enter at least a client name and company.");
+      toast.error("Client name and company are required");
       return;
     }
-    setIsGenerating(true);
-    setOutput("");
-    setGenStep(0);
-    let step = 0;
-    const stepInterval = setInterval(() => {
-      step++;
-      setGenStep(step);
-      if (step >= GEN_STEPS.length - 1) {
-        clearInterval(stepInterval);
-        // Simulate typewriter output
-        let charIndex = 0;
-        const typeInterval = setInterval(() => {
-          charIndex += 8;
-          setOutput(SAMPLE_OUTPUT.slice(0, charIndex));
-          if (charIndex >= SAMPLE_OUTPUT.length) {
-            clearInterval(typeInterval);
-            setIsGenerating(false);
-            toast.success("Strategy document generated!");
-          }
-        }, 20);
-      }
-    }, 500);
+    if (!context.trim()) {
+      toast.error("Add context about this client to ground the strategy");
+      return;
+    }
+    setResult(null);
+    generateStrategy.mutate({
+      outputType: selectedTemplate,
+      clientName: clientName.trim(),
+      company: company.trim(),
+      industry: industry || undefined,
+      context: context.trim(),
+      clientId: selectedClientId,
+    });
+  };
+
+  const handleCopy = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result.content);
+    toast.success("Copied to clipboard");
+  };
+
+  const handleDownload = () => {
+    if (!result) return;
+    const blob = new Blob([result.content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${result.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleClientSelect = (clientId: string) => {
+    if (!clientId) { setSelectedClientId(undefined); return; }
+    const id = parseInt(clientId);
+    const client = clients?.find(c => c.id === id);
+    if (client) {
+      setSelectedClientId(id);
+      setClientName(client.name);
+      setCompany(client.company ?? "");
+      setIndustry(client.industry ?? "");
+    }
   };
 
   return (
-    <AppLayout title="Strategy Generator" subtitle="Soul Engineer document engine">
+    <AppLayout title="Strategy Generator" subtitle="Soul Engineer document engine — AI-grounded strategy">
       <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Tab Bar */}
+        <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+          {[
+            { id: "generate", label: "Generate" },
+            { id: "history", label: `History (${strategies?.length ?? 0})` },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as "generate" | "history")}
+              className="px-4 py-2 text-sm font-medium transition-all"
+              style={{
+                color: activeTab === tab.id ? 'var(--amber)' : 'var(--text-muted)',
+                borderBottom: activeTab === tab.id ? '2px solid var(--amber)' : '2px solid transparent',
+                fontFamily: 'DM Sans, sans-serif',
+                marginBottom: '-1px',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Left: Config Panel */}
-          <div className="lg:col-span-2 space-y-4">
-
-            {/* Template Selection */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
-              <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Output Type
+        {activeTab === "generate" && (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Left: Config Panel */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Output Type */}
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Output Type
+                  </div>
+                </div>
+                <div className="p-3 space-y-2">
+                  {TEMPLATES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedTemplate(t.id)}
+                      className="w-full text-left p-3 transition-all duration-150"
+                      style={{
+                        background: selectedTemplate === t.id ? 'var(--amber-glow)' : 'var(--surface-raised)',
+                        border: `1px solid ${selectedTemplate === t.id ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
+                        borderLeft: `2px solid ${selectedTemplate === t.id ? 'var(--amber)' : 'transparent'}`,
+                      }}
+                    >
+                      <div style={{ fontSize: '13px', fontWeight: 500, color: selectedTemplate === t.id ? 'var(--amber)' : 'var(--text-primary)' }}>
+                        {t.label}
+                      </div>
+                      <div className="data-label mt-0.5">{t.desc}</div>
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="p-3 space-y-2">
-                {TEMPLATES.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setSelectedTemplate(t.id)}
-                    className="w-full text-left p-3 transition-all duration-150"
-                    style={{
-                      background: selectedTemplate === t.id ? 'var(--amber-glow)' : 'var(--surface-raised)',
-                      border: `1px solid ${selectedTemplate === t.id ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
-                      borderLeft: `2px solid ${selectedTemplate === t.id ? 'var(--amber)' : 'transparent'}`,
-                    }}
-                  >
-                    <div style={{ fontSize: '13px', fontWeight: 500, color: selectedTemplate === t.id ? 'var(--amber)' : 'var(--text-primary)' }}>
-                      {t.label}
+
+              {/* Client Details */}
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Client Details
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  {clients && clients.length > 0 && (
+                    <div>
+                      <label className="data-label block mb-1">Load from Client Record</label>
+                      <select
+                        onChange={(e) => handleClientSelect(e.target.value)}
+                        className="w-full px-3 py-2 text-sm outline-none"
+                        style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        <option value="">— Select client —</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ""}</option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="data-label mt-0.5">{t.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Client Details */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
-              <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Client Details
-                </div>
-              </div>
-              <div className="p-4 space-y-3">
-                <div>
-                  <label className="data-label block mb-1.5">Client Name</label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="Marcus Chen"
-                    className="ghost-input w-full px-3 py-2.5 text-sm"
-                    style={{ borderRadius: '2px' }}
-                  />
-                </div>
-                <div>
-                  <label className="data-label block mb-1.5">Company</label>
-                  <input
-                    type="text"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="TechFlow Solutions"
-                    className="ghost-input w-full px-3 py-2.5 text-sm"
-                    style={{ borderRadius: '2px' }}
-                  />
-                </div>
-                <div>
-                  <label className="data-label block mb-1.5">Industry</label>
-                  <div className="relative">
+                  )}
+                  <div>
+                    <label className="data-label block mb-1">Client Name *</label>
+                    <input
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Marcus Chen"
+                      className="w-full px-3 py-2 text-sm outline-none"
+                      style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="data-label block mb-1">Company *</label>
+                    <input
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="TechFlow Solutions"
+                      className="w-full px-3 py-2 text-sm outline-none"
+                      style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="data-label block mb-1">Industry</label>
                     <select
                       value={industry}
                       onChange={(e) => setIndustry(e.target.value)}
-                      className="ghost-input w-full px-3 py-2.5 text-sm appearance-none"
-                      style={{ borderRadius: '2px' }}
+                      className="w-full px-3 py-2 text-sm outline-none"
+                      style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
                     >
-                      <option value="">Select industry...</option>
-                      {INDUSTRIES.map((ind) => (
-                        <option key={ind} value={ind}>{ind}</option>
-                      ))}
+                      <option value="">Select industry</option>
+                      {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
                     </select>
-                    <ChevronDown
-                      size={14}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: 'var(--text-muted)' }}
+                  </div>
+                  <div>
+                    <label className="data-label block mb-1">Context & Notes *</label>
+                    <textarea
+                      value={context}
+                      onChange={(e) => setContext(e.target.value)}
+                      placeholder="Describe the client situation, goals, challenges, recent conversations... More context = better strategy."
+                      rows={5}
+                      className="w-full px-3 py-2 text-sm outline-none resize-none"
+                      style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
                     />
+                    <p className="data-label mt-1">Vault frameworks and client records are automatically included as context.</p>
                   </div>
                 </div>
-                <div>
-                  <label className="data-label block mb-1.5">Context / Notes</label>
-                  <textarea
-                    value={context}
-                    onChange={(e) => setContext(e.target.value)}
-                    placeholder="Paste their LinkedIn bio, email, pain points, or any relevant context..."
-                    rows={5}
-                    className="ghost-input w-full px-3 py-2.5 text-sm resize-none"
-                    style={{ borderRadius: '2px' }}
-                  />
-                </div>
-
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className="w-full flex items-center justify-center gap-2 py-3 transition-all duration-150"
-                  style={{
-                    background: isGenerating ? 'var(--amber-dim)' : 'var(--amber)',
-                    color: 'var(--obsidian)',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    fontFamily: 'DM Sans, sans-serif',
-                    opacity: isGenerating ? 0.7 : 1,
-                  }}
-                >
-                  {isGenerating ? (
-                    <>
-                      <span className="status-dot processing" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Zap size={15} />
-                      Generate Strategy
-                    </>
-                  )}
-                </button>
               </div>
-            </div>
-          </div>
 
-          {/* Right: Output Panel */}
-          <div className="lg:col-span-3">
-            <div
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border-subtle)',
-                minHeight: '600px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                className="flex items-center justify-between px-5 py-3.5"
-                style={{ borderBottom: '1px solid var(--border-subtle)' }}
+              <button
+                onClick={handleGenerate}
+                disabled={generateStrategy.isPending}
+                className="w-full py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                style={{
+                  background: generateStrategy.isPending ? 'var(--surface-raised)' : 'var(--amber)',
+                  color: generateStrategy.isPending ? 'var(--text-muted)' : '#0A0A0F',
+                  fontFamily: 'DM Sans, sans-serif',
+                  border: `1px solid ${generateStrategy.isPending ? 'var(--border-subtle)' : 'var(--amber)'}`,
+                }}
               >
-                <div className="flex items-center gap-3">
-                  <FileText size={15} style={{ color: 'var(--amber)' }} />
-                  <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Strategy Output
-                  </span>
-                  {isGenerating && <span className="status-dot processing" />}
-                  {output && !isGenerating && <span className="ghost-badge">Ready</span>}
+                {generateStrategy.isPending ? (
+                  <><RefreshCw size={15} className="animate-spin" />Ghost is generating...</>
+                ) : (
+                  <><Zap size={15} />Generate Strategy</>
+                )}
+              </button>
+
+              {generateStrategy.isPending && (
+                <div className="p-3 space-y-1.5" style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)' }}>
+                  {["Loading Soul Engineer framework...", "Pulling vault context...", "Analyzing client situation...", "Mapping engineering solutions...", "Crafting strategy document..."].map((step, i) => (
+                    <div key={i} className="flex items-center gap-2" style={{ color: 'var(--text-muted)', fontSize: '11px', fontFamily: 'Fira Code, monospace' }}>
+                      <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)', animationDelay: `${i * 0.3}s` }} />
+                      {step}
+                    </div>
+                  ))}
                 </div>
-                {output && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => { navigator.clipboard.writeText(output); toast.success("Copied to clipboard"); }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs transition-all duration-150"
-                      style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', fontFamily: 'DM Sans, sans-serif' }}
-                    >
-                      <Copy size={11} /> Copy
-                    </button>
-                    <button
-                      onClick={() => toast.info("Export coming soon")}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs transition-all duration-150"
-                      style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', fontFamily: 'DM Sans, sans-serif' }}
-                    >
-                      <Download size={11} /> Export
+              )}
+
+              {generateStrategy.isError && (
+                <div className="p-3 flex items-start gap-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                  <AlertCircle size={14} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <p style={{ color: '#ef4444', fontSize: '12px', fontWeight: 500 }}>Generation failed</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '2px' }}>{generateStrategy.error?.message}</p>
+                    <button onClick={handleGenerate} className="mt-2 text-xs font-medium" style={{ color: 'var(--amber)', fontFamily: 'DM Sans, sans-serif' }}>
+                      Retry →
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
 
-              <div className="flex-1 p-5 overflow-y-auto">
-                {/* Generation Progress */}
-                {isGenerating && genStep < GEN_STEPS.length - 1 && (
-                  <div className="mb-4 p-4 fade-in-up" style={{ background: 'var(--amber-glow)', border: '1px solid var(--border-amber)' }}>
-                    <div className="space-y-1.5">
-                      {GEN_STEPS.map((step, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2"
-                          style={{ opacity: i <= genStep ? 1 : 0.2, transition: 'opacity 300ms ease' }}
-                        >
-                          <div
-                            style={{
-                              width: '5px', height: '5px', borderRadius: '50%', flexShrink: 0,
-                              background: i < genStep ? '#4ADE80' : i === genStep ? 'var(--amber)' : 'var(--text-muted)',
-                            }}
-                          />
-                          <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '11px', color: i === genStep ? 'var(--amber)' : i < genStep ? '#4ADE80' : 'var(--text-muted)' }}>
-                            {step}
-                          </span>
-                        </div>
+            {/* Right: Output Panel */}
+            <div className="lg:col-span-3">
+              {!result && !generateStrategy.isPending && (
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                  <FileText size={40} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
+                  <div className="text-center">
+                    <p style={{ color: 'var(--text-primary)', fontSize: '15px', fontFamily: 'Playfair Display, serif' }}>No strategy generated yet</p>
+                    <p className="data-label mt-1">Fill in client details and click Generate Strategy</p>
+                  </div>
+                </div>
+              )}
+
+              {generateStrategy.isPending && (
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)' }}>
+                  <div className="w-12 h-12 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--amber)', borderTopColor: 'transparent' }} />
+                  <p style={{ color: 'var(--amber)', fontSize: '13px', fontFamily: 'Fira Code, monospace' }}>Ghost is working...</p>
+                </div>
+              )}
+
+              {result && (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                  <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} style={{ color: 'var(--amber)' }} />
+                        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', color: 'var(--text-primary)' }}>{result.title}</span>
+                      </div>
+                      <div className="data-label mt-0.5">
+                        {TEMPLATES.find(t => t.id === result.outputType)?.label} · Soul Engineer v2.0
+                        {result.citations.length > 0 && ` · ${result.citations.length} source${result.citations.length > 1 ? "s" : ""}`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={handleCopy} className="p-2 transition-colors" style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }} title="Copy markdown">
+                        <Copy size={13} />
+                      </button>
+                      <button onClick={handleDownload} className="p-2 transition-colors" style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }} title="Download .md">
+                        <Download size={13} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {result.missingContext && (
+                    <div className="mx-5 mt-4 p-3 flex items-start gap-2" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid var(--border-amber)' }}>
+                      <AlertCircle size={13} style={{ color: 'var(--amber)', flexShrink: 0, marginTop: '2px' }} />
+                      <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                        <span style={{ color: 'var(--amber)', fontWeight: 500 }}>Ghost note: </span>
+                        {result.missingContext}
+                      </p>
+                    </div>
+                  )}
+
+                  {result.citations.length > 0 && (
+                    <div className="mx-5 mt-3 flex flex-wrap gap-2">
+                      {result.citations.map((c, i) => (
+                        <span key={i} className="flex items-center gap-1 px-2 py-0.5"
+                          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border-subtle)', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'Fira Code, monospace' }}>
+                          <BookOpen size={10} />
+                          {c.type}: {c.title}
+                        </span>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Output */}
-                {output ? (
-                  <div
-                    style={{
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: '13px',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.8,
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
-                    {output.split('\n').map((line, i) => {
-                      if (line.startsWith('# ')) return (
-                        <h1 key={i} style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', marginTop: '16px' }}>
-                          {line.replace('# ', '')}
-                        </h1>
-                      );
-                      if (line.startsWith('## ')) return (
-                        <h2 key={i} style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--amber)', marginBottom: '6px', marginTop: '20px' }}>
-                          {line.replace('## ', '')}
-                        </h2>
-                      );
-                      if (line.startsWith('**') && line.endsWith('**')) return (
-                        <div key={i} style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                          {line.replace(/\*\*/g, '')}
-                        </div>
-                      );
-                      if (line === '---') return <div key={i} className="amber-rule my-4" />;
-                      return <div key={i}>{line || <br />}</div>;
-                    })}
+                  <div className="p-5 overflow-auto max-h-[600px]"
+                    style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.7' }}>
+                    <Streamdown>{result.content}</Streamdown>
                   </div>
-                ) : !isGenerating ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center" style={{ minHeight: '400px' }}>
-                    <div
-                      style={{
-                        width: '60px',
-                        height: '60px',
-                        background: 'var(--amber-glow)',
-                        border: '1px solid var(--border-amber)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      <FileText size={24} style={{ color: 'var(--amber)', opacity: 0.6 }} />
-                    </div>
-                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', color: 'var(--text-secondary)' }}>
-                      Strategy awaiting generation
-                    </div>
-                    <div className="data-label mt-2">Fill in client details and click Generate Strategy</div>
+
+                  <div className="px-5 py-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                    <button onClick={handleGenerate} disabled={generateStrategy.isPending}
+                      className="flex items-center gap-1.5 text-xs font-medium"
+                      style={{ color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+                      <RefreshCw size={12} />Regenerate
+                    </button>
                   </div>
-                ) : null}
-              </div>
+                </div>
+              )}
             </div>
           </div>
+        )}
 
-        </div>
+        {activeTab === "history" && (
+          <div>
+            {strategiesLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--amber)', borderTopColor: 'transparent' }} />
+              </div>
+            ) : !strategies?.length ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <FileText size={32} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No strategies generated yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {strategies.map((s) => {
+                  const ctx = s.inputContext as Record<string, string> | null;
+                  return (
+                    <div key={s.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                      <div className="px-5 py-4 flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 text-xs font-mono"
+                              style={{ background: 'var(--amber-glow)', color: 'var(--amber)', border: '1px solid var(--border-amber)' }}>
+                              {s.outputType}
+                            </span>
+                            <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>
+                              {ctx?.clientName ?? "Unknown"}{ctx?.company ? ` — ${ctx.company}` : ""}
+                            </span>
+                          </div>
+                          <p className="data-label">{new Date(s.createdAt).toLocaleDateString()} · {s.promptVersion ?? "v2.0"}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setResult({
+                              title: `${ctx?.clientName ?? ""} — ${s.outputType}`,
+                              outputType: s.outputType as OutputType,
+                              content: s.content ?? "",
+                              citations: (s.citations as Array<{ type: string; id: number; title: string }>) ?? [],
+                              missingContext: null,
+                            });
+                            setActiveTab("generate");
+                          }}
+                          className="text-xs px-3 py-1.5 ml-4 flex-shrink-0"
+                          style={{ color: 'var(--amber)', border: '1px solid var(--border-amber)', fontFamily: 'DM Sans, sans-serif' }}>
+                          View
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

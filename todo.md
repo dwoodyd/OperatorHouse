@@ -19,7 +19,7 @@
 
 ## Phase 2 — Premium UI/UX Upgrades (from attached spec)
 - [ ] Add AI Chat Assistant panel (floating ghost chat sidebar)
-- [ ] Add Strategy Generator wired to real LLM (currently UI-only with simulated steps)
+- [x] Add Strategy Generator wired to real LLM (currently UI-only with simulated steps)
 - [ ] Add Voice Briefing feature (text-to-speech on lead audits)
 - [ ] Add "Add to Pipeline" button from Lead Intelligence (cross-module flow)
 - [ ] Add drag-and-drop between pipeline stages
@@ -38,3 +38,12 @@
 ## Bug Fixes
 - [x] Fix pipeline_deals table missing from production DB (query errors on dashboard)
 - [x] Verify all 10 tables exist in production DB after migration
+
+## Phase 2 — Real Intelligence Layer
+- [x] Build centralized AI service layer (server/ai.ts) with versioned prompts
+- [x] Lead Intelligence: real structured JSON analysis from LLM, grounded in vault/client context
+- [x] Lead Intelligence: save analysis to leads table, retry/error states, remove all mock data
+- [x] Strategy Generator: real AI generation from client+deal+vault context
+- [x] Strategy Generator: save to strategies table, structured output, no fake typewriter
+- [x] Remove all hardcoded demo arrays and fallback mock data from completed modules
+- [x] Add citations field: reference vault items used in strategy generation

@@ -120,6 +120,7 @@ export const strategies = mysqlTable("strategies", {
   promptVersion: varchar("promptVersion", { length: 32 }).default("v1"),
   modelName: varchar("modelName", { length: 64 }),
   status: mysqlEnum("status", ["generating", "complete", "failed"]).default("generating").notNull(),
+  citations: json("citations"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

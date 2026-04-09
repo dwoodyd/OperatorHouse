@@ -12,7 +12,7 @@ import {
   updateClient, updateDeal, updateLead, updateStrategy, updateTask,
   updateVaultItem, upsertUserProfile,
 } from "./db";
-import { invokeLLM } from "./_core/llm";
+import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
 
 export const appRouter = router({
   system: systemRouter,
@@ -90,45 +90,43 @@ export const appRouter = router({
   leads: router({
     list: protectedProcedure.query(async ({ ctx }) => getLeads(ctx.user.id)),
     analyze: protectedProcedure
-      .input(z.object({ input: z.string().min(1) }))
+      .input(z.object({
+        input: z.string().min(1),
+        clientId: z.number().optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
-        const prompt = `You are the Ghost Consultant, an AI strategist operating through the Soul Engineer framework. Analyze the following lead and produce a structured JSON audit.
-
-Lead Input: ${input.input}
-
-Return ONLY valid JSON with this exact structure:
-{
-  "name": "<person or company name>",
-  "company": "<company name if identifiable>",
-  "intentScore": <number 1-10>,
-  "vibeCheck": "<2-3 sentence assessment of their current state, energy, and readiness>",
-  "painPoints": "<key pain points and structural problems you identify>",
-  "engineeringMap": "<specific AI/automation solutions mapped to their situation>",
-  "legacyPlay": "<long-term positioning and legacy opportunity>",
-  "nextBeat": "<specific next action to take with this lead>"
-}`;
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: "You are the Ghost Consultant. Return only valid JSON, no markdown fences." },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
+        const [vaultItems, clients] = await Promise.all([
+          getVaultItems(ctx.user.id),
+          getClients(ctx.user.id),
+        ]);
+        const clientRecord = input.clientId
+          ? (clients.find(c => c.id === input.clientId) ?? null)
+          : null;
+        const contextVault = vaultItems
+          .filter(v => v.type === "framework" || v.type === "case_study" || v.type === "research")
+          .slice(0, 5)
+          .map(v => ({ title: v.title, content: v.content ?? v.textContent ?? null, type: v.type }));
+        const audit = await runLeadAudit({
+          rawInput: input.input,
+          vaultContext: contextVault,
+          clientContext: clientRecord ? {
+            name: clientRecord.name,
+            company: clientRecord.company ?? null,
+            industry: clientRecord.industry ?? null,
+            summary: clientRecord.summary ?? null,
+          } : null,
         });
-        const raw = response.choices[0]?.message?.content ?? "{}";
-        let parsed: Record<string, unknown>;
-        try { parsed = JSON.parse(typeof raw === 'string' ? raw : JSON.stringify(raw)); } catch { parsed = {}; }
-        const intentScore = typeof parsed.intentScore === "number" ? parsed.intentScore : 5;
-        const { name, company, ...auditData } = parsed;
         await createLead({
           userId: ctx.user.id,
           rawInput: input.input,
           sourceType: "manual",
-          analysisJson: { name, company, ...auditData },
-          intentScore,
+          clientId: input.clientId,
+          analysisJson: audit,
+          intentScore: audit.intentScore,
           status: "analysis",
         });
-        await logActivity({ userId: ctx.user.id, activityType: "lead_created", summary: `Lead analyzed: ${String(name ?? input.input.slice(0, 40))}` });
-        return { success: true };
+        await logActivity({ userId: ctx.user.id, activityType: "lead_analyzed", summary: `Lead analyzed: ${audit.name} @ ${audit.company}` });
+        return { audit };
       }),
     create: protectedProcedure
       .input(z.object({
@@ -253,17 +251,66 @@ Return ONLY valid JSON with this exact structure:
 
   strategies: router({
     list: protectedProcedure.query(async ({ ctx }) => getStrategies(ctx.user.id)),
-    create: protectedProcedure
+    generate: protectedProcedure
       .input(z.object({
-        outputType: z.enum(["full", "quick", "deck", "email"]).optional(),
-        inputContext: z.any().optional(),
-        content: z.string().optional(),
+        outputType: z.enum(["full", "quick", "deck", "email"]),
+        clientName: z.string().min(1),
+        company: z.string().min(1),
+        industry: z.string().optional(),
+        context: z.string().min(1),
         clientId: z.number().optional(),
+        dealId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        await createStrategy({ ...input, userId: ctx.user.id, status: "complete" });
-        await logActivity({ userId: ctx.user.id, activityType: "strategy_generated", summary: `Strategy generated (${input.outputType ?? "full"})` });
-        return { success: true };
+        const [vaultItems, clients, deals] = await Promise.all([
+          getVaultItems(ctx.user.id),
+          getClients(ctx.user.id),
+          getPipelineDeals(ctx.user.id),
+        ]);
+        const clientRecord = input.clientId
+          ? (clients.find(c => c.id === input.clientId) ?? null)
+          : null;
+        const dealRecord = input.dealId
+          ? (deals.find(d => d.id === input.dealId) ?? null)
+          : null;
+        // Use top 6 vault items as context
+        const contextVault = vaultItems
+          .filter(v => v.type === "framework" || v.type === "case_study" || v.type === "template" || v.type === "research")
+          .slice(0, 6)
+          .map(v => ({ id: v.id, title: v.title, content: v.content ?? v.textContent ?? null, type: v.type }));
+        const result = await runStrategyGeneration({
+          outputType: input.outputType,
+          clientName: input.clientName,
+          company: input.company,
+          industry: input.industry,
+          context: input.context,
+          vaultItems: contextVault,
+          clientRecord: clientRecord ? {
+            id: clientRecord.id,
+            summary: clientRecord.summary ?? null,
+            nextStep: clientRecord.nextStep ?? null,
+          } : null,
+          dealRecord: dealRecord ? {
+            id: dealRecord.id,
+            title: dealRecord.title,
+            stage: dealRecord.stage,
+            notes: dealRecord.notes ?? null,
+          } : null,
+        });
+        await createStrategy({
+          userId: ctx.user.id,
+          clientId: input.clientId,
+          outputType: input.outputType,
+          inputContext: { clientName: input.clientName, company: input.company, industry: input.industry, context: input.context },
+          content: result.content,
+          structuredOutput: result.structuredSections,
+          promptVersion: result.promptVersion,
+          modelName: result.modelName,
+          status: "complete",
+          citations: result.citations,
+        });
+        await logActivity({ userId: ctx.user.id, activityType: "strategy_generated", summary: `Strategy generated: ${result.title} (${input.outputType})` });
+        return { strategy: result };
       }),
   }),
 
