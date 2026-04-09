@@ -15,6 +15,13 @@
       "when": 1775770252165,
       "tag": "0001_silly_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775771825619,
+      "tag": "0002_bright_triton",
+      "breakpoints": true
     }
   ]
 }

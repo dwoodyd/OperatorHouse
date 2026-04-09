@@ -34,3 +34,7 @@
 - [ ] Add usage analytics (track AI calls, leads analyzed, strategies generated)
 - [ ] Add team/multi-user support
 - [ ] Add white-label option for resellers
+
+## Bug Fixes
+- [x] Fix pipeline_deals table missing from production DB (query errors on dashboard)
+- [x] Verify all 10 tables exist in production DB after migration
