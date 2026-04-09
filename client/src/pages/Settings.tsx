@@ -48,7 +48,7 @@ export default function Settings() {
     <AppLayout title="Settings" subtitle="Manage your GhostDesk profile and preferences">
       <div className="max-w-2xl mx-auto space-y-6 p-6">
         {/* Account Info */}
-        <div className="rounded-xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="glass-panel p-6 space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <User size={16} style={{ color: 'var(--amber)' }} />
             <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--amber)', fontFamily: 'Fira Code, monospace' }}>Account</h2>
@@ -70,7 +70,7 @@ export default function Settings() {
         </div>
 
         {/* Profile Settings */}
-        <div className="rounded-xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="glass-panel p-6 space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <Building2 size={16} style={{ color: 'var(--amber)' }} />
             <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--amber)', fontFamily: 'Fira Code, monospace' }}>Profile</h2>
@@ -106,7 +106,7 @@ export default function Settings() {
         </div>
 
         {/* Timezone */}
-        <div className="rounded-xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="glass-panel p-6 space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <Clock size={16} style={{ color: 'var(--amber)' }} />
             <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--amber)', fontFamily: 'Fira Code, monospace' }}>Timezone</h2>

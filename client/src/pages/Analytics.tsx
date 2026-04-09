@@ -147,8 +147,7 @@ export default function Analytics() {
 
           {/* Revenue Chart */}
           <div
-            className="lg:col-span-2"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
+            className="lg:col-span-2 glass-panel"
           >
             <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -195,7 +194,7 @@ export default function Analytics() {
           </div>
 
           {/* Lead Sources */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+          <div className="glass-panel">
             <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Lead Sources
@@ -245,7 +244,7 @@ export default function Analytics() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Weekly Activity */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+          <div className="glass-panel">
             <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Ghost Activity — This Week
@@ -289,7 +288,7 @@ export default function Analytics() {
           </div>
 
           {/* Monthly Leads vs Closed */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+          <div className="glass-panel">
             <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Leads vs Closed

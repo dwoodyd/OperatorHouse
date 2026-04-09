@@ -49,7 +49,7 @@ export default function LeadIntel() {
       <div className="p-6 space-y-6">
 
         {/* Input Panel */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="glass-panel p-5 fade-in-up">
           <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
             Analyze a New Lead
           </div>
@@ -122,7 +122,7 @@ export default function LeadIntel() {
               return (
                 <div
                   key={lead.id}
-                  className="rounded-xl overflow-hidden group"
+                  className="glass-panel overflow-hidden group fade-in-up"
                   style={{ background: 'var(--surface)', border: `1px solid ${isOpen ? 'var(--border-amber)' : 'var(--border-subtle)'}` }}
                 >
                   {/* Lead Header */}

@@ -1,33 +1,23 @@
 /* =============================================================================
-   GhostDesk — AppLayout
-   Obsidian Intelligence: Persistent sidebar + content area
+   GhostDesk — AppLayout (Phase 3 Premium)
+   Glassmorphism sidebar + frosted topbar + gradient logo
    ============================================================================= */
-
 import { useState } from "react";
 import { useLocation } from "wouter";
 import {
-  LayoutDashboard,
-  Search,
-  GitBranch,
-  FileText,
-  Archive,
-  BarChart3,
-  Ghost,
-  Settings,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
+  LayoutDashboard, Search, GitBranch, FileText, Archive,
+  BarChart3, Ghost, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Command Center", path: "/dashboard", shortcut: "D" },
-  { icon: Search, label: "Lead Intelligence", path: "/leads", shortcut: "L" },
-  { icon: GitBranch, label: "Client Pipeline", path: "/pipeline", shortcut: "P" },
-  { icon: FileText, label: "Strategy Generator", path: "/strategy", shortcut: "S" },
-  { icon: Archive, label: "The Vault", path: "/vault", shortcut: "V" },
-  { icon: BarChart3, label: "Analytics", path: "/analytics", shortcut: "A" },
+  { icon: LayoutDashboard, label: "Command Center",    path: "/dashboard" },
+  { icon: Search,          label: "Lead Intelligence", path: "/leads" },
+  { icon: GitBranch,       label: "Client Pipeline",   path: "/pipeline" },
+  { icon: FileText,        label: "Strategy Generator",path: "/strategy" },
+  { icon: Archive,         label: "The Vault",         path: "/vault" },
+  { icon: BarChart3,       label: "Analytics",         path: "/analytics" },
+  { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
 ];
 
 interface AppLayoutProps {
@@ -39,107 +29,113 @@ interface AppLayoutProps {
 export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [ghostActive, setGhostActive] = useState(true);
+  const { user } = useAuth();
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "GD";
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--obsidian)' }}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--obsidian-deep)' }}>
+
+      {/* Global ambient glow */}
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 70% 50% at 15% -10%, rgba(245,166,35,0.05) 0%, transparent 65%)',
+      }} />
+
+      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside
-        className="flex flex-col flex-shrink-0 transition-all duration-200 ease-in-out"
+        className="flex flex-col flex-shrink-0 relative z-10"
         style={{
-          width: collapsed ? '60px' : '220px',
-          background: 'var(--surface)',
+          width: collapsed ? '60px' : '224px',
+          background: 'linear-gradient(180deg, rgba(14,14,22,0.97) 0%, rgba(8,8,13,0.98) 100%)',
           borderRight: '1px solid var(--border-subtle)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          transition: 'width 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '4px 0 32px rgba(0,0,0,0.35)',
         }}
       >
         {/* Logo */}
         <div
-          className="flex items-center gap-3 px-4 py-5"
-          style={{ borderBottom: '1px solid var(--border-subtle)', minHeight: '64px' }}
+          className="flex items-center gap-3 px-3 flex-shrink-0"
+          style={{ borderBottom: '1px solid var(--border-subtle)', height: '64px', overflow: 'hidden' }}
         >
           <div
-            className="flex-shrink-0 flex items-center justify-center"
+            className="flex-shrink-0 flex items-center justify-center relative"
             style={{
-              width: '32px',
-              height: '32px',
-              background: 'var(--amber-dim)',
+              width: '34px', height: '34px',
+              background: 'linear-gradient(135deg, rgba(245,166,35,0.22) 0%, rgba(245,166,35,0.07) 100%)',
               border: '1px solid var(--border-amber)',
+              borderRadius: '8px',
+              boxShadow: '0 0 20px rgba(245,166,35,0.18), inset 0 1px 0 rgba(255,255,255,0.12)',
+              flexShrink: 0,
             }}
           >
             <Ghost size={16} style={{ color: 'var(--amber)' }} />
+            <div style={{
+              position: 'absolute', top: '-3px', right: '-3px',
+              width: '8px', height: '8px', borderRadius: '50%',
+              background: '#4ADE80',
+              boxShadow: '0 0 8px rgba(74,222,128,0.8)',
+              border: '1.5px solid var(--obsidian-deep)',
+              animation: 'statusPulse 2.5s ease-in-out infinite',
+            }} />
           </div>
           {!collapsed && (
-            <div className="overflow-hidden">
+            <div style={{ overflow: 'hidden', minWidth: 0 }}>
               <div
+                className="text-amber-gradient"
                 style={{
                   fontFamily: 'Playfair Display, serif',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                  lineHeight: 1.2,
+                  fontSize: '16px', fontWeight: 700, lineHeight: 1.2,
                   whiteSpace: 'nowrap',
                 }}
               >
                 GhostDesk
               </div>
-              <div className="data-label" style={{ marginTop: '1px' }}>Soul Engineer OS</div>
+              <div style={{
+                fontFamily: 'Fira Code, monospace', fontSize: '9px',
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: 'var(--text-muted)', marginTop: '2px',
+              }}>
+                Soul Engineer OS
+              </div>
             </div>
           )}
         </div>
 
-        {/* Ghost Status */}
-        {!collapsed && (
-          <div
-            className="mx-3 my-3 p-3"
-            style={{
-              background: ghostActive ? 'var(--amber-glow)' : 'var(--surface-raised)',
-              border: `1px solid ${ghostActive ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
-            }}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="data-label">Ghost Status</span>
-              <span
-                className="status-dot"
-                style={{
-                  background: ghostActive ? 'var(--amber)' : 'var(--text-muted)',
-                  boxShadow: ghostActive ? '0 0 6px var(--amber-dim)' : 'none',
-                  animation: ghostActive ? 'statusPulse 2s ease-in-out infinite' : 'none',
-                }}
-              />
-            </div>
-            <div
-              style={{
-                fontFamily: 'Fira Code, monospace',
-                fontSize: '12px',
-                color: ghostActive ? 'var(--amber)' : 'var(--text-muted)',
-              }}
-            >
-              {ghostActive ? 'ACTIVE — Monitoring' : 'STANDBY'}
-            </div>
-          </div>
-        )}
-
-        {/* Nav Items */}
-        <nav className="flex-1 px-2 py-2 overflow-y-auto">
+        {/* Nav */}
+        <nav className="flex-1 px-2 py-3 overflow-y-auto" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {NAV_ITEMS.map((item) => {
-            const isActive = location === item.path;
+            const isActive = location === item.path || (item.path === '/dashboard' && location === '/');
             return (
               <button
                 key={item.path}
                 onClick={() => setLocation(item.path)}
-                className="sidebar-item w-full text-left mb-1"
+                className={`sidebar-item w-full text-left ${isActive ? 'active' : ''}`}
                 style={{
-                  background: isActive ? 'var(--amber-glow)' : 'transparent',
-                  color: isActive ? 'var(--amber)' : 'var(--text-secondary)',
-                  borderLeftColor: isActive ? 'var(--amber)' : 'transparent',
                   justifyContent: collapsed ? 'center' : 'flex-start',
-                  padding: collapsed ? '10px' : '8px 12px',
+                  padding: collapsed ? '10px' : '9px 12px',
                 }}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon size={16} style={{ flexShrink: 0 }} />
+                <item.icon
+                  size={15}
+                  style={{
+                    flexShrink: 0,
+                    color: isActive ? 'var(--amber)' : 'var(--text-secondary)',
+                    filter: isActive ? 'drop-shadow(0 0 5px rgba(245,166,35,0.55))' : 'none',
+                    transition: 'all 180ms ease',
+                  }}
+                />
                 {!collapsed && (
-                  <span style={{ fontSize: '13px', fontWeight: isActive ? 500 : 400 }}>
+                  <span style={{
+                    fontSize: '13px',
+                    fontWeight: isActive ? 500 : 400,
+                    transition: 'all 180ms ease',
+                  }}>
                     {item.label}
                   </span>
                 )}
@@ -148,49 +144,97 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           })}
         </nav>
 
-        {/* Bottom Actions */}
-        <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '12px 8px' }}>
+        {/* Bottom */}
+        <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '10px 8px 14px' }}>
+          {/* User row */}
+          {!collapsed && user && (
+            <div
+              className="flex items-center gap-2 px-2 py-2 mb-2"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
+              }}
+            >
+              <div
+                className="flex-shrink-0 flex items-center justify-center"
+                style={{
+                  width: '26px', height: '26px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--amber) 0%, #E8940F 100%)',
+                  fontSize: '10px', fontWeight: 700, color: '#0A0A0B',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              >
+                {initials}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
+                  {user.name ?? "Ghost Operator"}
+                </div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'Fira Code, monospace' }}>
+                  {user.role === 'admin' ? 'ADMIN' : 'OPERATOR'}
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
-            onClick={() => toast.info("Settings coming soon")}
-            className="sidebar-item w-full"
+            onClick={() => setLocation('/settings')}
+            className={`sidebar-item w-full ${location === '/settings' ? 'active' : ''}`}
             style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
           >
-            <Settings size={15} />
+            <Settings
+              size={14}
+              style={{
+                flexShrink: 0,
+                color: location === '/settings' ? 'var(--amber)' : 'var(--text-secondary)',
+              }}
+            />
             {!collapsed && <span style={{ fontSize: '13px' }}>Settings</span>}
           </button>
+
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="sidebar-item w-full mt-1"
+            className="sidebar-item w-full mt-0.5"
             style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
           >
-            {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
-            {!collapsed && <span style={{ fontSize: '13px' }}>Collapse</span>}
+            {collapsed
+              ? <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+              : (
+                <>
+                  <ChevronLeft size={14} style={{ color: 'var(--text-muted)' }} />
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Collapse</span>
+                </>
+              )
+            }
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top Bar */}
+      {/* ── Main Content ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col flex-1 overflow-hidden relative z-10">
+        {/* Frosted topbar */}
         <header
           className="flex items-center justify-between px-6 flex-shrink-0"
           style={{
             height: '64px',
-            background: 'var(--surface)',
+            background: 'rgba(8,8,13,0.82)',
+            backdropFilter: 'blur(24px) saturate(1.6)',
+            WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
             borderBottom: '1px solid var(--border-subtle)',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.25)',
           }}
         >
           <div>
             {title && (
-              <h1
-                style={{
-                  fontFamily: 'Playfair Display, serif',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                  lineHeight: 1.2,
-                }}
-              >
+              <h1 style={{
+                fontFamily: 'Playfair Display, serif',
+                fontSize: '20px', fontWeight: 700,
+                color: 'var(--text-primary)', lineHeight: 1.2,
+              }}>
                 {title}
               </h1>
             )}
@@ -198,30 +242,54 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
               <p className="data-label" style={{ marginTop: '2px' }}>{subtitle}</p>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'var(--amber-glow)', border: '1px solid var(--border-amber)' }}>
-              <Zap size={12} style={{ color: 'var(--amber)' }} />
-              <span className="data-label" style={{ color: 'var(--amber)' }}>Soul Engineer Framework</span>
-            </div>
-            <button
-              onClick={() => toast.info("Notifications coming soon")}
-              className="flex items-center justify-center"
+
+          <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5"
               style={{
-                width: '36px',
-                height: '36px',
-                background: 'var(--surface-raised)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
-                transition: 'all 150ms ease',
+                background: 'rgba(245,166,35,0.06)',
+                border: '1px solid rgba(245,166,35,0.18)',
+                borderRadius: '4px',
               }}
             >
-              <Bell size={15} />
+              <Zap size={11} style={{ color: 'var(--amber)' }} />
+              <span style={{
+                fontFamily: 'Fira Code, monospace', fontSize: '10px',
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--amber)',
+              }}>
+                Soul Engineer
+              </span>
+            </div>
+            <button
+              className="flex items-center justify-center"
+              style={{
+                width: '36px', height: '36px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                transition: 'all 180ms ease',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = 'var(--border-amber)';
+                el.style.color = 'var(--amber)';
+                el.style.boxShadow = '0 0 12px rgba(245,166,35,0.12)';
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = 'var(--border-subtle)';
+                el.style.color = 'var(--text-secondary)';
+                el.style.boxShadow = 'none';
+              }}
+            >
+              <Bell size={14} />
             </button>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto" style={{ background: 'var(--obsidian)' }}>
+        <main className="flex-1 overflow-y-auto" style={{ background: 'var(--obsidian-deep)' }}>
           {children}
         </main>
       </div>

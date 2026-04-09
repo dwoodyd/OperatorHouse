@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
-  createClient, createDeal, createLead, createStrategy, createTask,
+  createBriefing, createClient, createDeal, createLead, createStrategy, createTask,
   createVaultItem, deleteClient, deleteDeal, deleteLead, deleteTask,
   deleteVaultItem, getActivities, getAnalyticsData, getClients,
   getDashboardMetrics, getLatestBriefing, getLeads, getPipelineDeals,
@@ -357,6 +357,40 @@ export const appRouter = router({
 
   briefings: router({
     latest: protectedProcedure.query(async ({ ctx }) => getLatestBriefing(ctx.user.id)),
+    generate: protectedProcedure.mutation(async ({ ctx }) => {
+      const [leads, deals, activities] = await Promise.all([
+        getLeads(ctx.user.id),
+        getPipelineDeals(ctx.user.id),
+        getActivities(ctx.user.id, 10),
+      ]);
+      const activeDeals = deals.filter((d) => d.stage !== 'Closed');
+      const staleDeals = activeDeals.filter((d) => {
+        const daysSince = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSince > 7;
+      });
+      const { invokeLLM } = await import('./_core/llm');
+      const prompt = `You are the Ghost — an AI consultant for ${ctx.user.name ?? 'the operator'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
+      const response = await invokeLLM({
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_schema', json_schema: { name: 'briefing', strict: true, schema: { type: 'object', properties: { situation: { type: 'string' }, priority: { type: 'string' }, ghostNote: { type: 'string' } }, required: ['situation', 'priority', 'ghostNote'], additionalProperties: false } } },
+      });
+      const parsed = JSON.parse(response.choices[0].message.content as string) as { situation: string; priority: string; ghostNote: string };
+      await createBriefing({ userId: ctx.user.id, briefingType: 'login', content: JSON.stringify(parsed), payload: parsed });
+      return parsed;
+    }),
+    staleDeals: protectedProcedure.query(async ({ ctx }) => {
+      const deals = await getPipelineDeals(ctx.user.id);
+      return deals
+        .filter((d) => {
+          if (d.stage === 'Closed') return false;
+          const daysSince = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+          return daysSince > 7;
+        })
+        .map((d) => ({
+          id: d.id, title: d.title, stage: d.stage,
+          daysSince: Math.floor((Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
+        }));
+    }),
   }),
 });
 

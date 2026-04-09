@@ -17,28 +17,6 @@
 - [x] Add /settings route to App.tsx
 - [x] Fix all TypeScript errors (0 errors confirmed)
 
-## Phase 2 — Premium UI/UX Upgrades (from attached spec)
-- [ ] Add AI Chat Assistant panel (floating ghost chat sidebar)
-- [x] Add Strategy Generator wired to real LLM (currently UI-only with simulated steps)
-- [ ] Add Voice Briefing feature (text-to-speech on lead audits)
-- [ ] Add "Add to Pipeline" button from Lead Intelligence (cross-module flow)
-- [ ] Add drag-and-drop between pipeline stages
-- [ ] Add client detail view (click client → full profile)
-- [ ] Add public-facing landing page (/landing route)
-- [ ] Add Stripe subscription checkout
-- [ ] Add notification system (owner alerts on new leads/deals)
-- [ ] Add onboarding flow for first-time users
-
-## Phase 3 — Revenue Features
-- [ ] Add tiered pricing page
-- [ ] Add usage analytics (track AI calls, leads analyzed, strategies generated)
-- [ ] Add team/multi-user support
-- [ ] Add white-label option for resellers
-
-## Bug Fixes
-- [x] Fix pipeline_deals table missing from production DB (query errors on dashboard)
-- [x] Verify all 10 tables exist in production DB after migration
-
 ## Phase 2 — Real Intelligence Layer
 - [x] Build centralized AI service layer (server/ai.ts) with versioned prompts
 - [x] Lead Intelligence: real structured JSON analysis from LLM, grounded in vault/client context
@@ -47,3 +25,36 @@
 - [x] Strategy Generator: save to strategies table, structured output, no fake typewriter
 - [x] Remove all hardcoded demo arrays and fallback mock data from completed modules
 - [x] Add citations field: reference vault items used in strategy generation
+
+## Phase 3 — Premium UI/UX + Retention Layer
+- [x] Upgrade global CSS design system (glassmorphism, depth, premium tokens, micro-animations)
+- [x] Upgrade AppLayout sidebar (gradient logo, active state glow, user avatar, frosted topbar)
+- [x] Upgrade metric cards (glass surface, animated number counters, subtle glow borders)
+- [x] Upgrade Dashboard with login re-entry Ghost Briefing panel (AI-generated)
+- [x] Add Next-Best-Action engine panel (derived from real pipeline/lead state)
+- [x] Add stale pipeline detection (deals with no activity > 7 days flagged amber)
+- [x] Apply glass-panel and fade-in-up entrance animations to all inner pages
+- [x] Build Tasks page with full CRUD, priority system, optimistic updates
+- [x] Add Tasks to sidebar navigation (8 nav items total)
+- [x] briefings.generate procedure wired to real LLM
+- [x] briefings.staleDeals procedure returning live data
+
+## Bug Fixes
+- [x] Fix pipeline_deals table missing from production DB (query errors on dashboard)
+- [x] Verify all 10 tables exist in production DB after migration
+- [x] Fix duplicate className attributes across all pages after glass-panel upgrade
+
+## Pending — Phase 4 (Revenue + Scale)
+- [ ] Add AI Chat Assistant panel (floating ghost chat sidebar)
+- [ ] Add Voice Briefing feature (text-to-speech on lead audits)
+- [ ] Add "Add to Pipeline" button from Lead Intelligence (cross-module flow)
+- [ ] Add client detail view (click client → full profile)
+- [ ] Add public-facing landing page (/landing route)
+- [ ] Add Stripe subscription checkout
+- [ ] Add notification system (owner alerts on new leads/deals)
+- [ ] Add onboarding flow for first-time users
+- [ ] Add tiered pricing page
+- [ ] Add usage analytics (track AI calls, leads analyzed, strategies generated)
+- [ ] Add team/multi-user support
+- [ ] Add white-label option for resellers
+- [ ] Add export options (PDF/Markdown for strategies, CSV for pipeline)

@@ -174,8 +174,7 @@ export default function Pipeline() {
             {STAGES.map((stage) => (
               <div
                 key={stage}
-                className="flex flex-col rounded-xl"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
+                className="flex flex-col glass-panel"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => handleDrop(stage)}
               >

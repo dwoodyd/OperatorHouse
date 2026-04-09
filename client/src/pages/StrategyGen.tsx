@@ -137,7 +137,7 @@ export default function StrategyGen() {
             {/* Left: Config Panel */}
             <div className="lg:col-span-2 space-y-4">
               {/* Output Type */}
-              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+              <div className="glass-panel">
                 <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     Output Type
@@ -165,7 +165,7 @@ export default function StrategyGen() {
               </div>
 
               {/* Client Details */}
-              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+              <div className="glass-panel">
                 <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     Client Details
@@ -280,8 +280,7 @@ export default function StrategyGen() {
             {/* Right: Output Panel */}
             <div className="lg:col-span-3">
               {!result && !generateStrategy.isPending && (
-                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4 glass-panel">
                   <FileText size={40} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
                   <div className="text-center">
                     <p style={{ color: 'var(--text-primary)', fontSize: '15px', fontFamily: 'Playfair Display, serif' }}>No strategy generated yet</p>
@@ -299,7 +298,7 @@ export default function StrategyGen() {
               )}
 
               {result && (
-                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                <div className="glass-panel">
                   <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <div>
                       <div className="flex items-center gap-2">
@@ -377,7 +376,7 @@ export default function StrategyGen() {
                 {strategies.map((s) => {
                   const ctx = s.inputContext as Record<string, string> | null;
                   return (
-                    <div key={s.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                    <div key={s.id} className="glass-panel">
                       <div className="px-5 py-4 flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
