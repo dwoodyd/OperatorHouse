@@ -77,9 +77,9 @@ export default function Settings() {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center gap-2 py-4" style={{ color: 'var(--text-muted)' }}>
-              <Loader2 size={14} className="animate-spin" />
-              <span className="text-sm">Loading profile...</span>
+            <div className="space-y-3 py-2">
+              <div className="skeleton" style={{ height: 13, width: '40%', borderRadius: 4 }} />
+              <div className="skeleton" style={{ height: 36, borderRadius: 6 }} />
             </div>
           ) : (
             <div className="space-y-4">
@@ -132,7 +132,7 @@ export default function Settings() {
         <button
           onClick={handleSave}
           disabled={upsertProfile.isPending}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all"
+          className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold"
           style={{
             background: 'var(--amber)',
             color: '#0A0A0F',

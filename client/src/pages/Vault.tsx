@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, Search, Archive, Loader2, X, Trash2, FileText, BookOpen, Mic, Layout, FlaskConical, StickyNote } from "lucide-react";
+import { SkeletonCards, EmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 
 type VaultType = "framework" | "case_study" | "voice_note" | "template" | "research" | "note";
@@ -116,16 +117,13 @@ export default function Vault() {
         )}
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin" style={{ color: "var(--amber)" }} />
-          </div>
+          <SkeletonCards count={6} />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Archive size={32} style={{ color: "var(--text-muted)", opacity: 0.4 }} />
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-              {search || filterType !== "all" ? "No items match your filter." : "Your Vault is empty. Start adding frameworks, case studies, and templates."}
-            </p>
-          </div>
+          <EmptyState
+            icon={Archive}
+            title={search || filterType !== "all" ? "No items match your filter." : "Your Vault is empty."}
+            body={!search && filterType === "all" ? "Start adding frameworks, case studies, and templates." : undefined}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((item) => {
@@ -133,8 +131,8 @@ export default function Vault() {
               const Icon = meta.icon;
               const isOpen = expanded === item.id;
               return (
-                <div key={item.id} className="rounded-xl group cursor-pointer transition-all"
-                  style={{ background: "var(--surface)", border: `1px solid ${isOpen ? meta.color + "60" : "var(--border-subtle)"}` }}
+                <div key={item.id} className="rounded-xl group cursor-pointer"
+                  style={{ background: "var(--surface)", border: `1px solid ${isOpen ? meta.color + "60" : "var(--border-subtle)"}`, transition: "border-color 180ms ease" }}
                   onClick={() => setExpanded(isOpen ? null : item.id)}>
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">

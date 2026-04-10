@@ -98,3 +98,15 @@
 - [x] Public landing page (pre-login marketing page at /)
 - [x] Vitest smoke tests: auth.me, leads.create, pipeline.create (8/8 passing)
 - [ ] New-user onboarding redirect to /about on first login (deferred)
+
+## UI Optimization (Tailwind + Animations + State Patterns)
+- [x] Add GPU-accelerated keyframes to index.css (oh-spin, oh-fade-up, oh-fade-pulse)
+- [x] Replace all transition:all with GPU-safe property-specific transitions across all pages
+- [x] Build shared StateUI components: SkeletonRows, SkeletonCards, SkeletonKanban, EmptyState, PageLoader
+- [x] Apply SkeletonRows to Tasks and LeadIntel loading states
+- [x] Apply SkeletonCards to Vault loading state
+- [x] Apply SkeletonKanban to Pipeline loading state
+- [x] Apply PageLoader to Analytics loading state
+- [x] Apply EmptyState to Tasks, LeadIntel, Vault empty states
+- [x] Restyle NotFound page to match charcoal/ivory OH aesthetic
+- [x] Upgrade Settings loading skeleton to match OH design system

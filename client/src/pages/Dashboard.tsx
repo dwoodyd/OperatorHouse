@@ -94,7 +94,7 @@ function GhostBriefingPanel() {
           onClick={() => generate.mutate()}
           disabled={generate.isPending}
           className="flex items-center gap-1.5 px-3 py-1.5"
-          style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)', borderRadius: 4, color: 'var(--amber)', fontSize: 11, opacity: generate.isPending ? 0.6 : 1, transition: 'all 180ms' }}
+          style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)', borderRadius: 4, color: 'var(--amber)', fontSize: 11, opacity: generate.isPending ? 0.6 : 1, transition: 'opacity 180ms ease, transform 180ms ease' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,166,35,0.15)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,166,35,0.08)')}
         >
@@ -204,7 +204,7 @@ function NextBestAction() {
             key={i}
             onClick={() => setLocation(action.path)}
             className="w-full flex items-center gap-3 text-left"
-            style={{ padding: '10px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)', transition: 'all 180ms' }}
+            style={{ padding: '10px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)', transition: 'border-color 180ms ease, background 180ms ease' }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = `${action.color}40`; (e.currentTarget as HTMLButtonElement).style.background = `${action.color}08`; }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-subtle)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.02)'; }}
           >
@@ -288,7 +288,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setLocation('/leads')}
                   className="flex items-center gap-2 px-4 py-2.5"
-                  style={{ background: 'var(--amber)', color: 'var(--obsidian)', fontWeight: 600, fontSize: 13, borderRadius: 5, boxShadow: '0 0 20px rgba(245,166,35,0.3)', transition: 'all 180ms' }}
+                  style={{ background: 'var(--amber)', color: 'var(--obsidian)', fontWeight: 600, fontSize: 13, borderRadius: 5, boxShadow: '0 0 20px rgba(245,166,35,0.3)', transition: 'opacity 180ms ease, transform 180ms ease' }}
                   onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 30px rgba(245,166,35,0.5)')}
                   onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 20px rgba(245,166,35,0.3)')}
                 >
@@ -297,7 +297,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setLocation('/strategy')}
                   className="flex items-center gap-2 px-4 py-2.5"
-                  style={{ background: 'transparent', border: '1px solid var(--border-amber)', color: 'var(--amber)', fontSize: 13, borderRadius: 5, transition: 'all 180ms' }}
+                  style={{ background: 'transparent', border: '1px solid var(--border-amber)', color: 'var(--amber)', fontSize: 13, borderRadius: 5, transition: 'opacity 180ms ease, transform 180ms ease' }}
                   onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,166,35,0.08)')}
                   onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
                 >

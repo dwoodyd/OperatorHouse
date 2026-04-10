@@ -10,6 +10,7 @@ import {
   CheckCircle2, Circle, Plus, Trash2, Loader2,
   AlertTriangle, Clock, Zap, ChevronDown, ChevronUp,
 } from "lucide-react";
+import { SkeletonRows, EmptyState } from "@/components/StateUI";
 
 const PRIORITY_CONFIG = {
   urgent: { label: "URGENT", color: "#F87171", bg: "rgba(248,113,113,0.08)" },
@@ -165,7 +166,7 @@ export default function Tasks() {
                 color: filter === f ? 'var(--amber)' : 'var(--text-muted)',
                 borderBottom: filter === f ? '2px solid var(--amber)' : '2px solid transparent',
                 marginBottom: -1,
-                transition: 'all 150ms',
+                transition: 'color 150ms ease, border-color 150ms ease',
               }}
             >
               {f}
@@ -176,18 +177,13 @@ export default function Tasks() {
         {/* Task List */}
         <div className="space-y-2">
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="glass-panel p-4">
-                <div className="skeleton" style={{ height: 13, width: '60%', borderRadius: 4 }} />
-              </div>
-            ))
+            <SkeletonRows rows={4} />
           ) : filtered.length === 0 ? (
-            <div className="glass-panel p-10 text-center">
-              <CheckCircle2 size={28} style={{ color: 'var(--text-muted)', margin: '0 auto 10px', opacity: 0.4 }} />
-              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                {filter === "done" ? "No completed tasks yet." : "No tasks. Add one above or let the Ghost suggest some from your leads."}
-              </p>
-            </div>
+            <EmptyState
+              icon={CheckCircle2}
+              title={filter === "done" ? "No completed tasks yet." : "No tasks yet."}
+              body={filter !== "done" ? "Add one above or let the Ghost suggest actions from your leads." : undefined}
+            />
           ) : (
             filtered.map((task) => {
               const p = PRIORITY_CONFIG[(task.priority as Priority) ?? "medium"];
@@ -196,7 +192,7 @@ export default function Tasks() {
                 <div
                   key={task.id}
                   className="glass-panel p-4 flex items-start gap-3 fade-in-up"
-                  style={{ opacity: 0, transition: 'all 150ms' }}
+                  style={{ opacity: 0, transition: 'opacity 150ms ease, transform 150ms ease' }}
                 >
                   <button
                     onClick={() => updateTask.mutate({ id: task.id, status: isDone ? "pending" : "done" as Status })}

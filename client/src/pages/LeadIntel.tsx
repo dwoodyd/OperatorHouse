@@ -9,6 +9,7 @@ import {
   Target, Loader2, Trash2, ChevronDown, ChevronUp,
   Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2
 } from "lucide-react";
+import { SkeletonRows, EmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 
 const SCORE_COLOR = (score: number) => {
@@ -131,7 +132,7 @@ export default function LeadIntel() {
                 analyzeLead.mutate({ input: input.trim() });
               }}
               disabled={analyzeLead.isPending}
-              className="flex flex-col items-center justify-center gap-2 px-5 py-3 text-sm font-semibold flex-shrink-0 transition-all"
+              className="flex flex-col items-center justify-center gap-2 px-5 py-3 text-sm font-semibold flex-shrink-0"
               style={{
                 background: analyzeLead.isPending ? "var(--surface-raised)" : "var(--amber)",
                 color: analyzeLead.isPending ? "var(--text-muted)" : "#0A0A0F",
@@ -173,16 +174,13 @@ export default function LeadIntel() {
 
         {/* Leads List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin" style={{ color: "var(--amber)" }} />
-          </div>
+          <SkeletonRows rows={3} />
         ) : !leads?.length ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Target size={32} style={{ color: "var(--text-muted)", opacity: 0.4 }} />
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-              No leads analyzed yet. Paste a lead above to run the first Operator Audit.
-            </p>
-          </div>
+          <EmptyState
+            icon={Target}
+            title="No leads analyzed yet."
+            body="Paste a lead URL or description above to run the first Operator Audit."
+          />
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
@@ -373,7 +371,7 @@ export default function LeadIntel() {
                                 handlePushToPipeline(lead);
                               }}
                               disabled={createDeal.isPending}
-                              className="flex items-center gap-2 px-3 py-1.5 rounded transition-all"
+                              className="flex items-center gap-2 px-3 py-1.5 rounded"
                               style={{
                                 background: createDeal.isPending
                                   ? "var(--surface-raised)"

@@ -119,12 +119,13 @@ export default function StrategyGen() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as "generate" | "history")}
-              className="px-4 py-2 text-sm font-medium transition-all"
+              className="px-4 py-2 text-sm font-medium"
               style={{
                 color: activeTab === tab.id ? 'var(--amber)' : 'var(--text-muted)',
                 borderBottom: activeTab === tab.id ? '2px solid var(--amber)' : '2px solid transparent',
                 fontFamily: 'DM Sans, sans-serif',
                 marginBottom: '-1px',
+                transition: 'color 150ms ease, border-color 150ms ease',
               }}
             >
               {tab.label}
@@ -148,11 +149,12 @@ export default function StrategyGen() {
                     <button
                       key={t.id}
                       onClick={() => setSelectedTemplate(t.id)}
-                      className="w-full text-left p-3 transition-all duration-150"
+                      className="w-full text-left p-3"
                       style={{
                         background: selectedTemplate === t.id ? 'var(--amber-glow)' : 'var(--surface-raised)',
                         border: `1px solid ${selectedTemplate === t.id ? 'var(--border-amber)' : 'var(--border-subtle)'}`,
                         borderLeft: `2px solid ${selectedTemplate === t.id ? 'var(--amber)' : 'transparent'}`,
+                        transition: 'background 150ms ease, border-color 150ms ease',
                       }}
                     >
                       <div style={{ fontSize: '13px', fontWeight: 500, color: selectedTemplate === t.id ? 'var(--amber)' : 'var(--text-primary)' }}>
@@ -237,7 +239,7 @@ export default function StrategyGen() {
               <button
                 onClick={handleGenerate}
                 disabled={generateStrategy.isPending}
-                className="w-full py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3 font-semibold text-sm flex items-center justify-center gap-2"
                 style={{
                   background: generateStrategy.isPending ? 'var(--surface-raised)' : 'var(--amber)',
                   color: generateStrategy.isPending ? 'var(--text-muted)' : '#0A0A0F',

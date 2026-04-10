@@ -7,6 +7,7 @@ import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, DollarSign, Loader2, X, Trash2 } from "lucide-react";
+import { SkeletonKanban } from "@/components/StateUI";
 import { toast } from "sonner";
 
 type Stage = "Discovery" | "Analysis" | "Strategy" | "Proposal" | "Closed";
@@ -95,7 +96,7 @@ export default function Pipeline() {
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold"
             style={{ background: 'var(--amber)', color: '#0A0A0F', fontFamily: 'DM Sans, sans-serif' }}
           >
             <Plus size={14} />
@@ -166,9 +167,7 @@ export default function Pipeline() {
 
         {/* Kanban Board */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--amber)' }} />
-          </div>
+          <SkeletonKanban cols={5} />
         ) : (
           <div className="grid grid-cols-5 gap-3" style={{ minHeight: '500px' }}>
             {STAGES.map((stage) => (

@@ -5,7 +5,7 @@
 
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { Loader2 } from "lucide-react";
+import { PageLoader } from "@/components/StateUI";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
@@ -73,9 +73,7 @@ export default function Analytics() {
   if (isLoading) {
     return (
       <AppLayout title="Analytics" subtitle="Performance intelligence dashboard">
-        <div className="flex items-center justify-center py-40">
-          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--amber)' }} />
-        </div>
+        <PageLoader />
       </AppLayout>
     );
   }
