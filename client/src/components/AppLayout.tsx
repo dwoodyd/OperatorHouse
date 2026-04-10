@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X,
+  BarChart3, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { icon: Archive,         label: "The Vault",         path: "/vault" },
   { icon: BarChart3,       label: "Analytics",         path: "/analytics" },
   { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
+  { icon: Info,            label: "About & Features",   path: "/about" },
 ];
 
 interface AppLayoutProps {

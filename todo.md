@@ -88,3 +88,8 @@
 - [x] Rewrite OHSplash: only OH symbol (no lockup), much larger (200px), door-open diagonal line animation with shine sweep
 - [x] Upsize sidebar logo from 36px to 48px
 - [x] Upsize home screen icon reference (sidebar logo upsized)
+
+## About & Features Page
+- [x] Build About.tsx with six module cards and How It Works section
+- [x] Wire /about route in App.tsx
+- [x] Add About to AppLayout sidebar nav
