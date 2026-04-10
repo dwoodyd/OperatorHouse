@@ -271,3 +271,20 @@ export async function getAnalyticsData(userId: number) {
 
   return { dealsByStage, leadsBySource, recentDeals };
 }
+
+// ─── Account Deletion ─────────────────────────────────────────────────────────
+export async function deleteAllUserData(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  // Delete in dependency order (children before parent user row)
+  await db.delete(activities).where(eq(activities.userId, userId));
+  await db.delete(briefings).where(eq(briefings.userId, userId));
+  await db.delete(tasks).where(eq(tasks.userId, userId));
+  await db.delete(strategies).where(eq(strategies.userId, userId));
+  await db.delete(vaultItems).where(eq(vaultItems.userId, userId));
+  await db.delete(pipelineDeals).where(eq(pipelineDeals.userId, userId));
+  await db.delete(leads).where(eq(leads.userId, userId));
+  await db.delete(clients).where(eq(clients.userId, userId));
+  await db.delete(userProfiles).where(eq(userProfiles.userId, userId));
+  await db.delete(users).where(eq(users.id, userId));
+}

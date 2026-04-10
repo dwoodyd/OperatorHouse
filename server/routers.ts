@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   createBriefing, createClient, createDeal, createLead, createStrategy, createTask,
-  createVaultItem, deleteClient, deleteDeal, deleteLead, deleteTask,
+  createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
   deleteVaultItem, getActivities, getAnalyticsData, getClients,
   getDashboardMetrics, getLatestBriefing, getLeads, getPipelineDeals,
   getStrategies, getTasks, getUserProfile, getVaultItems, logActivity,
@@ -39,6 +39,12 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      return { success: true } as const;
+    }),
+    deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+      await deleteAllUserData(ctx.user.id);
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;

@@ -110,3 +110,9 @@
 - [x] Apply EmptyState to Tasks, LeadIntel, Vault empty states
 - [x] Restyle NotFound page to match charcoal/ivory OH aesthetic
 - [x] Upgrade Settings loading skeleton to match OH design system
+
+## Compliance & App Store Readiness
+- [x] Add users.deleteAccount tRPC procedure (cascading wipe of all user data)
+- [x] Upgrade Settings page: Delete Account section with confirmation modal
+- [x] Add Privacy Policy link, Terms of Service link, and About/version section to Settings
+- [x] Write App Store and Play Store metadata document (descriptions, keywords, What's New)
