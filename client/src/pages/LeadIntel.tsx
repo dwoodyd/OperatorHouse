@@ -2,11 +2,13 @@
    Operator House — Lead Intelligence
    Obsidian Intelligence: AI-powered Operator lead audit — real AI
    ============================================================================= */
-
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { Target, Loader2, Trash2, ChevronDown, ChevronUp, Brain, AlertTriangle, Map, Star, Music, Plus } from "lucide-react";
+import {
+  Target, Loader2, Trash2, ChevronDown, ChevronUp,
+  Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2
+} from "lucide-react";
 import { toast } from "sonner";
 
 const SCORE_COLOR = (score: number) => {
@@ -26,6 +28,7 @@ const SECTION_META = [
 export default function LeadIntel() {
   const utils = trpc.useUtils();
   const { data: leads, isLoading } = trpc.leads.list.useQuery();
+
   const analyzeLead = trpc.leads.analyze.useMutation({
     onSuccess: () => {
       utils.leads.list.invalidate();
@@ -35,25 +38,79 @@ export default function LeadIntel() {
     },
     onError: (err) => toast.error(err.message || "Analysis failed"),
   });
+
   const deleteLead = trpc.leads.delete.useMutation({
     onSuccess: () => { utils.leads.list.invalidate(); toast.success("Lead removed"); },
     onError: () => toast.error("Failed to delete lead"),
   });
 
+  const createDeal = trpc.pipeline.create.useMutation({
+    onSuccess: (_data, variables, _context) => {
+      utils.pipeline.list.invalidate();
+      utils.dashboard.metrics.invalidate();
+      toast.success("Lead pushed to Pipeline — Discovery stage");
+    },
+    onError: (err) => toast.error(err.message || "Failed to push to pipeline"),
+  });
+
   const [input, setInput] = useState("");
   const [expanded, setExpanded] = useState<number | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [pushedIds, setPushedIds] = useState<Set<number>>(new Set());
+
+  const handlePushToPipeline = (lead: {
+    id: number;
+    intentScore: number | null;
+    analysisJson: unknown;
+  }) => {
+    if (pushedIds.has(lead.id)) return;
+    const audit = lead.analysisJson as Record<string, string> | null;
+    if (!audit) {
+      toast.error("No audit data to push");
+      return;
+    }
+
+    const name = audit.name ?? "Unknown Lead";
+    const company = audit.company ?? "";
+    const title = company ? `${name} — ${company}` : name;
+    const nextBeat = audit.nextBeat ?? "";
+
+    createDeal.mutate(
+      {
+        title,
+        stage: "Discovery",
+        intentScore: lead.intentScore ?? undefined,
+        notes: nextBeat
+          ? `[From Lead Intel]\nNext Beat: ${nextBeat}`
+          : "[From Lead Intel]",
+      },
+      {
+        onSuccess: () => {
+          setPushedIds((prev) => new Set(Array.from(prev).concat(lead.id)));
+        },
+      }
+    );
+  };
 
   return (
     <AppLayout title="Lead Intelligence" subtitle="Operator Audit — AI-powered lead analysis">
       <div className="p-6 space-y-6">
-
         {/* Input Panel */}
         <div className="glass-panel p-5 fade-in-up">
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+          <div
+            style={{
+              fontFamily: "Playfair Display, serif",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              marginBottom: "4px",
+            }}
+          >
             Analyze a New Lead
           </div>
-          <div className="data-label mb-4">Paste a LinkedIn URL, company URL, email, or describe the prospect</div>
+          <div className="data-label mb-4">
+            Paste a LinkedIn URL, company URL, email, or describe the prospect
+          </div>
           <div className="flex gap-3">
             <textarea
               value={input}
@@ -61,7 +118,12 @@ export default function LeadIntel() {
               placeholder="e.g. https://linkedin.com/in/marcus-chen — CEO of TechFlow Solutions, B2B SaaS, 50 employees, recently raised Series A..."
               rows={3}
               className="flex-1 px-4 py-3 rounded-lg text-sm outline-none resize-none"
-              style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
+              style={{
+                background: "var(--obsidian)",
+                color: "var(--text-primary)",
+                border: "1px solid var(--border-subtle)",
+                fontFamily: "DM Sans, sans-serif",
+              }}
             />
             <button
               onClick={() => {
@@ -71,16 +133,17 @@ export default function LeadIntel() {
               disabled={analyzeLead.isPending}
               className="flex flex-col items-center justify-center gap-2 px-5 py-3 text-sm font-semibold flex-shrink-0 transition-all"
               style={{
-                background: analyzeLead.isPending ? 'var(--surface-raised)' : 'var(--amber)',
-                color: analyzeLead.isPending ? 'var(--text-muted)' : '#0A0A0F',
-                fontFamily: 'DM Sans, sans-serif',
-                minWidth: '120px',
+                background: analyzeLead.isPending ? "var(--surface-raised)" : "var(--amber)",
+                color: analyzeLead.isPending ? "var(--text-muted)" : "#0A0A0F",
+                fontFamily: "DM Sans, sans-serif",
+                minWidth: "120px",
+                borderRadius: "8px",
               }}
             >
               {analyzeLead.isPending ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  <span style={{ fontSize: '11px' }}>Analyzing...</span>
+                  <span style={{ fontSize: "11px" }}>Analyzing...</span>
                 </>
               ) : (
                 <>
@@ -91,8 +154,18 @@ export default function LeadIntel() {
             </button>
           </div>
           {analyzeLead.isPending && (
-            <div className="mt-3 flex items-center gap-2" style={{ color: 'var(--amber)', fontSize: '12px', fontFamily: 'Fira Code, monospace' }}>
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--amber)' }} />
+            <div
+              className="mt-3 flex items-center gap-2"
+              style={{
+                color: "var(--amber)",
+                fontSize: "12px",
+                fontFamily: "Fira Code, monospace",
+              }}
+            >
+              <div
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "var(--amber)" }}
+              />
               Operator is running the Operator Audit...
             </div>
           )}
@@ -101,17 +174,25 @@ export default function LeadIntel() {
         {/* Leads List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--amber)' }} />
+            <Loader2 size={24} className="animate-spin" style={{ color: "var(--amber)" }} />
           </div>
         ) : !leads?.length ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Target size={32} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No leads analyzed yet. Paste a lead above to run the first Operator Audit.</p>
+            <Target size={32} style={{ color: "var(--text-muted)", opacity: 0.4 }} />
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+              No leads analyzed yet. Paste a lead above to run the first Operator Audit.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', color: 'var(--text-primary)' }}>
+              <span
+                style={{
+                  fontFamily: "Playfair Display, serif",
+                  fontSize: "15px",
+                  color: "var(--text-primary)",
+                }}
+              >
                 Recent Audits
               </span>
               <span className="data-label">{leads.length} leads analyzed</span>
@@ -119,11 +200,15 @@ export default function LeadIntel() {
             {leads.map((lead) => {
               const audit = lead.analysisJson as Record<string, string> | null;
               const isOpen = expanded === lead.id;
+              const alreadyPushed = pushedIds.has(lead.id);
               return (
                 <div
                   key={lead.id}
                   className="glass-panel overflow-hidden group fade-in-up"
-                  style={{ background: 'var(--surface)', border: `1px solid ${isOpen ? 'var(--border-amber)' : 'var(--border-subtle)'}` }}
+                  style={{
+                    background: "var(--surface)",
+                    border: `1px solid ${isOpen ? "var(--border-amber)" : "var(--border-subtle)"}`,
+                  }}
                 >
                   {/* Lead Header */}
                   <div
@@ -132,65 +217,131 @@ export default function LeadIntel() {
                   >
                     <div
                       className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ background: 'var(--obsidian)', border: '1px solid var(--border-subtle)' }}
+                      style={{
+                        background: "var(--obsidian)",
+                        border: "1px solid var(--border-subtle)",
+                      }}
                     >
-                      <Target size={16} style={{ color: 'var(--amber)' }} />
+                      <Target size={16} style={{ color: "var(--amber)" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }} className="truncate">
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                        className="truncate"
+                      >
                         {(audit?.name as string) || (lead.rawInput ?? "").slice(0, 60)}
                       </div>
                       {audit?.company && (
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>{audit.company as string}</div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {audit.company as string}
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">
                       {lead.intentScore != null && (
                         <div className="text-center">
-                          <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '20px', fontWeight: 700, color: SCORE_COLOR(lead.intentScore), lineHeight: 1 }}>
+                          <div
+                            style={{
+                              fontFamily: "Fira Code, monospace",
+                              fontSize: "20px",
+                              fontWeight: 700,
+                              color: SCORE_COLOR(lead.intentScore),
+                              lineHeight: 1,
+                            }}
+                          >
                             {lead.intentScore.toFixed(1)}
                           </div>
                           <div className="data-label">Intent</div>
                         </div>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); deleteLead.mutate({ id: lead.id }); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteLead.mutate({ id: lead.id });
+                        }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <Trash2 size={13} style={{ color: 'var(--text-muted)' }} />
+                        <Trash2 size={13} style={{ color: "var(--text-muted)" }} />
                       </button>
-                      {isOpen ? <ChevronUp size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />}
+                      {isOpen ? (
+                        <ChevronUp size={14} style={{ color: "var(--text-muted)" }} />
+                      ) : (
+                        <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />
+                      )}
                     </div>
                   </div>
 
                   {/* Expanded Audit */}
                   {isOpen && audit && (
-                    <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                    <div style={{ borderTop: "1px solid var(--border-subtle)" }}>
                       {SECTION_META.map((section) => {
                         const content = audit[section.key];
                         if (!content) return null;
                         const Icon = section.icon;
-                        const isSectionOpen = expandedSection === `${lead.id}-${section.key}`;
+                        const isSectionOpen =
+                          expandedSection === `${lead.id}-${section.key}`;
                         return (
-                          <div key={section.key} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                          <div
+                            key={section.key}
+                            style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                          >
                             <div
                               className="flex items-center gap-3 px-5 py-3 cursor-pointer"
-                              onClick={() => setExpandedSection(isSectionOpen ? null : `${lead.id}-${section.key}`)}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                              onClick={() =>
+                                setExpandedSection(
+                                  isSectionOpen ? null : `${lead.id}-${section.key}`
+                                )
+                              }
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.background = "var(--surface-raised)")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.background = "transparent")
+                              }
                             >
-                              <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: section.color + '20' }}>
+                              <div
+                                className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+                                style={{ background: section.color + "20" }}
+                              >
                                 <Icon size={12} style={{ color: section.color }} />
                               </div>
-                              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }}>
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  color: "var(--text-primary)",
+                                  fontFamily: "DM Sans, sans-serif",
+                                }}
+                              >
                                 {section.label}
                               </span>
                               <div className="flex-1" />
-                              {isSectionOpen ? <ChevronUp size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />}
+                              {isSectionOpen ? (
+                                <ChevronUp size={12} style={{ color: "var(--text-muted)" }} />
+                              ) : (
+                                <ChevronDown size={12} style={{ color: "var(--text-muted)" }} />
+                              )}
                             </div>
                             {isSectionOpen && (
                               <div className="px-5 pb-4">
-                                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                                <p
+                                  style={{
+                                    fontSize: "13px",
+                                    color: "var(--text-secondary)",
+                                    lineHeight: 1.7,
+                                    whiteSpace: "pre-wrap",
+                                  }}
+                                >
                                   {content}
                                 </p>
                               </div>
@@ -198,14 +349,74 @@ export default function LeadIntel() {
                           </div>
                         );
                       })}
-                      <div className="px-5 py-3 flex items-center gap-2">
-                        <Plus size={12} style={{ color: 'var(--amber)' }} />
-                        <button
-                          onClick={() => toast.info("Add to Pipeline — coming soon")}
-                          style={{ fontSize: '12px', color: 'var(--amber)', fontFamily: 'DM Sans, sans-serif' }}
-                        >
-                          Add to Pipeline
-                        </button>
+
+                      {/* Push to Pipeline CTA */}
+                      <div className="px-5 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {alreadyPushed ? (
+                            <>
+                              <CheckCircle2 size={13} style={{ color: "#4ADE80" }} />
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  color: "#4ADE80",
+                                  fontFamily: "DM Sans, sans-serif",
+                                }}
+                              >
+                                In Pipeline
+                              </span>
+                            </>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePushToPipeline(lead);
+                              }}
+                              disabled={createDeal.isPending}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded transition-all"
+                              style={{
+                                background: createDeal.isPending
+                                  ? "var(--surface-raised)"
+                                  : "rgba(245, 166, 35, 0.12)",
+                                border: "1px solid rgba(245, 166, 35, 0.3)",
+                                color: createDeal.isPending
+                                  ? "var(--text-muted)"
+                                  : "var(--amber)",
+                                fontFamily: "DM Sans, sans-serif",
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                cursor: createDeal.isPending ? "not-allowed" : "pointer",
+                              }}
+                            >
+                              {createDeal.isPending ? (
+                                <>
+                                  <Loader2 size={11} className="animate-spin" />
+                                  Pushing...
+                                </>
+                              ) : (
+                                <>
+                                  <GitMerge size={11} />
+                                  Push to Pipeline
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                        {audit.nextBeat && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--text-muted)",
+                              fontFamily: "Fira Code, monospace",
+                              maxWidth: "300px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Next: {audit.nextBeat}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}

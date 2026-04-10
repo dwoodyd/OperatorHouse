@@ -47,7 +47,7 @@
 ## Pending — Phase 4 (Revenue + Scale)
 - [ ] Add AI Chat Assistant panel (floating ghost chat sidebar)
 - [ ] Add Voice Briefing feature (text-to-speech on lead audits)
-- [ ] Add "Add to Pipeline" button from Lead Intelligence (cross-module flow)
+- [x] Add "Push to Pipeline" button from Lead Intelligence (cross-module flow — real deal creation)
 - [ ] Add client detail view (click client → full profile)
 - [ ] Add public-facing landing page (/landing route)
 - [ ] Add Stripe subscription checkout
@@ -68,3 +68,18 @@
 - [x] Build AI chat sidebar (The Operator / Command Line) wired to real LLM
 - [x] Add chat sidebar toggle button to topbar (CMD button in topbar)
 - [x] Wire chat to context-aware system prompt using user's pipeline/lead data
+
+## Logo & Brand Asset Integration
+- [x] Upload OH symbol SVG and full lockup PNG to CDN
+- [ ] Build premium door-open entry animation (SVG-based, splash screen)
+- [x] Replace sidebar logo placeholder with OH symbol mark (CDN asset)
+- [ ] Replace topbar/login with full lockup where appropriate
+- [x] Update favicon with OH symbol mark
+- [x] Update app title to Operator House in index.html
+
+## P0 Beta-Readiness
+- [x] Add rate limiting middleware on AI tRPC endpoints (express-rate-limit, 10 req/min per IP)
+- [x] Add 45s AI timeout wrapper on all LLM calls (briefings, operator chat, lead audit, strategy)
+- [x] Push to Pipeline button on Lead Intelligence (real deal creation, Discovery stage, intent score)
+- [x] Mobile responsive sidebar (hamburger overlay drawer on mobile, collapsible on desktop)
+- [x] Overflow-x hidden on main content area to prevent horizontal scroll on mobile

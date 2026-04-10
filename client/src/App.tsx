@@ -1,8 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import { useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import OHSplash from "./components/OHSplash";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
 import LeadIntel from "./pages/LeadIntel";
@@ -33,6 +35,16 @@ function Router() {
 }
 
 function App() {
+  // Show splash only on first load per session
+  const [splashDone, setSplashDone] = useState(() => {
+    return sessionStorage.getItem("oh_splash_shown") === "true";
+  });
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem("oh_splash_shown", "true");
+    setSplashDone(true);
+  };
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
@@ -48,6 +60,7 @@ function App() {
               },
             }}
           />
+          {!splashDone && <OHSplash onComplete={handleSplashComplete} />}
           <Router />
         </TooltipProvider>
       </ThemeProvider>

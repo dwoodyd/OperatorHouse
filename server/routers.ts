@@ -15,6 +15,25 @@ import {
 import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
 import { invokeLLM } from "./_core/llm";
 
+// AI timeout helper for inline LLM calls in this router
+const AI_TIMEOUT_MS = 45_000;
+async function withAiTimeout<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`AI ${label} timed out after ${AI_TIMEOUT_MS / 1000}s. Please try again.`));
+    }, AI_TIMEOUT_MS);
+  });
+  try {
+    const result = await Promise.race([fn(), timeoutPromise]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -369,12 +388,14 @@ export const appRouter = router({
         const daysSince = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
         return daysSince > 7;
       });
-      const { invokeLLM } = await import('./_core/llm');
-      const prompt = `You are the Ghost — an AI consultant for ${ctx.user.name ?? 'the operator'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
-      const response = await invokeLLM({
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_schema', json_schema: { name: 'briefing', strict: true, schema: { type: 'object', properties: { situation: { type: 'string' }, priority: { type: 'string' }, ghostNote: { type: 'string' } }, required: ['situation', 'priority', 'ghostNote'], additionalProperties: false } } },
-      });
+      const prompt = `You are The Operator — an AI strategist for ${ctx.user.name ?? 'the operator'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
+      const response = await withAiTimeout(
+        () => invokeLLM({
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_schema', json_schema: { name: 'briefing', strict: true, schema: { type: 'object', properties: { situation: { type: 'string' }, priority: { type: 'string' }, ghostNote: { type: 'string' } }, required: ['situation', 'priority', 'ghostNote'], additionalProperties: false } } },
+        }),
+        'Briefing'
+      );
       const parsed = JSON.parse(response.choices[0].message.content as string) as { situation: string; priority: string; ghostNote: string };
       await createBriefing({ userId: ctx.user.id, briefingType: 'login', content: JSON.stringify(parsed), payload: parsed });
       return parsed;
@@ -438,7 +459,10 @@ ${contextBlock}`;
           { role: 'user' as const, content: input.message },
         ];
 
-        const response = await invokeLLM({ messages });
+        const response = await withAiTimeout(
+          () => invokeLLM({ messages }),
+          'Command Line'
+        );
         const reply = response.choices[0].message.content as string;
 
         // Log the interaction as an activity

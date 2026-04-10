@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { strictAiRateLimiter, aiRateLimiter } from "./rateLimiter";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +36,15 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // Rate limiting for expensive AI endpoints (strategy generation, lead audit)
+  app.use("/api/trpc/leads.analyze", strictAiRateLimiter);
+  app.use("/api/trpc/strategies.generate", strictAiRateLimiter);
+  // Lighter rate limit for operator chat (more frequent, less expensive)
+  app.use("/api/trpc/operator.chat", aiRateLimiter);
+  // Also limit briefing generation
+  app.use("/api/trpc/briefings.generate", aiRateLimiter);
+
   // tRPC API
   app.use(
     "/api/trpc",

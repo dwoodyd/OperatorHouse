@@ -6,6 +6,30 @@
 
 import { invokeLLM } from "./_core/llm";
 
+// ─── AI Timeout Wrapper ───────────────────────────────────────────────────────
+const AI_TIMEOUT_MS = 45_000; // 45 second timeout for all AI calls
+
+/**
+ * Wraps an AI call with a timeout. If the call takes longer than AI_TIMEOUT_MS,
+ * it throws a user-friendly error instead of hanging indefinitely.
+ */
+async function withAiTimeout<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`AI ${label} timed out after ${AI_TIMEOUT_MS / 1000}s. Please try again.`));
+    }, AI_TIMEOUT_MS);
+  });
+  try {
+    const result = await Promise.race([fn(), timeoutPromise]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+}
+
 // ─── Prompt Versions ──────────────────────────────────────────────────────────
 export const PROMPT_VERSIONS = {
   leadAudit: "v2.0",
@@ -92,13 +116,16 @@ Return ONLY valid JSON with this exact schema:
   "missingContext": "what additional info would improve this analysis, or null"
 }`;
 
-  const response = await invokeLLM({
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    response_format: { type: "json_object" },
-  });
+  const response = await withAiTimeout(
+    () => invokeLLM({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
+    "Lead Audit"
+  );
 
   const raw = response.choices[0]?.message?.content ?? "{}";
   let parsed: Partial<LeadAuditOutput>;
@@ -221,13 +248,16 @@ Context: ${input.context}${clientSnippet}${vaultSnippet}
 Return JSON matching: ${schema}`;
   }
 
-  const response = await invokeLLM({
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    response_format: { type: "json_object" },
-  });
+  const response = await withAiTimeout(
+    () => invokeLLM({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
+    "Strategy Generation"
+  );
 
   const raw = response.choices[0]?.message?.content ?? "{}";
   let parsed: Record<string, unknown>;
