@@ -93,3 +93,8 @@
 - [x] Build About.tsx with six module cards and How It Works section
 - [x] Wire /about route in App.tsx
 - [x] Add About to AppLayout sidebar nav
+
+## Beta Readiness — Remaining
+- [x] Public landing page (pre-login marketing page at /)
+- [x] Vitest smoke tests: auth.me, leads.create, pipeline.create (8/8 passing)
+- [ ] New-user onboarding redirect to /about on first login (deferred)
