@@ -83,3 +83,8 @@
 - [x] Push to Pipeline button on Lead Intelligence (real deal creation, Discovery stage, intent score)
 - [x] Mobile responsive sidebar (hamburger overlay drawer on mobile, collapsible on desktop)
 - [x] Overflow-x hidden on main content area to prevent horizontal scroll on mobile
+
+## Splash Screen Rework
+- [x] Rewrite OHSplash: only OH symbol (no lockup), much larger (200px), door-open diagonal line animation with shine sweep
+- [x] Upsize sidebar logo from 36px to 48px
+- [x] Upsize home screen icon reference (sidebar logo upsized)

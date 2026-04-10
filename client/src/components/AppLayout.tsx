@@ -66,12 +66,12 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
       >
         <div
           className="flex-shrink-0 flex items-center justify-center relative"
-          style={{ width: "36px", height: "36px", flexShrink: 0 }}
+          style={{ width: "48px", height: "48px", flexShrink: 0 }}
         >
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
             alt="Operator House"
-            style={{ width: "36px", height: "36px", objectFit: "contain", display: "block" }}
+            style={{ width: "48px", height: "48px", objectFit: "contain", display: "block" }}
           />
         </div>
         {(!collapsed || isMobile) && (
