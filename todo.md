@@ -129,3 +129,10 @@
 - [x] Optimistic updates + rollback on Pipeline deal mutations (move stage, delete)
 - [x] Optimistic updates + rollback on Vault item mutations (add, delete)
 - [x] Optimistic updates + rollback on Tasks mutations (toggle complete, delete — already had onMutate)
+
+## Capacitor/Mobile Readiness
+- [x] Audit browser-specific calls and produce Capacitor compatibility report
+- [x] Build useOnlineStatus hook with navigator.onLine + online/offline events
+- [x] Build OfflineBanner component (charcoal/ivory aesthetic, slide-down animation)
+- [x] Wire OfflineBanner into App.tsx root (covers all pages including public)
+- [x] Wire OfflineBanner into public pages (handled at App.tsx root level)

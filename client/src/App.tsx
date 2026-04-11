@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OHSplash from "./components/OHSplash";
+import OfflineBanner from "./components/OfflineBanner";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
 import LeadIntel from "./pages/LeadIntel";
@@ -54,6 +55,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
+        <OfflineBanner />
         <TooltipProvider>
           <Toaster
             theme="dark"
