@@ -116,3 +116,9 @@
 - [x] Upgrade Settings page: Delete Account section with confirmation modal
 - [x] Add Privacy Policy link, Terms of Service link, and About/version section to Settings
 - [x] Write App Store and Play Store metadata document (descriptions, keywords, What's New)
+
+## Legal Pages & Notifications
+- [x] Build /privacy page (Privacy Policy)
+- [x] Build /terms page (Terms of Service)
+- [x] Wire /privacy and /terms routes in App.tsx
+- [x] Add notifyOwner to leads.analyze procedure (fire-and-forget, non-blocking)

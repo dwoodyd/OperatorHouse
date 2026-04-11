@@ -13,6 +13,7 @@ import {
   updateVaultItem, upsertUserProfile,
 } from "./db";
 import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
+import { notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
 
 // AI timeout helper for inline LLM calls in this router
@@ -152,6 +153,11 @@ export const appRouter = router({
           status: "analysis",
         });
         await logActivity({ userId: ctx.user.id, activityType: "lead_analyzed", summary: `Lead analyzed: ${audit.name} @ ${audit.company}` });
+        // Fire-and-forget owner notification — don't block the response
+        notifyOwner({
+          title: `New Lead Audit: ${audit.name} @ ${audit.company}`,
+          content: `Intent score: ${audit.intentScore}/10\nNext beat: ${audit.nextBeat ?? "—"}\nAnalyzed by: ${ctx.user.name ?? ctx.user.email ?? "user"}`,
+        }).catch(() => {/* non-critical */});
         return { audit };
       }),
     create: protectedProcedure

@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import Tasks from "./pages/Tasks";
 import About from "./pages/About";
 import Home from "./pages/Home";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/tasks" component={Tasks} />
       <Route path="/about" component={About} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
