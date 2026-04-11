@@ -8,9 +8,26 @@ import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, DollarSign, Loader2, X, Trash2 } from "lucide-react";
 import { SkeletonKanban } from "@/components/StateUI";
+import DealSlideOver from "@/components/DealSlideOver";
 import { toast } from "sonner";
 
 type Stage = "Discovery" | "Analysis" | "Strategy" | "Proposal" | "Closed";
+// Deal type derived from the query result
+type Deal = {
+  id: number;
+  userId: number;
+  clientId: number | null;
+  title: string;
+  stage: Stage;
+  value: number | null;
+  intentScore: number | null;
+  tags: string[] | null;
+  notes: string | null;
+  closeProbability: number | null;
+  expectedCloseDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const STAGES: Stage[] = ["Discovery", "Analysis", "Strategy", "Proposal", "Closed"];
 
@@ -38,6 +55,7 @@ interface NewDealForm {
 export default function Pipeline() {
   const utils = trpc.useUtils();
   const { data: deals, isLoading } = trpc.pipeline.list.useQuery();
+
   const createDeal = trpc.pipeline.create.useMutation({
     onSuccess: () => {
       utils.pipeline.list.invalidate();
@@ -48,25 +66,59 @@ export default function Pipeline() {
     },
     onError: () => toast.error("Failed to create deal"),
   });
+
+  // Optimistic update: stage change via drag-and-drop
   const updateDeal = trpc.pipeline.update.useMutation({
-    onSuccess: () => {
+    onMutate: async (vars) => {
+      await utils.pipeline.list.cancel();
+      const prev = utils.pipeline.list.getData();
+      utils.pipeline.list.setData(undefined, (old) =>
+        old?.map((d) =>
+          d.id === vars.id
+            ? {
+                ...d,
+                ...(vars.stage ? { stage: vars.stage } : {}),
+                ...(vars.value != null ? { value: vars.value } : {}),
+                ...(vars.notes != null ? { notes: vars.notes } : {}),
+              }
+            : d
+        )
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.pipeline.list.setData(undefined, ctx.prev);
+      toast.error("Failed to update deal");
+    },
+    onSettled: () => {
       utils.pipeline.list.invalidate();
       utils.dashboard.metrics.invalidate();
     },
-    onError: () => toast.error("Failed to update deal"),
   });
+
+  // Optimistic update: delete
   const deleteDeal = trpc.pipeline.delete.useMutation({
-    onSuccess: () => {
+    onMutate: async ({ id }) => {
+      await utils.pipeline.list.cancel();
+      const prev = utils.pipeline.list.getData();
+      utils.pipeline.list.setData(undefined, (old) => old?.filter((d) => d.id !== id));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.pipeline.list.setData(undefined, ctx.prev);
+      toast.error("Failed to delete deal");
+    },
+    onSettled: () => {
       utils.pipeline.list.invalidate();
       utils.dashboard.metrics.invalidate();
       toast.success("Deal removed");
     },
-    onError: () => toast.error("Failed to delete deal"),
   });
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<NewDealForm>({ title: "", stage: "Discovery", value: "", notes: "" });
   const [dragId, setDragId] = useState<number | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
   const dealsByStage = (stage: Stage) => deals?.filter((d) => d.stage === stage) ?? [];
   const totalValue = deals?.reduce((sum, d) => sum + (d.value ?? 0), 0) ?? 0;
@@ -204,14 +256,21 @@ export default function Pipeline() {
                     <div
                       key={deal.id}
                       draggable
-                      onDragStart={() => setDragId(deal.id)}
-                      className="rounded-lg p-3 cursor-grab active:cursor-grabbing group"
-                      style={{ background: 'var(--obsidian)', border: '1px solid var(--border-subtle)' }}
+                      onDragStart={(e) => { e.stopPropagation(); setDragId(deal.id); }}
+                      onClick={() => setSelectedDeal(deal)}
+                      className="rounded-lg p-3 cursor-pointer group"
+                      style={{
+                        background: 'var(--obsidian)',
+                        border: '1px solid var(--border-subtle)',
+                        transition: 'border-color 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--amber)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
                     >
                       <div className="flex items-start justify-between gap-1">
                         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{deal.title}</div>
                         <button
-                          onClick={() => deleteDeal.mutate({ id: deal.id })}
+                          onClick={(e) => { e.stopPropagation(); deleteDeal.mutate({ id: deal.id }); }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                         >
                           <Trash2 size={10} style={{ color: 'var(--text-muted)' }} />
@@ -243,6 +302,9 @@ export default function Pipeline() {
           </div>
         )}
       </div>
+
+      {/* Deal Slide-Over */}
+      <DealSlideOver deal={selectedDeal} onClose={() => setSelectedDeal(null)} />
     </AppLayout>
   );
 }

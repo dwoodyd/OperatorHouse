@@ -122,3 +122,10 @@
 - [x] Build /terms page (Terms of Service)
 - [x] Wire /privacy and /terms routes in App.tsx
 - [x] Add notifyOwner to leads.analyze procedure (fire-and-forget, non-blocking)
+
+## Client Detail & Optimistic Updates
+- [x] Build DealSlideOver component (activity log, linked lead audit, quick-edit fields)
+- [x] Wire DealSlideOver into Pipeline page on deal card click
+- [x] Optimistic updates + rollback on Pipeline deal mutations (move stage, delete)
+- [x] Optimistic updates + rollback on Vault item mutations (add, delete)
+- [x] Optimistic updates + rollback on Tasks mutations (toggle complete, delete — already had onMutate)

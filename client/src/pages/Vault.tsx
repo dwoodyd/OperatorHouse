@@ -36,8 +36,17 @@ export default function Vault() {
     onError: () => toast.error("Failed to save item"),
   });
   const deleteItem = trpc.vault.delete.useMutation({
-    onSuccess: () => { utils.vault.list.invalidate(); toast.success("Item removed"); },
-    onError: () => toast.error("Failed to delete item"),
+    onMutate: async ({ id }) => {
+      await utils.vault.list.cancel();
+      const prev = utils.vault.list.getData();
+      utils.vault.list.setData(undefined, (old) => old?.filter((v) => v.id !== id));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.vault.list.setData(undefined, ctx.prev);
+      toast.error("Failed to delete item");
+    },
+    onSettled: () => { utils.vault.list.invalidate(); toast.success("Item removed"); },
   });
 
   const [showForm, setShowForm] = useState(false);
