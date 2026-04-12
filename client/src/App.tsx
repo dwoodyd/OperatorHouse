@@ -19,6 +19,7 @@ import About from "./pages/About";
 import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Pricing from "./pages/Pricing";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/tasks" component={Tasks} />
       <Route path="/about" component={About} />
+      <Route path="/pricing" component={Pricing} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

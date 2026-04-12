@@ -2,6 +2,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   createBriefing, createClient, createDeal, createLead, createStrategy, createTask,
@@ -486,6 +487,27 @@ ${contextBlock}`;
 
         return { reply };
       }),
+  }),
+
+  stripe: router({
+    createCheckout: protectedProcedure
+      .input(z.object({ plan: z.enum(["monthly", "annual"]), origin: z.string().url() }))
+      .mutation(async ({ ctx, input }) => {
+        const { createCheckoutSession, PLANS } = await import('./stripe');
+        const priceId = PLANS[input.plan].priceId;
+        if (!priceId) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Plan price not configured. Please set STRIPE_MONTHLY_PRICE_ID / STRIPE_ANNUAL_PRICE_ID.' });
+        const session = await createCheckoutSession({
+          userId: ctx.user.id,
+          email: ctx.user.email ?? '',
+          name: ctx.user.name ?? '',
+          priceId,
+          origin: input.origin,
+        });
+        return { url: session.url };
+      }),
+    subscriptionStatus: protectedProcedure.query(async ({ ctx }) => ({
+      status: (ctx.user as { subscriptionStatus?: string }).subscriptionStatus ?? 'inactive',
+    })),
   }),
 });
 

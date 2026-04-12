@@ -4,6 +4,7 @@
    No mock data. No simulated typewriter.
    ============================================================================= */
 import { useState } from "react";
+import { generateStrategySchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -59,14 +60,9 @@ export default function StrategyGen() {
   });
 
   const handleGenerate = () => {
-    if (!clientName.trim() || !company.trim()) {
-      toast.error("Client name and company are required");
-      return;
-    }
-    if (!context.trim()) {
-      toast.error("Add context about this client to ground the strategy");
-      return;
-    }
+    const result = generateStrategySchema.safeParse({ clientName: clientName.trim(), company: company.trim(), outputType: selectedTemplate });
+    if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
+    if (!context.trim()) return toast.error("Add context about this client to ground the strategy");
     setResult(null);
     generateStrategy.mutate({
       outputType: selectedTemplate,

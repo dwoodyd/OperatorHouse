@@ -29,6 +29,13 @@
       "when": 1775772758111,
       "tag": "0003_chief_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1776031848135,
+      "tag": "0004_modern_slipstream",
+      "breakpoints": true
     }
   ]
 }

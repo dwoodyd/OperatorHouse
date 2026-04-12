@@ -164,6 +164,22 @@ export default function Home() {
           >
             See the modules
           </button>
+          <button
+            onClick={() => setLocation("/pricing")}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              padding: "14px 28px",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "6px",
+              color: "rgba(232,228,217,0.45)",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Pricing
+          </button>
         </div>
 
         {/* Trust badges */}
@@ -263,9 +279,12 @@ export default function Home() {
             Operator House © {new Date().getFullYear()}
           </span>
         </div>
-        <button onClick={() => setLocation("/about")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>
-          About & Features
-        </button>
+        <div style={{ display: "flex", gap: "16px" }}>
+          <button onClick={() => setLocation("/about")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>About & Features</button>
+          <button onClick={() => setLocation("/pricing")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Pricing</button>
+          <button onClick={() => setLocation("/privacy")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Privacy</button>
+          <button onClick={() => setLocation("/terms")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Terms</button>
+        </div>
       </footer>
     </div>
   );

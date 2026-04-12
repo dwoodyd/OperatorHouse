@@ -136,3 +136,12 @@
 - [x] Build OfflineBanner component (charcoal/ivory aesthetic, slide-down animation)
 - [x] Wire OfflineBanner into App.tsx root (covers all pages including public)
 - [x] Wire OfflineBanner into public pages (handled at App.tsx root level)
+
+## Security & Validation Hardening
+- [x] Ownership audit: all update/delete helpers confirmed to use userId WHERE clause at DB layer (no separate guard needed)
+- [x] Frontend Zod validation: schemas.ts created, validation added to LeadIntel, Vault, Pipeline, Tasks, StrategyGen
+- [x] Stripe integration: stripe.ts, webhook handler, checkout session, subscriptionStatus procedure
+- [x] Schema migration: stripeCustomerId, subscriptionStatus, subscriptionId added to users table
+- [x] Pricing page at /pricing with monthly/annual toggle and Stripe checkout
+- [x] Pricing link added to Home hero CTA and footer nav
+- [x] Stripe webhook route wired before express.json in server index.ts

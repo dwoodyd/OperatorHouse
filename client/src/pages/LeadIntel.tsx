@@ -3,6 +3,7 @@
    Obsidian Intelligence: AI-powered Operator lead audit — real AI
    ============================================================================= */
 import { useState } from "react";
+import { leadInputSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import {
@@ -128,8 +129,9 @@ export default function LeadIntel() {
             />
             <button
               onClick={() => {
-                if (!input.trim()) return toast.error("Enter a lead URL or description");
-                analyzeLead.mutate({ input: input.trim() });
+                const result = leadInputSchema.safeParse({ input: input.trim() });
+                if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
+                analyzeLead.mutate(result.data);
               }}
               disabled={analyzeLead.isPending}
               className="flex flex-col items-center justify-center gap-2 px-5 py-3 text-sm font-semibold flex-shrink-0"

@@ -4,6 +4,7 @@
    ============================================================================= */
 
 import React, { useState } from "react";
+import { createVaultItemSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, Search, Archive, Loader2, X, Trash2, FileText, BookOpen, Mic, Layout, FlaskConical, StickyNote } from "lucide-react";
@@ -115,9 +116,9 @@ export default function Vault() {
                 style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
             </div>
             <button onClick={() => {
-              if (!form.title.trim()) return toast.error("Title is required");
-              createItem.mutate({ title: form.title, type: form.type, textContent: form.textContent || undefined,
-                tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined });
+              const result = createVaultItemSchema.safeParse({ title: form.title, type: form.type, textContent: form.textContent || undefined });
+              if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
+              createItem.mutate({ ...result.data, tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined });
             }} disabled={createItem.isPending} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold"
               style={{ background: "var(--amber)", color: "#0A0A0F", fontFamily: "DM Sans, sans-serif" }}>
               {createItem.isPending ? <Loader2 size={12} className="animate-spin" /> : <Archive size={12} />} Save to Vault

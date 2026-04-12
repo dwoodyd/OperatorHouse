@@ -32,6 +32,20 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Stripe webhook MUST use raw body — register BEFORE express.json()
+  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["stripe-signature"] as string;
+    try {
+      const { handleStripeWebhook } = await import("../stripe");
+      const result = await handleStripeWebhook(req.body as Buffer, sig);
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Webhook error";
+      console.error("[Stripe Webhook]", msg);
+      res.status(400).json({ error: msg });
+    }
+  });
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

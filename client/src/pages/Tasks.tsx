@@ -3,6 +3,7 @@
    Ghost-suggested task management with priority, due dates, and client linking
    ============================================================================= */
 import { useState } from "react";
+import { createTaskSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -141,7 +142,11 @@ export default function Tasks() {
                 ))}
                 <div style={{ flex: 1 }} />
                 <button
-                  onClick={() => { if (title.trim()) createTask.mutate({ title: title.trim(), description: description || undefined, priority }); }}
+                  onClick={() => {
+                    const result = createTaskSchema.safeParse({ title: title.trim(), description: description || undefined, priority });
+                    if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
+                    createTask.mutate(result.data);
+                  }}
                   disabled={!title.trim() || createTask.isPending}
                   className="flex items-center gap-2 px-4 py-2"
                   style={{ background: 'var(--amber)', color: 'var(--obsidian)', fontWeight: 600, fontSize: 12, borderRadius: 4, opacity: !title.trim() ? 0.5 : 1 }}

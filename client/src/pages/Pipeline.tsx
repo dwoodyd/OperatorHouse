@@ -4,6 +4,7 @@
    ============================================================================= */
 
 import { useState } from "react";
+import { createDealSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, DollarSign, Loader2, X, Trash2 } from "lucide-react";
@@ -199,13 +200,9 @@ export default function Pipeline() {
             </div>
             <button
               onClick={() => {
-                if (!form.title.trim()) return toast.error("Deal title is required");
-                createDeal.mutate({
-                  title: form.title,
-                  stage: form.stage,
-                  value: form.value ? Number(form.value) : undefined,
-                  notes: form.notes || undefined,
-                });
+                const result = createDealSchema.safeParse({ title: form.title, stage: form.stage, value: form.value ? Number(form.value) : undefined, notes: form.notes || undefined });
+                if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
+                createDeal.mutate(result.data);
               }}
               disabled={createDeal.isPending}
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold"
