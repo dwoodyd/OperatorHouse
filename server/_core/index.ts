@@ -7,7 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { strictAiRateLimiter, aiRateLimiter } from "./rateLimiter";
+import { strictAiRateLimiter, aiRateLimiter, authRateLimiter } from "./rateLimiter";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -31,9 +31,14 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Auth rate limiting — 5 attempts per 15 min per IP (brute-force protection)
+  app.use("/api/oauth/callback", authRateLimiter);
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
@@ -45,14 +50,20 @@ async function startServer() {
   // Also limit briefing generation
   app.use("/api/trpc/briefings.generate", aiRateLimiter);
 
-  // tRPC API
+  // tRPC API — onError logs full details server-side only; stack traces never reach the client
   app.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError: ({ error, path }) => {
+        if (error.code === "INTERNAL_SERVER_ERROR") {
+          console.error(`[tRPC error] ${path ?? "unknown"}:`, error.message, error.cause);
+        }
+      },
     })
   );
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

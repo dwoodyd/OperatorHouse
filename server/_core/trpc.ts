@@ -5,6 +5,14 @@ import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  // Strip stack traces from client-facing error responses in production
+  errorFormatter: ({ shape, error }) => ({
+    ...shape,
+    data: {
+      ...shape.data,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    },
+  }),
 });
 
 export const router = t.router;

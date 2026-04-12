@@ -9,6 +9,23 @@ import { rateLimit } from "express-rate-limit";
 import { ENV } from "./env";
 
 /**
+ * Auth rate limiter — 5 attempts per 15 minutes per IP.
+ * Applied to the OAuth callback to prevent brute-force token exchange.
+ */
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    error: {
+      message: "Too many login attempts. Please wait 15 minutes before trying again.",
+      code: "AUTH_RATE_LIMITED",
+    },
+  },
+});
+
+/**
  * AI rate limiter — 20 requests per 10 minutes per IP.
  * Applied to all AI-heavy tRPC procedures.
  */
