@@ -6,11 +6,12 @@
    bottom-left — it looks exactly like a door on a hinge.
 
    Animation concept:
-   1. Mark fades in large and still (0–600ms)
+   1. Mark fades in large and still (0–800ms)
    2. The diagonal "door" line rotates open on its top pivot, swinging left like
-      a door opening inward, revealing warm light behind it (600–1400ms)
-   3. A gold shine sweeps across the mark as the door opens (800–1200ms)
-   4. Screen fades out (1400–1900ms) → onComplete fires
+      a door opening inward, revealing warm light behind it (800–2000ms)
+   3. A gold shine sweeps across the mark as the door opens (1100–1800ms)
+   4. Hold open (2000–2800ms)
+   5. Screen fades out (2800–3500ms) → onComplete fires
 
    Only the OH symbol is shown — no lockup, no wordmark.
    Plays once per session via sessionStorage flag (set in App.tsx).
@@ -28,10 +29,10 @@ export default function OHSplash({ onComplete }: OHSplashProps) {
   const [phase, setPhase] = useState<"idle" | "open" | "shine" | "exit">("idle");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("open"),  600);   // door starts opening
-    const t2 = setTimeout(() => setPhase("shine"), 800);   // shine sweeps
-    const t3 = setTimeout(() => setPhase("exit"),  1500);  // fade out
-    const t4 = setTimeout(() => onComplete(),      2050);  // unmount
+    const t1 = setTimeout(() => setPhase("open"),  800);   // door starts opening
+    const t2 = setTimeout(() => setPhase("shine"), 1100);  // shine sweeps
+    const t3 = setTimeout(() => setPhase("exit"),  2800);  // fade out (hold open ~1.7s)
+    const t4 = setTimeout(() => onComplete(),      3500);  // unmount
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [onComplete]);
 
@@ -126,7 +127,7 @@ export default function OHSplash({ onComplete }: OHSplashProps) {
               transform: phase === "open" || phase === "shine" || phase === "exit"
                 ? "rotate(-52deg)"
                 : "rotate(0deg)",
-              transition: "transform 750ms cubic-bezier(0.4,0,0.2,1)",
+              transition: "transform 1100ms cubic-bezier(0.4,0,0.2,1)",
             }}
           >
             {/* Thin door line — the diagonal itself */}
@@ -157,7 +158,7 @@ export default function OHSplash({ onComplete }: OHSplashProps) {
                 ? "translateX(400px)"
                 : "translateX(0px)",
               transition: phase === "shine"
-                ? "transform 600ms cubic-bezier(0.4,0,0.2,1)"
+                ? "transform 900ms cubic-bezier(0.4,0,0.2,1)"
                 : "none",
             }}
           />
