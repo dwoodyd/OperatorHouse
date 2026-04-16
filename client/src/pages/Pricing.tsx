@@ -114,7 +114,7 @@ export default function Pricing() {
             >
               Annual
               <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
-                Save 32%
+                Save 32% ↓
               </span>
             </button>
           </div>
@@ -170,14 +170,14 @@ export default function Pricing() {
             </Button>
 
             <p className="text-center text-xs text-[#f5f0e8]/30 mt-4">
-              Test card: 4242 4242 4242 4242 · Secure checkout via Stripe
+              Secure checkout via Stripe · Cancel anytime
             </p>
           </div>
         </div>
 
         {/* Trust line */}
         <p className="text-center text-xs text-[#f5f0e8]/30 mt-10">
-          Cancel anytime · No setup fees · Promotion codes accepted at checkout
+          No setup fees · Promotion codes accepted at checkout
         </p>
       </div>
     </div>

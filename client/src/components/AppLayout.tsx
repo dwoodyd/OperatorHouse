@@ -3,7 +3,7 @@
    Glassmorphism sidebar + frosted topbar + gradient logo
    Mobile: hamburger overlay drawer; Desktop: collapsible sidebar
    ============================================================================= */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
@@ -34,7 +34,21 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
   const { user } = useAuth();
+
+  // Cmd+K / Ctrl+K shortcut for Command Line
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      setCommandLineOpen(prev => !prev);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -121,6 +135,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
       {/* Nav */}
       <nav
         className="flex-1 px-2 py-3 overflow-y-auto"
+        aria-label="Main navigation"
         style={{ display: "flex", flexDirection: "column", gap: "2px" }}
       >
         {NAV_ITEMS.map((item) => {
@@ -131,6 +146,8 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             <button
               key={item.path}
               onClick={() => setLocation(item.path)}
+              aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
               className={`sidebar-item w-full text-left ${isActive ? "active" : ""}`}
               style={{
                 justifyContent: !isMobile && collapsed ? "center" : "flex-start",
@@ -413,7 +430,9 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             <button
               onClick={() => setCommandLineOpen(true)}
               className="flex items-center gap-2"
-              title="Open Command Line"
+              title="Open Command Line (⌘K)"
+              aria-label="Open Command Line (Cmd+K)"
+              aria-expanded={commandLineOpen}
               style={{
                 height: "36px",
                 padding: "0 12px",
@@ -445,18 +464,39 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             </button>
 
             <button
-              className="flex items-center justify-center"
+              className="flex items-center justify-center relative"
+              aria-label="Notifications"
+              onClick={() => setBellOpen(prev => !prev)}
               style={{
                 width: "36px",
                 height: "36px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid var(--border-subtle)",
+                background: bellOpen ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${bellOpen ? "var(--border-amber)" : "var(--border-subtle)"}`,
                 borderRadius: "6px",
-                color: "var(--text-secondary)",
-                transition: "all 180ms ease",
+                color: bellOpen ? "var(--amber)" : "var(--text-secondary)",
+                transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
               }}
             >
               <Bell size={14} />
+              {bellOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    width: "260px",
+                    background: "rgba(14,14,22,0.98)",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "8px",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                    padding: "12px",
+                    zIndex: 100,
+                  }}
+                >
+                  <div style={{ fontFamily: "Playfair Display, serif", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>Notifications</div>
+                  <div style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", textAlign: "center", padding: "16px 0" }}>No new notifications</div>
+                </div>
+              )}
             </button>
           </div>
         </header>

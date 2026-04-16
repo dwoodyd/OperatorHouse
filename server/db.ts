@@ -259,17 +259,49 @@ export async function getDashboardMetrics(userId: number) {
 // ─── Analytics ────────────────────────────────────────────────────────────────
 export async function getAnalyticsData(userId: number) {
   const db = await getDb();
-  if (!db) return { dealsByStage: [], leadsBySource: [], recentDeals: [] };
+  if (!db) return { dealsByStage: [], leadsBySource: [], recentDeals: [], monthlyData: [], weeklyActivity: [] };
 
-  const [dealsByStage, leadsBySource, recentDeals] = await Promise.all([
+  const now = new Date();
+  // Build last-6-months labels dynamically
+  const months: { label: string; year: number; month: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleString('en-US', { month: 'short' }), year: d.getFullYear(), month: d.getMonth() + 1 });
+  }
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const [dealsByStage, leadsBySource, recentDeals, allLeads, allDeals, allStrategies, allBriefings] = await Promise.all([
     db.select({ stage: pipelineDeals.stage, count: sql<number>`count(*)`, totalValue: sql<number>`sum(value)` })
       .from(pipelineDeals).where(eq(pipelineDeals.userId, userId)).groupBy(pipelineDeals.stage),
     db.select({ sourceType: leads.sourceType, count: sql<number>`count(*)` })
       .from(leads).where(eq(leads.userId, userId)).groupBy(leads.sourceType),
     db.select().from(pipelineDeals).where(eq(pipelineDeals.userId, userId)).orderBy(desc(pipelineDeals.createdAt)).limit(5),
+    db.select({ createdAt: leads.createdAt }).from(leads).where(eq(leads.userId, userId)),
+    db.select({ createdAt: pipelineDeals.createdAt, value: pipelineDeals.value, stage: pipelineDeals.stage }).from(pipelineDeals).where(eq(pipelineDeals.userId, userId)),
+    db.select({ createdAt: strategies.createdAt }).from(strategies).where(eq(strategies.userId, userId)),
+    db.select({ createdAt: briefings.createdAt }).from(briefings).where(eq(briefings.userId, userId)),
   ]);
 
-  return { dealsByStage, leadsBySource, recentDeals };
+  const monthlyData = months.map(({ label, year, month }) => {
+    const leadsCount = allLeads.filter(l => { const d = new Date(l.createdAt); return d.getFullYear() === year && d.getMonth() + 1 === month; }).length;
+    const closedDeals = allDeals.filter(d => { const dt = new Date(d.createdAt); return dt.getFullYear() === year && dt.getMonth() + 1 === month && d.stage === 'Closed'; });
+    const revenue = closedDeals.reduce((sum, d) => sum + (d.value ?? 0), 0);
+    return { month: label, revenue, leads: leadsCount, closed: closedDeals.length };
+  });
+
+  const weeklyActivity = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now); d.setDate(now.getDate() - (6 - i));
+    const y = d.getFullYear(), mo = d.getMonth() + 1, day = d.getDate();
+    const match = (dt: Date) => dt.getFullYear() === y && dt.getMonth() + 1 === mo && dt.getDate() === day;
+    return {
+      day: dayNames[d.getDay()],
+      leads: allLeads.filter(l => match(new Date(l.createdAt))).length,
+      strategies: allStrategies.filter(s => match(new Date(s.createdAt))).length,
+      briefings: allBriefings.filter(b => match(new Date(b.createdAt))).length,
+    };
+  });
+
+  return { dealsByStage, leadsBySource, recentDeals, monthlyData, weeklyActivity };
 }
 
 // ─── Account Deletion ─────────────────────────────────────────────────────────

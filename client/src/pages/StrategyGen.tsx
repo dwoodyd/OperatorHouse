@@ -190,7 +190,7 @@ export default function StrategyGen() {
                     <input
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Marcus Chen"
+                      placeholder="Client name"
                       className="w-full px-3 py-2 text-sm outline-none"
                       style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
                     />
@@ -200,7 +200,7 @@ export default function StrategyGen() {
                     <input
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
-                      placeholder="TechFlow Solutions"
+                      placeholder="Company name"
                       className="w-full px-3 py-2 text-sm outline-none"
                       style={{ background: 'var(--obsidian)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif' }}
                     />
