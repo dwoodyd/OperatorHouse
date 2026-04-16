@@ -2,9 +2,10 @@
    Operator House — AppLayout (Phase 3 Premium + Mobile Responsive)
    Glassmorphism sidebar + frosted topbar + gradient logo
    Mobile: hamburger overlay drawer; Desktop: collapsible sidebar
+   Accessibility: ARIA landmarks, anchor-based nav, labeled buttons
    ============================================================================= */
 import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
   BarChart3, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info,
@@ -30,7 +31,7 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
@@ -62,6 +63,20 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Auto-collapse sidebar on tablet (768–1024px)
+  useEffect(() => {
+    const checkTablet = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setCollapsed(false);
+      }
+    };
+    checkTablet();
+    window.addEventListener("resize", checkTablet);
+    return () => window.removeEventListener("resize", checkTablet);
   }, []);
 
   const initials = user?.name
@@ -120,6 +135,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         {isMobile && (
           <button
             onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation menu"
             style={{
               marginLeft: "auto",
               color: "var(--text-muted)",
@@ -132,10 +148,11 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         )}
       </div>
 
-      {/* Nav */}
+      {/* Nav — anchor-based for right-click, screen readers, deep links */}
       <nav
-        className="flex-1 px-2 py-3 overflow-y-auto"
+        role="navigation"
         aria-label="Main navigation"
+        className="flex-1 px-2 py-3 overflow-y-auto"
         style={{ display: "flex", flexDirection: "column", gap: "2px" }}
       >
         {NAV_ITEMS.map((item) => {
@@ -143,15 +160,19 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             location === item.path ||
             (item.path === "/dashboard" && location === "/");
           return (
-            <button
+            <Link
               key={item.path}
-              onClick={() => setLocation(item.path)}
+              href={item.path}
               aria-label={item.label}
-              aria-current={isActive ? 'page' : undefined}
+              aria-current={isActive ? "page" : undefined}
               className={`sidebar-item w-full text-left ${isActive ? "active" : ""}`}
               style={{
                 justifyContent: !isMobile && collapsed ? "center" : "flex-start",
                 padding: !isMobile && collapsed ? "10px" : "9px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                textDecoration: "none",
               }}
               title={!isMobile && collapsed ? item.label : undefined}
             >
@@ -163,7 +184,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   filter: isActive
                     ? "drop-shadow(0 0 5px rgba(245,166,35,0.55))"
                     : "none",
-                  transition: "all 180ms ease",
+                  transition: "color 180ms ease, filter 180ms ease",
                 }}
               />
               {(!collapsed || isMobile) && (
@@ -171,13 +192,14 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   style={{
                     fontSize: "13px",
                     fontWeight: isActive ? 500 : 400,
-                    transition: "all 180ms ease",
+                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                    transition: "color 180ms ease",
                   }}
                 >
                   {item.label}
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
       </nav>
@@ -234,30 +256,38 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           </div>
         )}
 
-        <button
-          onClick={() => setLocation("/settings")}
+        <Link
+          href="/settings"
+          aria-label="Settings"
+          aria-current={location === "/settings" ? "page" : undefined}
           className={`sidebar-item w-full ${location === "/settings" ? "active" : ""}`}
           style={{
             justifyContent: !isMobile && collapsed ? "center" : "flex-start",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            textDecoration: "none",
+            padding: !isMobile && collapsed ? "10px" : "9px 12px",
           }}
+          title={!isMobile && collapsed ? "Settings" : undefined}
         >
           <Settings
             size={14}
             style={{
               flexShrink: 0,
-              color:
-                location === "/settings" ? "var(--amber)" : "var(--text-secondary)",
+              color: location === "/settings" ? "var(--amber)" : "var(--text-secondary)",
             }}
           />
           {(!collapsed || isMobile) && (
-            <span style={{ fontSize: "13px" }}>Settings</span>
+            <span style={{ fontSize: "13px", color: location === "/settings" ? "var(--text-primary)" : "var(--text-secondary)" }}>Settings</span>
           )}
-        </button>
+        </Link>
 
         {/* Collapse toggle — desktop only */}
         {!isMobile && (
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="sidebar-item w-full mt-0.5"
             style={{ justifyContent: collapsed ? "center" : "flex-start" }}
           >
@@ -296,7 +326,9 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
       {/* ── Desktop Sidebar ───────────────────────────────────────────────── */}
       <aside
-        className="hidden md:flex flex-col flex-shrink-0 relative z-10"
+        role="complementary"
+        aria-label="Sidebar"
+        className="hidden md:flex flex-col flex-shrink-0 relative z-20"
         style={{
           width: collapsed ? "60px" : "224px",
           background:
@@ -319,9 +351,12 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             className="fixed inset-0 z-40 md:hidden"
             style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
             onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
           />
           {/* Drawer */}
           <aside
+            role="navigation"
+            aria-label="Mobile navigation"
             className="fixed top-0 left-0 h-full z-50 flex flex-col md:hidden"
             style={{
               width: "260px",
@@ -341,6 +376,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
       <div className="flex flex-col flex-1 overflow-hidden relative z-10 min-w-0">
         {/* Frosted topbar */}
         <header
+          role="banner"
           className="flex items-center justify-between flex-shrink-0"
           style={{
             height: "64px",
@@ -358,6 +394,8 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             <button
               className="flex md:hidden items-center justify-center flex-shrink-0"
               onClick={() => setMobileOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={mobileOpen}
               style={{
                 width: "36px",
                 height: "36px",
@@ -406,6 +444,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           <div className="flex items-center gap-2 flex-shrink-0">
             <div
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5"
+              aria-hidden="true"
               style={{
                 background: "rgba(245,166,35,0.06)",
                 border: "1px solid rgba(245,166,35,0.18)",
@@ -428,7 +467,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
             {/* Command Line toggle */}
             <button
-              onClick={() => setCommandLineOpen(true)}
+              onClick={() => setCommandLineOpen(prev => !prev)}
               className="flex items-center gap-2"
               title="Open Command Line (⌘K)"
               aria-label="Open Command Line (Cmd+K)"
@@ -444,7 +483,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 }`,
                 borderRadius: "6px",
                 color: commandLineOpen ? "var(--amber)" : "var(--text-secondary)",
-                transition: "all 180ms ease",
+                transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
                 boxShadow: commandLineOpen
                   ? "0 0 14px rgba(245,166,35,0.15)"
                   : "none",
@@ -463,23 +502,30 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
               </span>
             </button>
 
-            <button
-              className="flex items-center justify-center relative"
-              aria-label="Notifications"
-              onClick={() => setBellOpen(prev => !prev)}
-              style={{
-                width: "36px",
-                height: "36px",
-                background: bellOpen ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${bellOpen ? "var(--border-amber)" : "var(--border-subtle)"}`,
-                borderRadius: "6px",
-                color: bellOpen ? "var(--amber)" : "var(--text-secondary)",
-                transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
-              }}
-            >
-              <Bell size={14} />
+            {/* Notifications bell */}
+            <div style={{ position: "relative" }}>
+              <button
+                className="flex items-center justify-center"
+                aria-label="Notifications"
+                aria-expanded={bellOpen}
+                aria-haspopup="true"
+                onClick={() => setBellOpen(prev => !prev)}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  background: bellOpen ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${bellOpen ? "var(--border-amber)" : "var(--border-subtle)"}`,
+                  borderRadius: "6px",
+                  color: bellOpen ? "var(--amber)" : "var(--text-secondary)",
+                  transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
+                }}
+              >
+                <Bell size={14} />
+              </button>
               {bellOpen && (
                 <div
+                  role="dialog"
+                  aria-label="Notifications panel"
                   style={{
                     position: "absolute",
                     top: "calc(100% + 8px)",
@@ -497,12 +543,13 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   <div style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", textAlign: "center", padding: "16px 0" }}>No new notifications</div>
                 </div>
               )}
-            </button>
+            </div>
           </div>
         </header>
 
         {/* Page Content */}
         <main
+          role="main"
           className="flex-1 overflow-y-auto overflow-x-hidden"
           style={{ background: "var(--obsidian-deep)" }}
         >

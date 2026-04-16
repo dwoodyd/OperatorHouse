@@ -148,16 +148,19 @@
 
 ## QA Review Fixes (B- → A-)
 ### Critical
-- [ ] Fix Analytics: replace fake/hardcoded chart data with real DB data or empty states
-- [ ] Fix Analytics: dynamic date (current month, not hardcoded March 2026)
-- [ ] Remove Stripe test card text from Pricing page
-- [ ] Clear Strategy Generator pre-filled test data (Marcus Chen / TechFlow Solutions)
+- [x] Fix Analytics: replace fake/hardcoded chart data with real DB data or empty states
+- [x] Fix Analytics: dynamic date (current month, not hardcoded March 2026)
+- [x] Remove Stripe test card text from Pricing page
+- [x] Clear Strategy Generator pre-filled test data (Marcus Chen / TechFlow Solutions)
 ### Medium
-- [ ] Notification bell: add dropdown panel with "No notifications yet" empty state
-- [ ] Sidebar nav: replace button elements with proper anchor/Link elements
-- [ ] Add ARIA roles: role="navigation", role="main", role="banner" throughout
-- [ ] Add tablet breakpoint (~768px): sidebar collapses to icon-only by default
-- [ ] Fix savings % consistency on Pricing page (33% vs 32%)
+- [x] Notification bell: add dropdown panel with "No notifications yet" empty state
+- [x] Sidebar nav: replace button elements with proper anchor/Link elements (QA v2 HIGH)
+- [x] Add ARIA roles: role="navigation", role="main", role="banner", role="complementary" throughout (QA v2 HIGH)
+- [x] Add tablet breakpoint (768–1024px): sidebar auto-collapses to icon-only on tablet (QA v2 MEDIUM)
+- [x] Fix savings % consistency on Pricing page (confirmed 32%)
 ### Nice-to-Have
-- [ ] Cmd+K keyboard shortcut to open Command Line panel
-- [ ] Add manifest.json for PWA support
+- [x] Cmd+K keyboard shortcut to open Command Line panel
+- [x] Add manifest.json for PWA support
+- [x] Register service worker (sw.js): cache-first static, network-first API, offline fallback (QA v2 MEDIUM)
+- [x] Analytics scripts: single Umami tracker confirmed, no redundant scripts (QA v2 MEDIUM)
+- [x] Add aria-label to all icon-only buttons: hamburger, close drawer, collapse/expand, notifications (QA v2 HIGH)
