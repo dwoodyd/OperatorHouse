@@ -180,3 +180,6 @@
 - [x] Pricing social proof: 3 operator testimonials (M.R., D.K., T.A.) above plan cards
 - [x] Social proof styled: italic quote, gold dot + monospace name, muted role label
 - [x] Zero TS errors confirmed after all 6 changes
+
+## Animation Fix
+- [x] OnboardingFlow: two-phase exit/enter (no flash), slower auto fades, smooth final exit
