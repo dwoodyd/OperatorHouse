@@ -8,11 +8,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info,
+  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
 import NotificationBell from "./NotificationBell";
+import { useIntroReplay } from "@/contexts/IntroReplayContext";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Command Center",    path: "/dashboard" },
@@ -29,6 +30,28 @@ interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
+}
+
+function ReplayIntroSidebarButton() {
+  const { replayIntro } = useIntroReplay();
+  return (
+    <button
+      onClick={replayIntro}
+      aria-label="Replay intro"
+      className="sidebar-item w-full"
+      style={{
+        justifyContent: "flex-start",
+        gap: "10px",
+        color: "var(--text-muted)",
+        fontSize: "12px",
+        fontFamily: "DM Sans, sans-serif",
+      }}
+      title="Replay Intro"
+    >
+      <PlayCircle size={13} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
+      <span>Replay Intro</span>
+    </button>
+  );
 }
 
 export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
@@ -284,6 +307,10 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           )}
         </Link>
 
+        {/* Replay Intro — hidden when collapsed on desktop */}
+        {(!collapsed || isMobile) && (
+          <ReplayIntroSidebarButton />
+        )}
         {/* Collapse toggle — desktop only */}
         {!isMobile && (
           <button

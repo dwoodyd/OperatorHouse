@@ -198,3 +198,10 @@
 - [x] Bell icon with unread badge in AppLayout header
 - [x] Persistent inbox dropdown (mark read, clear all)
 - [x] Toast pop-up on new notification
+
+## Replay Intro Feature
+- [x] IntroReplayContext: replayIntro() function, phase state, clears sessionStorage flags
+- [x] App.tsx: IntroLayer component handles first-run gate and replay overlay; wrapped in IntroReplayProvider
+- [x] OnboardingFlow: isReplay prop skips server-side onboarding.complete mutation during replay
+- [x] Settings page: Replay Intro button in About section (amber, full-width, PlayCircle icon)
+- [x] AppLayout sidebar: Replay Intro button below Settings link (hidden when collapsed)

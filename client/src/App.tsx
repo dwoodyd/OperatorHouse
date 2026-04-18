@@ -8,6 +8,7 @@ import OHSplash from "./components/OHSplash";
 import OnboardingFlow from "./components/OnboardingFlow";
 import OfflineBanner from "./components/OfflineBanner";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { IntroReplayProvider, useIntroReplay } from "./contexts/IntroReplayContext";
 import Dashboard from "./pages/Dashboard";
 import LeadIntel from "./pages/LeadIntel";
 import Pipeline from "./pages/Pipeline";
@@ -44,7 +45,13 @@ function Router() {
   );
 }
 
-function App() {
+/**
+ * Handles both the first-run gate AND the replay overlay.
+ * Must be rendered inside IntroReplayProvider.
+ */
+function IntroLayer() {
+  const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
+
   const [splashDone, setSplashDone] = useState(() =>
     sessionStorage.getItem("oh_splash_shown") === "true"
   );
@@ -56,35 +63,48 @@ function App() {
     sessionStorage.setItem("oh_splash_shown", "true");
     setSplashDone(true);
   };
-
   const handleOnboardingComplete = () => {
     sessionStorage.setItem("oh_onboarding_shown", "true");
     setOnboardingDone(true);
   };
 
-  // Onboarding only shows after splash, only on first session
-  const showOnboarding = splashDone && !onboardingDone;
+  // Replay takes priority over the first-run gate
+  if (_replayPhase === "splash") {
+    return <OHSplash onComplete={_onSplashComplete} />;
+  }
+  if (_replayPhase === "onboarding") {
+    return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
+  }
 
+  // Normal first-run flow
+  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} />;
+  if (!onboardingDone) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+
+  return null;
+}
+
+function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <OfflineBanner />
-        <TooltipProvider>
-          <Toaster
-            theme="dark"
-            toastOptions={{
-              style: {
-                background: '#18181E',
-                border: '1px solid rgba(245, 166, 35, 0.3)',
-                color: '#E8E6E0',
-                fontFamily: 'DM Sans, sans-serif',
-              },
-            }}
-          />
-          {!splashDone && <OHSplash onComplete={handleSplashComplete} />}
-          {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
-          <Router />
-        </TooltipProvider>
+        <IntroReplayProvider>
+          <OfflineBanner />
+          <TooltipProvider>
+            <Toaster
+              theme="dark"
+              toastOptions={{
+                style: {
+                  background: '#18181E',
+                  border: '1px solid rgba(245, 166, 35, 0.3)',
+                  color: '#E8E6E0',
+                  fontFamily: 'DM Sans, sans-serif',
+                },
+              }}
+            />
+            <IntroLayer />
+            <Router />
+          </TooltipProvider>
+        </IntroReplayProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

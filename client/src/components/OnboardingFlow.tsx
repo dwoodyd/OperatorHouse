@@ -13,6 +13,8 @@ const OH_SYMBOL =
 
 interface OnboardingFlowProps {
   onComplete: () => void;
+  /** When true, skips the server-side onboarding.complete mutation (used for replay) */
+  isReplay?: boolean;
 }
 
 /* ── Abstract SVG visuals ───────────────────────────────────────────────────── */
@@ -142,7 +144,7 @@ const AUTO_FADE_MS = 700;
 const AUTO_ADVANCE_MS = 9000;
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
-export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
 
   // `displayCard` = what is currently rendered in the DOM (never changes mid-animation)
@@ -229,7 +231,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const finish = () => {
     if (exiting) return;
     setExiting(true);
-    completeOnboarding.mutate();
+    if (!isReplay) completeOnboarding.mutate();
     setTimeout(() => {
       sessionStorage.setItem("oh_onboarding_shown", "true");
       onComplete();

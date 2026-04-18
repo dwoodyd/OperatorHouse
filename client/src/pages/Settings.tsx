@@ -4,7 +4,8 @@ import AppLayout from "@/components/AppLayout";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle } from "lucide-react";
+import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle } from "lucide-react";
+import { useIntroReplay } from "@/contexts/IntroReplayContext";
 
 const APP_VERSION = "1.0.0";
 const BUILD_DATE = "April 2026";
@@ -131,6 +132,47 @@ function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Replay Intro Button ──────────────────────────────────────────────────────
+function ReplayIntroButton() {
+  const { replayIntro } = useIntroReplay();
+  return (
+    <button
+      onClick={() => {
+        replayIntro();
+      }}
+      style={{
+        marginTop: "14px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "9px 16px",
+        background: "rgba(245,166,35,0.06)",
+        border: "1px solid rgba(245,166,35,0.22)",
+        borderRadius: "6px",
+        color: "rgba(245,166,35,0.85)",
+        fontSize: "12px",
+        fontFamily: "DM Sans, sans-serif",
+        fontWeight: 500,
+        cursor: "pointer",
+        transition: "background 180ms ease, border-color 180ms ease",
+        width: "100%",
+        justifyContent: "center",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.12)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.4)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.06)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.22)";
+      }}
+    >
+      <PlayCircle size={13} />
+      Replay Intro
+    </button>
   );
 }
 
@@ -281,6 +323,8 @@ export default function Settings() {
               Terms of Service
             </a>
           </div>
+          {/* Replay Intro */}
+          <ReplayIntroButton />
         </div>
 
         {/* Danger Zone — Delete Account */}
