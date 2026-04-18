@@ -164,3 +164,11 @@
 - [x] Register service worker (sw.js): cache-first static, network-first API, offline fallback (QA v2 MEDIUM)
 - [x] Analytics scripts: single Umami tracker confirmed, no redundant scripts (QA v2 MEDIUM)
 - [x] Add aria-label to all icon-only buttons: hamburger, close drawer, collapse/expand, notifications (QA v2 HIGH)
+
+## Onboarding Upgrades (Cinematic / Conversion-Optimized)
+- [x] Phase 1: Extend OHSplash with time-of-day welcome moment (greeting + OH lockup + ambient sweep, 5.4s total arc)
+- [x] Phase 2: OnboardingFlow component — 3-card cinematic walkthrough (door/pipeline/command visuals, skip + Enter the House CTA, sessionStorage gated)
+- [x] Phase 2: Wire OnboardingFlow into App.tsx after splash, first-login only (oh_onboarding_shown flag)
+- [x] Phase 3: FirstMission component — guided first action replacing empty Dashboard state (add first client, gold flash, "The House is now active")
+- [x] Phase 3: Wire FirstMission into Dashboard.tsx with zero-data detection (no leads, no deals, no clients)
+- [x] Phase 4: Rewrite Pricing.tsx as "Claim Your Seat" — identity/aspiration framing, outcome promises, no feature table, two plan cards, Stripe checkout wired

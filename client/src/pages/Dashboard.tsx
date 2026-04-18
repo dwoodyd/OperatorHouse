@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import FirstMission from "@/components/FirstMission";
 import {
   TrendingUp, Clock, ArrowRight, Zap, Target, Brain,
   ChevronRight, AlertTriangle, Sparkles, RefreshCw,
@@ -227,9 +228,19 @@ function NextBestAction() {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [missionDone, setMissionDone] = useState(false);
   const { user } = useAuth();
   const { data: metrics, isLoading: metricsLoading } = trpc.dashboard.metrics.useQuery();
   const { data: pipelineDeals } = trpc.pipeline.list.useQuery();
+  const { data: clients } = trpc.clients.list.useQuery();
+
+  // Show First Mission when user has no data at all
+  const isNewUser =
+    !missionDone &&
+    !metricsLoading &&
+    (metrics?.totalLeads ?? 0) === 0 &&
+    (metrics?.activeDeals ?? 0) === 0 &&
+    (clients?.length ?? 0) === 0;
 
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -252,6 +263,11 @@ export default function Dashboard() {
       subtitle={`${greeting()}, ${user?.name?.split(' ')[0] ?? 'Operator'} — ${currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
     >
       <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
+        {isNewUser ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <FirstMission onComplete={() => setMissionDone(true)} />
+          </div>
+        ) : (<>
 
         {/* Hero Banner */}
         <div
@@ -431,6 +447,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+      </>)}
       </div>
     </AppLayout>
   );

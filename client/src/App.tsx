@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OHSplash from "./components/OHSplash";
+import OnboardingFlow from "./components/OnboardingFlow";
 import OfflineBanner from "./components/OfflineBanner";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
@@ -20,8 +21,8 @@ import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Pricing from "./pages/Pricing";
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -44,15 +45,25 @@ function Router() {
 }
 
 function App() {
-  // Show splash only on first load per session
-  const [splashDone, setSplashDone] = useState(() => {
-    return sessionStorage.getItem("oh_splash_shown") === "true";
-  });
+  const [splashDone, setSplashDone] = useState(() =>
+    sessionStorage.getItem("oh_splash_shown") === "true"
+  );
+  const [onboardingDone, setOnboardingDone] = useState(() =>
+    sessionStorage.getItem("oh_onboarding_shown") === "true"
+  );
 
   const handleSplashComplete = () => {
     sessionStorage.setItem("oh_splash_shown", "true");
     setSplashDone(true);
   };
+
+  const handleOnboardingComplete = () => {
+    sessionStorage.setItem("oh_onboarding_shown", "true");
+    setOnboardingDone(true);
+  };
+
+  // Onboarding only shows after splash, only on first session
+  const showOnboarding = splashDone && !onboardingDone;
 
   return (
     <ErrorBoundary>
@@ -71,6 +82,7 @@ function App() {
             }}
           />
           {!splashDone && <OHSplash onComplete={handleSplashComplete} />}
+          {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
           <Router />
         </TooltipProvider>
       </ThemeProvider>
