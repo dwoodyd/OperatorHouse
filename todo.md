@@ -185,3 +185,8 @@
 - [x] OnboardingFlow: two-phase exit/enter (no flash), slower auto fades, smooth final exit
 - [x] Progress label (1 / 3) above dots
 - [x] Auto-advance after 8s idle, pauses on hover/touch
+
+## Fix Batch — SW + Onboarding Last Card
+- [x] Disable SW registration in dev/preview domains to stop stale chunk errors
+- [x] Slow last card enter animation significantly (longer dwell, less info rush)
+- [x] Disable auto-advance on card 3 (last card should stay until user acts)

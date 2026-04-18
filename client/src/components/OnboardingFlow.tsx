@@ -1,7 +1,7 @@
 /* =============================================================================
    Operator House — Cinematic Onboarding Walkthrough
-   3 fullscreen cards. Two-phase slide animation (exit → enter) eliminates flash.
-   User-controlled transitions: 320ms. Auto/finish fades: 600ms+.
+   3 fullscreen cards. Two-phase animation: exit completes before content swaps.
+   Last card (card 3) has no auto-advance and a slower enter animation.
    Gated by sessionStorage flag 'oh_onboarding_shown' — first login only.
    ============================================================================= */
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -132,21 +132,28 @@ const CARDS = [
 
 /* ── Timing constants ───────────────────────────────────────────────────────── */
 // User-triggered slide: fast and responsive
-const USER_EXIT_MS = 260;
-const USER_ENTER_MS = 320;
+const USER_EXIT_MS = 280;
+const USER_ENTER_MS = 380;
+// Last card enters slower — more to absorb
+const LAST_CARD_ENTER_MS = 700;
 // Auto/finish fade: slow and cinematic
 const AUTO_FADE_MS = 700;
+// Auto-advance idle time (only on cards 0 and 1 — card 2 never auto-advances)
+const AUTO_ADVANCE_MS = 9000;
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
 
-  // `card` = what is currently rendered in the DOM
+  // `displayCard` = what is currently rendered in the DOM (never changes mid-animation)
   // `phase` = "idle" | "exiting" | "entering"
   // `slideDir` = which direction the exit/enter moves
-  const [card, setCard] = useState(0);
+  const [displayCard, setDisplayCard] = useState(0);
   const [phase, setPhase] = useState<"idle" | "exiting" | "entering">("idle");
   const [slideDir, setSlideDir] = useState<"left" | "right">("right");
+
+  // Track the "logical" current card separately so nav buttons update immediately
+  const logicalCard = useRef(0);
 
   // Overall overlay visibility
   const [visible, setVisible] = useState(false);
@@ -165,45 +172,59 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, []);
 
   // Two-phase transition: exiting → (swap content) → entering
+  // Uses a local `from` snapshot so stale closure never causes wrong card
   const goTo = useCallback((next: number, dir: "left" | "right") => {
-    if (transitioning.current || next === card) return;
+    if (transitioning.current) return;
+    if (next === logicalCard.current) return;
+    if (next < 0 || next >= CARDS.length) return;
+
     transitioning.current = true;
+    logicalCard.current = next;
+
     setSlideDir(dir);
     setPhase("exiting");
 
-    // After exit completes, swap content and start enter
+    const isLastCard = next === CARDS.length - 1;
+    const enterMs = isLastCard ? LAST_CARD_ENTER_MS : USER_ENTER_MS;
+
+    // Phase 1: exit animation plays
     setTimeout(() => {
-      setCard(next);
+      // Swap content — invisible at this point (opacity:0 from exit anim)
+      setDisplayCard(next);
       setPhase("entering");
-      // After enter completes, return to idle
+
+      // Phase 2: enter animation plays
       setTimeout(() => {
         setPhase("idle");
         transitioning.current = false;
-      }, USER_ENTER_MS);
+      }, enterMs);
     }, USER_EXIT_MS);
-  }, [card]);
+  }, []);
 
   const next = () => {
-    if (card < CARDS.length - 1) goTo(card + 1, "right");
+    const cur = logicalCard.current;
+    if (cur < CARDS.length - 1) goTo(cur + 1, "right");
   };
   const prev = () => {
-    if (card > 0) goTo(card - 1, "left");
+    const cur = logicalCard.current;
+    if (cur > 0) goTo(cur - 1, "left");
   };
 
-  // Auto-advance after 8s idle; pauses on hover
+  // Auto-advance after idle — only on cards 0 and 1, never on last card
   const scheduleAutoAdvance = useCallback(() => {
     if (autoTimer.current) clearTimeout(autoTimer.current);
+    if (logicalCard.current >= CARDS.length - 1) return; // no auto-advance on last card
     autoTimer.current = setTimeout(() => {
-      if (!paused.current && !transitioning.current && card < CARDS.length - 1) {
-        goTo(card + 1, "right");
+      if (!paused.current && !transitioning.current && logicalCard.current < CARDS.length - 1) {
+        goTo(logicalCard.current + 1, "right");
       }
-    }, 8000);
-  }, [card, goTo]);
+    }, AUTO_ADVANCE_MS);
+  }, [goTo]);
 
   useEffect(() => {
     scheduleAutoAdvance();
     return () => { if (autoTimer.current) clearTimeout(autoTimer.current); };
-  }, [card, scheduleAutoAdvance]);
+  }, [displayCard, scheduleAutoAdvance]);
 
   const finish = () => {
     if (exiting) return;
@@ -215,32 +236,37 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     }, AUTO_FADE_MS + 80);
   };
 
-  const c = CARDS[card];
+  const c = CARDS[displayCard];
   const Visual = c.visual;
+  const isLastCard = displayCard === CARDS.length - 1;
+  const enterMs = isLastCard ? LAST_CARD_ENTER_MS : USER_ENTER_MS;
 
-  // Compute slide transform/opacity based on phase + direction
-
-  // CSS keyframe animations handle the enter/exit — no extra state needed.
+  // Use displayCard for dot/label rendering so they stay in sync with visible content
+  const shownCard = displayCard;
 
   return (
     <>
       {/* Inject keyframes once */}
       <style>{`
         @keyframes oh-slide-in-right {
-          from { opacity: 0; transform: translateX(48px); }
+          from { opacity: 0; transform: translateX(52px); }
           to   { opacity: 1; transform: translateX(0); }
         }
         @keyframes oh-slide-in-left {
-          from { opacity: 0; transform: translateX(-48px); }
+          from { opacity: 0; transform: translateX(-52px); }
           to   { opacity: 1; transform: translateX(0); }
         }
         @keyframes oh-slide-out-left {
           from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(-48px); }
+          to   { opacity: 0; transform: translateX(-52px); }
         }
         @keyframes oh-slide-out-right {
           from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(48px); }
+          to   { opacity: 0; transform: translateX(52px); }
+        }
+        @keyframes oh-fade-in-up {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
@@ -256,7 +282,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           pointerEvents: exiting ? "none" : "all",
         }}
         onMouseEnter={() => { paused.current = true; }}
-        onMouseLeave={() => { paused.current = false; scheduleAutoAdvance(); }}
+        onMouseLeave={() => {
+          paused.current = false;
+          scheduleAutoAdvance();
+        }}
       >
         {/* Skip */}
         <button
@@ -285,15 +314,17 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           <img src={OH_SYMBOL} alt="" style={{ width: 32, height: 32, objectFit: "contain" }} draggable={false} />
         </div>
 
-        {/* Animated card content — keyed so it remounts on card change */}
+        {/* Animated card content — keyed so React remounts on card change */}
         <div
-          key={`card-${card}`}
+          key={`card-${displayCard}`}
           style={{
             width: "100%", maxWidth: 480, padding: "0 32px", textAlign: "center",
             animation: phase === "exiting"
               ? `${slideDir === "right" ? "oh-slide-out-left" : "oh-slide-out-right"} ${USER_EXIT_MS}ms ease forwards`
               : phase === "entering"
-              ? `${slideDir === "right" ? "oh-slide-in-right" : "oh-slide-in-left"} ${USER_ENTER_MS}ms cubic-bezier(0.22,1,0.36,1) forwards`
+              ? isLastCard
+                ? `oh-fade-in-up ${enterMs}ms cubic-bezier(0.16,1,0.3,1) forwards`
+                : `${slideDir === "right" ? "oh-slide-in-right" : "oh-slide-in-left"} ${enterMs}ms cubic-bezier(0.22,1,0.36,1) forwards`
               : "none",
           }}
         >
@@ -333,7 +364,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           {/* Prev */}
           <button
             onClick={prev}
-            disabled={card === 0 || transitioning.current}
+            disabled={shownCard === 0}
             aria-label="Previous"
             style={{
               width: 40, height: 40, borderRadius: "50%",
@@ -341,12 +372,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               border: "1px solid rgba(255,255,255,0.08)",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: "rgba(245,240,232,0.4)",
-              cursor: card === 0 ? "default" : "pointer",
-              opacity: card === 0 ? 0.3 : 1,
+              cursor: shownCard === 0 ? "default" : "pointer",
+              opacity: shownCard === 0 ? 0.3 : 1,
               transition: "opacity 200ms ease",
             }}
           >
-            <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />
+            <ArrowLeft size={14} />
           </button>
 
           {/* Progress label + Dots */}
@@ -357,30 +388,31 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               letterSpacing: "0.12em",
               color: "rgba(245,240,232,0.3)",
               userSelect: "none",
-            }}>{card + 1} / {CARDS.length}</span>
-          <div style={{ display: "flex", gap: 8 }}>
-            {CARDS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i, i > card ? "right" : "left")}
-                aria-label={`Go to card ${i + 1}`}
-                style={{
-                  width: i === card ? 20 : 6,
-                  height: 6, borderRadius: 3,
-                  background: i === card ? c.accent : "rgba(245,240,232,0.2)",
-                  border: "none", cursor: "pointer",
-                  transition: "width 350ms ease, background 350ms ease",
-                }}
-              />
-            ))}
-          </div>
+            }}>{shownCard + 1} / {CARDS.length}</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              {CARDS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (i !== logicalCard.current) goTo(i, i > logicalCard.current ? "right" : "left");
+                  }}
+                  aria-label={`Go to card ${i + 1}`}
+                  style={{
+                    width: i === shownCard ? 20 : 6,
+                    height: 6, borderRadius: 3,
+                    background: i === shownCard ? c.accent : "rgba(245,240,232,0.2)",
+                    border: "none", cursor: "pointer",
+                    transition: "width 350ms ease, background 350ms ease",
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Next / Enter */}
-          {card < CARDS.length - 1 ? (
+          {/* Next / Enter the House */}
+          {shownCard < CARDS.length - 1 ? (
             <button
               onClick={next}
-              disabled={transitioning.current}
               aria-label="Next"
               style={{
                 width: 40, height: 40, borderRadius: "50%",

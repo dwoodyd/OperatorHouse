@@ -20,7 +20,8 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      /* Service worker disabled in dev — re-enable only in production builds */
+      if ('serviceWorker' in navigator && location.hostname !== 'localhost' && !location.hostname.includes('.manus.computer')) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
