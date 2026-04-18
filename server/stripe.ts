@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { getDb } from "./db";
+import { getDb, createNotification } from "./db";
 import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
@@ -87,6 +87,13 @@ export async function handleStripeWebhook(rawBody: Buffer, signature: string) {
         })
         .where(eq(users.id, userId));
       console.log(`[Stripe] Subscription activated for user ${userId}`);
+      createNotification({
+        userId,
+        type: 'payment',
+        title: 'Payment received — Operator House activated',
+        body: 'Your subscription is now active. Welcome to the House.',
+        metadata: { customerId, subscriptionId },
+      }).catch(() => {});
       break;
     }
     case "customer.subscription.updated": {

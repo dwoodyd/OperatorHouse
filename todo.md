@@ -190,3 +190,11 @@
 - [x] Disable SW registration in dev/preview domains to stop stale chunk errors
 - [x] Slow last card enter animation significantly (longer dwell, less info rush)
 - [x] Disable auto-advance on card 3 (last card should stay until user acts)
+
+## Notification System
+- [x] Add notifications table to schema and push DB migration
+- [x] Build server-side notification helpers and tRPC procedures
+- [x] Wire event triggers (new client, deal moved, payment, briefing ready)
+- [x] Bell icon with unread badge in AppLayout header
+- [x] Persistent inbox dropdown (mark read, clear all)
+- [x] Toast pop-up on new notification

@@ -1,10 +1,10 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
-  activities, briefings, clients, leads, pipelineDeals,
+  activities, briefings, clients, leads, notifications, pipelineDeals,
   strategies, tasks, userProfiles, users, vaultItems,
   InsertActivity, InsertBriefing, InsertClient, InsertLead,
-  InsertPipelineDeal, InsertStrategy, InsertTask, InsertUser,
+  InsertNotification, InsertPipelineDeal, InsertStrategy, InsertTask, InsertUser,
   InsertUserProfile, InsertVaultItem,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -304,11 +304,60 @@ export async function getAnalyticsData(userId: number) {
   return { dealsByStage, leadsBySource, recentDeals, monthlyData, weeklyActivity };
 }
 
+// ─── Notifications ─────────────────────────────────────────────────────────
+export async function createNotification(
+  data: Omit<InsertNotification, 'id' | 'createdAt'>
+) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notifications).values(data);
+}
+
+export async function getUserNotifications(userId: number, limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
+}
+
+export async function markNotificationRead(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
+}
+
+export async function markAllNotificationsRead(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+}
+
+export async function getUnreadNotificationCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  return Number(result[0]?.count ?? 0);
+}
+
 // ─── Account Deletion ─────────────────────────────────────────────────────────
 export async function deleteAllUserData(userId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   // Delete in dependency order (children before parent user row)
+  await db.delete(notifications).where(eq(notifications.userId, userId));
   await db.delete(activities).where(eq(activities.userId, userId));
   await db.delete(briefings).where(eq(briefings.userId, userId));
   await db.delete(tasks).where(eq(tasks.userId, userId));

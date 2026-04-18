@@ -8,10 +8,11 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Settings, Bell, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info,
+  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
+import NotificationBell from "./NotificationBell";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Command Center",    path: "/dashboard" },
@@ -35,7 +36,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
-  const [bellOpen, setBellOpen] = useState(false);
+  // bellOpen state is now managed inside NotificationBell component
   const { user } = useAuth();
 
   // Cmd+K / Ctrl+K shortcut for Command Line
@@ -503,47 +504,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
             </button>
 
             {/* Notifications bell */}
-            <div style={{ position: "relative" }}>
-              <button
-                className="flex items-center justify-center"
-                aria-label="Notifications"
-                aria-expanded={bellOpen}
-                aria-haspopup="true"
-                onClick={() => setBellOpen(prev => !prev)}
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  background: bellOpen ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${bellOpen ? "var(--border-amber)" : "var(--border-subtle)"}`,
-                  borderRadius: "6px",
-                  color: bellOpen ? "var(--amber)" : "var(--text-secondary)",
-                  transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
-                }}
-              >
-                <Bell size={14} />
-              </button>
-              {bellOpen && (
-                <div
-                  role="dialog"
-                  aria-label="Notifications panel"
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 8px)",
-                    right: 0,
-                    width: "260px",
-                    background: "rgba(14,14,22,0.98)",
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "8px",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                    padding: "12px",
-                    zIndex: 100,
-                  }}
-                >
-                  <div style={{ fontFamily: "Playfair Display, serif", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>Notifications</div>
-                  <div style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", textAlign: "center", padding: "16px 0" }}>No new notifications</div>
-                </div>
-              )}
-            </div>
+            <NotificationBell iconSize={14} />
           </div>
         </header>
 

@@ -5,11 +5,12 @@ import { systemRouter } from "./_core/systemRouter";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
-  createBriefing, createClient, createDeal, createLead, createStrategy, createTask,
+  createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
   deleteVaultItem, getActivities, getAnalyticsData, getClients,
   getDashboardMetrics, getLatestBriefing, getLeads, getPipelineDeals,
-  getStrategies, getTasks, getUserProfile, getVaultItems, logActivity,
+  getStrategies, getTasks, getUserNotifications, getUserProfile, getVaultItems,
+  getUnreadNotificationCount, logActivity, markAllNotificationsRead, markNotificationRead,
   updateClient, updateDeal, updateLead, updateStrategy, updateTask,
   updateVaultItem, upsertUserProfile,
 } from "./db";
@@ -87,6 +88,13 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await createClient({ ...input, userId: ctx.user.id });
         await logActivity({ userId: ctx.user.id, activityType: "client_created", summary: `Added client: ${input.name}` });
+        createNotification({
+          userId: ctx.user.id,
+          type: 'new_client',
+          title: `New client added: ${input.name}`,
+          body: input.company ? `Company: ${input.company}` : undefined,
+          metadata: { clientName: input.name, company: input.company },
+        }).catch(() => {});
         return { success: true };
       }),
     update: protectedProcedure
@@ -233,6 +241,14 @@ export const appRouter = router({
         await updateDeal(id, ctx.user.id, data);
         if (data.stage) {
           await logActivity({ userId: ctx.user.id, activityType: "deal_stage_changed", summary: `Deal moved to ${data.stage}` });
+          const dealTitle = data.title ?? `Deal #${id}`;
+          createNotification({
+            userId: ctx.user.id,
+            type: 'deal_moved',
+            title: `Deal moved to ${data.stage}`,
+            body: dealTitle !== `Deal #${id}` ? dealTitle : undefined,
+            metadata: { dealId: id, stage: data.stage, title: dealTitle },
+          }).catch(() => {});
         }
         return { success: true };
       }),
@@ -411,6 +427,13 @@ export const appRouter = router({
       );
       const parsed = JSON.parse(response.choices[0].message.content as string) as { situation: string; priority: string; ghostNote: string };
       await createBriefing({ userId: ctx.user.id, briefingType: 'login', content: JSON.stringify(parsed), payload: parsed });
+      createNotification({
+        userId: ctx.user.id,
+        type: 'briefing_ready',
+        title: 'Your briefing is ready',
+        body: parsed.priority,
+        metadata: { situation: parsed.situation },
+      }).catch(() => {});
       return parsed;
     }),
     staleDeals: protectedProcedure.query(async ({ ctx }) => {
@@ -524,6 +547,25 @@ ${contextBlock}`;
     subscriptionStatus: protectedProcedure.query(async ({ ctx }) => ({
       status: (ctx.user as { subscriptionStatus?: string }).subscriptionStatus ?? 'inactive',
     })),
+  }),
+
+  notifications: router({
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => getUserNotifications(ctx.user.id, input.limit ?? 30)),
+    unreadCount: protectedProcedure.query(async ({ ctx }) =>
+      getUnreadNotificationCount(ctx.user.id)
+    ),
+    markRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await markNotificationRead(input.id, ctx.user.id);
+        return { success: true };
+      }),
+    markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await markAllNotificationsRead(ctx.user.id);
+      return { success: true };
+    }),
   }),
 });
 

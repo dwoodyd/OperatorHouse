@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
   float,
+  boolean,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -184,3 +185,17 @@ export const userProfiles = mysqlTable("user_profiles", {
 });
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type InsertUserProfile = typeof userProfiles.$inferInsert;
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["new_client", "deal_moved", "payment", "briefing_ready", "system"]).default("system").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body"),
+  isRead: boolean("isRead").default(false).notNull(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
