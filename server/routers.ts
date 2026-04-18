@@ -489,6 +489,22 @@ ${contextBlock}`;
       }),
   }),
 
+  onboarding: router({
+    complete: protectedProcedure.mutation(async ({ ctx }) => {
+      await logActivity({
+        userId: ctx.user.id,
+        activityType: 'onboarding_completed',
+        summary: 'Operator completed onboarding walkthrough',
+      });
+      // Fire-and-forget owner notification
+      notifyOwner({
+        title: 'New Operator Activated',
+        content: `${ctx.user.name ?? 'An operator'} (${ctx.user.email ?? 'unknown'}) completed onboarding and entered the House.`,
+      }).catch(() => {});
+      return { success: true };
+    }),
+  }),
+
   stripe: router({
     createCheckout: protectedProcedure
       .input(z.object({ plan: z.enum(["monthly", "annual"]), origin: z.string().url() }))

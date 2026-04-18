@@ -208,6 +208,25 @@ export default function Pricing() {
           ))}
         </div>
 
+        {/* Social proof */}
+        <div style={{ marginBottom: 36 }}>
+          <p style={{ fontFamily: 'Fira Code, monospace', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(212,168,83,0.4)', textAlign: 'center', marginBottom: 20 }}>From operators in the House</p>
+          {[
+            { quote: 'I walked into a $40K retainer pitch with a full AI briefing. The client asked how I knew so much about their pipeline. I just smiled.', name: 'M.R.', role: 'Strategy Consultant' },
+            { quote: 'Closed three deals in the first two weeks. The Command Line thinks faster than I do — and it never forgets a detail.', name: 'D.K.', role: 'Business Development' },
+            { quote: 'Finally a tool built for how I actually work. Not a CRM. Not a chatbot. An actual operator HQ.', name: 'T.A.', role: 'Independent Advisor' },
+          ].map((t, i) => (
+            <div key={i} style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, marginBottom: 10 }}>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(245,240,232,0.6)', lineHeight: 1.6, marginBottom: 10, fontStyle: 'italic' }}>&#34;{t.quote}&#34;</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#d4a853', flexShrink: 0 }} />
+                <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, color: 'rgba(212,168,83,0.7)' }}>{t.name}</span>
+                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(245,240,232,0.25)' }}>· {t.role}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Plan cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
           {/* Monthly */}

@@ -4,7 +4,8 @@
    Gated by sessionStorage flag 'oh_onboarding_shown' — first login only.
    ============================================================================= */
 import { useState, useEffect, useCallback } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, X } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -148,6 +149,7 @@ const CARDS = [
 ];
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+  const completeOnboarding = trpc.onboarding.complete.useMutation();
   const [card, setCard] = useState(0);
   const [animDir, setAnimDir] = useState<"in" | "out-left" | "out-right">("in");
   const [visible, setVisible] = useState(false);
@@ -177,6 +179,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const finish = () => {
     setExiting(true);
+    completeOnboarding.mutate();
     setTimeout(() => {
       sessionStorage.setItem("oh_onboarding_shown", "true");
       onComplete();

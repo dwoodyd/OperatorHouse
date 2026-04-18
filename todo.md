@@ -172,3 +172,11 @@
 - [x] Phase 3: FirstMission component — guided first action replacing empty Dashboard state (add first client, gold flash, "The House is now active")
 - [x] Phase 3: Wire FirstMission into Dashboard.tsx with zero-data detection (no leads, no deals, no clients)
 - [x] Phase 4: Rewrite Pricing.tsx as "Claim Your Seat" — identity/aspiration framing, outcome promises, no feature table, two plan cards, Stripe checkout wired
+
+## Follow-Up Batch (6 items)
+- [x] Onboarding email trigger: notifyOwner fires on onboarding.complete (name + email, fire-and-forget)
+- [x] Onboarding completion tracking: logActivity 'onboarding_completed' row on Enter the House
+- [x] OnboardingFlow wired to trpc.onboarding.complete.useMutation on finish()
+- [x] Pricing social proof: 3 operator testimonials (M.R., D.K., T.A.) above plan cards
+- [x] Social proof styled: italic quote, gold dot + monospace name, muted role label
+- [x] Zero TS errors confirmed after all 6 changes
