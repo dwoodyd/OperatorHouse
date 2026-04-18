@@ -39,7 +39,14 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx?v=${nanoid()}"`
       );
       const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      // Inject sync fallback globals AFTER transformIndexHtml so the manus-runtime
+      // script tag exists. This prevents $RefreshSig$ is not a function errors
+      // caused by module-scope calls running before the async preamble resolves.
+      const safePage = page.replace(
+        `<script id="manus-runtime">`,
+        `<script>window.$RefreshSig$=window.$RefreshSig$||(()=>(t)=>t);window.$RefreshReg$=window.$RefreshReg$||(()=>{});</script>\n    <script id="manus-runtime">`
+      );
+      res.status(200).set({ "Content-Type": "text/html" }).end(safePage);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
