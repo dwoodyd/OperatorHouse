@@ -183,3 +183,5 @@
 
 ## Animation Fix
 - [x] OnboardingFlow: two-phase exit/enter (no flash), slower auto fades, smooth final exit
+- [x] Progress label (1 / 3) above dots
+- [x] Auto-advance after 8s idle, pauses on hover/touch

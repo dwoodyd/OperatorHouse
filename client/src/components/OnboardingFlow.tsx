@@ -154,6 +154,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   // Prevent double-clicks during transition
   const transitioning = useRef(false);
+  // Auto-advance: pause when user hovers or interacts
+  const paused = useRef(false);
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fade in on mount
   useEffect(() => {
@@ -186,6 +189,21 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const prev = () => {
     if (card > 0) goTo(card - 1, "left");
   };
+
+  // Auto-advance after 8s idle; pauses on hover
+  const scheduleAutoAdvance = useCallback(() => {
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    autoTimer.current = setTimeout(() => {
+      if (!paused.current && !transitioning.current && card < CARDS.length - 1) {
+        goTo(card + 1, "right");
+      }
+    }, 8000);
+  }, [card, goTo]);
+
+  useEffect(() => {
+    scheduleAutoAdvance();
+    return () => { if (autoTimer.current) clearTimeout(autoTimer.current); };
+  }, [card, scheduleAutoAdvance]);
 
   const finish = () => {
     if (exiting) return;
@@ -237,6 +255,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             : "opacity 500ms ease",
           pointerEvents: exiting ? "none" : "all",
         }}
+        onMouseEnter={() => { paused.current = true; }}
+        onMouseLeave={() => { paused.current = false; scheduleAutoAdvance(); }}
       >
         {/* Skip */}
         <button
@@ -329,7 +349,15 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />
           </button>
 
-          {/* Dots */}
+          {/* Progress label + Dots */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <span style={{
+              fontFamily: "Fira Code, monospace",
+              fontSize: 10,
+              letterSpacing: "0.12em",
+              color: "rgba(245,240,232,0.3)",
+              userSelect: "none",
+            }}>{card + 1} / {CARDS.length}</span>
           <div style={{ display: "flex", gap: 8 }}>
             {CARDS.map((_, i) => (
               <button
@@ -345,6 +373,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 }}
               />
             ))}
+          </div>
           </div>
 
           {/* Next / Enter */}
