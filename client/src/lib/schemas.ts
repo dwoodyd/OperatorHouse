@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Lead Intelligence
 export const leadInputSchema = z.object({
-  input: z.string().min(3, "Input must be at least 3 characters").max(2000, "Input too long"),
+  input: z.string().min(1, "Please enter a URL, email, or description").max(2000, "Input too long"),
 });
 
 // Pipeline

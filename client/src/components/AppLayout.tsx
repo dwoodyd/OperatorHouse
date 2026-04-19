@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle,
+  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
@@ -60,7 +60,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
   // bellOpen state is now managed inside NotificationBell component
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Cmd+K / Ctrl+K shortcut for Command Line
   const handleKeyDown = useCallback((e: KeyboardEvent) => {

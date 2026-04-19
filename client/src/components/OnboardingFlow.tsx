@@ -44,7 +44,7 @@ const GLOBAL_CSS = `
     pointer-events: none; overflow-y: auto; z-index: 1;
   }
   .oh-slide.active {
-    opacity: 1; transform: translateX(0) scale(1); pointer-events: auto;
+    opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; z-index: 2;
   }
   .oh-slide.exit-left {
     opacity: 0; transform: translateX(-48px) scale(0.97);
@@ -425,7 +425,6 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const goTo = useCallback((n: number) => {
     setSlide(n);
     try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {}
-    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   useEffect(() => {

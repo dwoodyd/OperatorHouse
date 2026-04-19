@@ -205,3 +205,9 @@
 - [x] OnboardingFlow: isReplay prop skips server-side onboarding.complete mutation during replay
 - [x] Settings page: Replay Intro button in About section (amber, full-width, PlayCircle icon)
 - [x] AppLayout sidebar: Replay Intro button below Settings link (hidden when collapsed)
+
+## Bug Fixes (recorded session 2026-04-19)
+- [x] Onboarding CTA buttons unresponsive after slide 1 (goTo not firing)
+- [x] Onboarding pagination dots unresponsive
+- [x] Lead analyzer: validation error on first attempt + silent failure on second
+- [x] Missing sign-out button in sidebar/profile

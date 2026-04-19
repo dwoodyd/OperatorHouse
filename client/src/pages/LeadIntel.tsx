@@ -129,7 +129,9 @@ export default function LeadIntel() {
             />
             <button
               onClick={() => {
-                const result = leadInputSchema.safeParse({ input: input.trim() });
+                const trimmed = input.trim();
+                if (!trimmed) return toast.error("Please enter a URL, email, or description");
+                const result = leadInputSchema.safeParse({ input: trimmed });
                 if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
                 analyzeLead.mutate(result.data);
               }}
