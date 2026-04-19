@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { useState, useEffect } from "react";
@@ -50,6 +51,65 @@ function Router() {
  * Handles both the first-run gate AND the replay overlay.
  * Must be rendered inside IntroReplayProvider.
  */
+
+
+// ── PWA post-install toast + push subscription ────────────────────────────
+function usePWAFeatures() {
+  const { user } = useAuth();
+
+  // 1. Post-install standalone welcome toast
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || (window.navigator as any).standalone === true;
+    if (!isStandalone) return;
+    const key = 'oh_pwa_welcomed';
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    setTimeout(() => toast("You're in the House.", {
+      description: "Tap the icon anytime to return.",
+      duration: 5000,
+    }), 1200);
+  }, []);
+
+  // 2. Auto-subscribe to push notifications once user is logged in
+  useEffect(() => {
+    if (!user) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (localStorage.getItem('oh_push_subscribed')) return;
+
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        // Fetch VAPID public key
+        const res = await fetch('/api/trpc/push.vapidKey?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D', { credentials: 'include' });
+        const json = await res.json();
+        const publicKey = json?.[0]?.result?.data?.json?.publicKey;
+        if (!publicKey) return;
+
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) { localStorage.setItem('oh_push_subscribed', '1'); return; }
+
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: publicKey,
+        });
+        const { endpoint, keys } = sub.toJSON() as any;
+        await fetch('/api/trpc/push.subscribe', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ "0": { json: { endpoint, p256dh: keys.p256dh, auth: keys.auth } } }),
+        });
+        localStorage.setItem('oh_push_subscribed', '1');
+      } catch (e) {
+        console.warn('[PWA] push subscription failed', e);
+      }
+    })();
+  }, [user]);
+}
 
 // ── PWA Install Banner ────────────────────────────────────────────────────────
 function PWAInstallBanner() {
@@ -148,6 +208,7 @@ function IntroLayer() {
 }
 
 function App() {
+  usePWAFeatures();
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">

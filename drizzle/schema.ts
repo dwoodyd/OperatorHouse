@@ -207,3 +207,12 @@ export const stripeEvents = mysqlTable("stripe_events", {
 });
 export type StripeEvent = typeof stripeEvents.$inferSelect;
 export type InsertStripeEvent = typeof stripeEvents.$inferInsert;
+
+export const pushSubscriptions = mysqlTable('push_subscriptions', {
+  id: int('id').primaryKey().autoincrement(),
+  userId: int('user_id').notNull(),
+  endpoint: text('endpoint').notNull(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

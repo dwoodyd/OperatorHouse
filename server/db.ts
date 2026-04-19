@@ -2,7 +2,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   activities, briefings, clients, leads, notifications, pipelineDeals,
-  strategies, tasks, userProfiles, users, vaultItems,
+  pushSubscriptions, strategies, tasks, userProfiles, users, vaultItems,
   InsertActivity, InsertBriefing, InsertClient, InsertLead,
   InsertNotification, InsertPipelineDeal, InsertStrategy, InsertTask, InsertUser,
   InsertUserProfile, InsertVaultItem,
@@ -368,4 +368,23 @@ export async function deleteAllUserData(userId: number): Promise<void> {
   await db.delete(clients).where(eq(clients.userId, userId));
   await db.delete(userProfiles).where(eq(userProfiles.userId, userId));
   await db.delete(users).where(eq(users.id, userId));
+}
+
+// ── Push Subscription helpers ─────────────────────────────────────────────
+export async function savePushSubscription(userId: number, sub: { endpoint: string; p256dh: string; auth: string }) {
+  const db = await getDb(); if (!db) return;
+  await db.insert(pushSubscriptions)
+    .values({ userId, endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth })
+    .onDuplicateKeyUpdate({ set: { p256dh: sub.p256dh, auth: sub.auth } });
+}
+
+export async function deletePushSubscription(userId: number, endpoint: string) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(pushSubscriptions)
+    .where(and(eq(pushSubscriptions.userId, userId), eq(pushSubscriptions.endpoint, endpoint)));
+}
+
+export async function getPushSubscriptionsForUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
 }

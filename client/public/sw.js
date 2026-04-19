@@ -59,3 +59,59 @@ self.addEventListener("fetch", (event) => {
     fetch(request).catch(() => caches.match(request) || caches.match("/offline.html") || caches.match("/"))
   );
 });
+
+// ── Push Notifications ────────────────────────────────────────────────────
+self.addEventListener('push', (event) => {
+  let data = { title: 'Operator House', body: 'You have a new update.', url: '/dashboard' };
+  try { data = { ...data, ...event.data.json() }; } catch {}
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-favicon-64_869fa057.png',
+      badge: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-favicon-64_869fa057.png',
+      data: { url: data.url },
+      vibrate: [100, 50, 100],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/dashboard';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
+      const existing = cs.find(c => c.url.includes(url));
+      if (existing) return existing.focus();
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ── Background Sync ───────────────────────────────────────────────────────
+const SYNC_QUEUE_KEY = 'oh_sync_queue';
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'oh-mutations') {
+    event.waitUntil(replayQueue());
+  }
+});
+
+async function replayQueue() {
+  const cache = await caches.open(CACHE_NAME);
+  const queued = await cache.match('/__sync_queue__');
+  if (!queued) return;
+  let items = [];
+  try { items = await queued.json(); } catch { return; }
+  const remaining = [];
+  for (const item of items) {
+    try {
+      const res = await fetch(item.url, { method: item.method, headers: item.headers, body: item.body, credentials: 'include' });
+      if (!res.ok) remaining.push(item);
+    } catch { remaining.push(item); }
+  }
+  if (remaining.length === 0) {
+    await cache.delete('/__sync_queue__');
+  } else {
+    await cache.put('/__sync_queue__', new Response(JSON.stringify(remaining), { headers: { 'Content-Type': 'application/json' } }));
+  }
+}
