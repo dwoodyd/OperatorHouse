@@ -40,9 +40,15 @@ async function startServer() {
       const result = await handleStripeWebhook(req.body as Buffer, sig);
       res.json(result);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Webhook error";
-      console.error("[Stripe Webhook]", msg);
-      res.status(400).json({ error: msg });
+      const isStripeSigError =
+        err !== null &&
+        typeof err === "object" &&
+        (err as { type?: string }).type === "StripeSignatureVerificationError";
+      const clientMsg = isStripeSigError
+        ? (err as Error).message
+        : "Webhook processing failed";
+      console.error("[Stripe Webhook]", err instanceof Error ? err.message : err);
+      res.status(400).json({ error: clientMsg });
     }
   });
 

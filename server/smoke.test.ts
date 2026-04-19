@@ -63,7 +63,7 @@ function makeUser(overrides?: Partial<User>): User {
   };
 }
 
-function makeCtx(user: AuthenticatedUser | null = null): TrpcContext {
+function makeCtx(user: TrpcContext["user"] = null): TrpcContext {
   return {
     user,
     req: { protocol: "https", headers: {} } as TrpcContext["req"],

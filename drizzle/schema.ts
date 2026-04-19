@@ -199,3 +199,11 @@ export const notifications = mysqlTable("notifications", {
 });
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+// ─── Stripe Event Ledger (idempotency) ────────────────────────────────────────
+export const stripeEvents = mysqlTable("stripe_events", {
+  eventId: varchar("eventId", { length: 255 }).primaryKey(),
+  eventType: varchar("eventType", { length: 100 }).notNull(),
+  processedAt: timestamp("processedAt").defaultNow().notNull(),
+});
+export type StripeEvent = typeof stripeEvents.$inferSelect;
+export type InsertStripeEvent = typeof stripeEvents.$inferInsert;
