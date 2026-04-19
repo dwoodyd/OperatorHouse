@@ -38,7 +38,19 @@ export default function LeadIntel() {
       toast.success("Operator Audit complete");
       setInput("");
     },
-    onError: (err) => toast.error(err.message || "Analysis failed"),
+    onError: (err) => {
+      const msg = err.message || "Analysis failed";
+      toast.error(msg, {
+        action: {
+          label: "Retry",
+          onClick: () => {
+            const trimmed = input.trim();
+            if (trimmed) analyzeLead.mutate({ input: trimmed });
+          },
+        },
+        duration: 6000,
+      });
+    },
   });
 
   const deleteLead = trpc.leads.delete.useMutation({

@@ -59,6 +59,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   // bellOpen state is now managed inside NotificationBell component
   const { user, logout } = useAuth();
 

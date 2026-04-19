@@ -251,6 +251,11 @@ const GLOBAL_CSS = `
     .oh-vault-grid { grid-template-columns: repeat(2,1fr) !important; }
     .oh-pipeline { grid-template-columns: repeat(3,1fr) !important; }
     .oh-hero { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+    /* Mobile: disable 3D perspective door — use fade instead */
+    .oh-door-panel { transform: none !important; transition: opacity 800ms ease !important; }
+    .oh-door-wrap:hover .oh-door-panel { transform: none !important; }
+    .oh-door-wrap.opening .oh-door-panel { transform: none !important; opacity: 0 !important; }
+    .oh-door-wrap.walking { transform: scale(6) translateY(-6%) !important; }
   }
 `;
 
@@ -459,7 +464,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     const door = doorWrapRef.current;
     const s1 = slide1Ref.current;
     const goldout = goldoutRef.current;
-    if (!door || !s1 || !goldout) { goTo(2); setEntering(false); return; }
+    const isMobileDevice = window.innerWidth < 480;
+    if (!door || !s1 || !goldout || isMobileDevice) {
+      // Mobile: simple fade transition instead of 3D swing
+      if (goldout) { goldout.classList.add("show"); }
+      setTimeout(() => { goTo(2); if (goldout) { goldout.classList.add("fading"); } }, 400);
+      setTimeout(() => { if (goldout) goldout.classList.remove("show", "fading"); setEntering(false); }, 1200);
+      return;
+    }
     door.classList.add("opening");
     setTimeout(() => { door.classList.add("walking"); }, 500);
     setTimeout(() => { goldout.classList.add("show"); }, 1600);
