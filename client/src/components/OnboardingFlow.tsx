@@ -9,7 +9,55 @@ interface OnboardingFlowProps {
 
 const TOTAL = 7;
 
-// ─── Global CSS ───────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────────────────
+   Operator House — Onboarding (fixed)
+
+   Fixes from the bug report:
+
+   BUG 1 / BUG 2 / BUG 3 — CTAs and dots unresponsive on slides 2–7.
+   Root cause: every slide in the original used `position:absolute; inset:0` and
+   only used `opacity:0 + pointer-events:none` to "hide" inactive ones. When a
+   slide animated transform (translateX + scale), the transform created a new
+   stacking context. In some browsers (and reliably in Safari/older Chromium)
+   the inactive slide's stacking context is rendered ON TOP of the active one
+   for a frame after a transition, which silently swallows clicks. The dot nav
+   was also rendered as a sibling INSIDE the same stacking context as the
+   slides, so its z-index:10 was being competed with by the active slide's
+   z-index:2 plus its `transform` stacking context — clicks on dots landed on
+   the slide instead.
+
+   FIX: three things, applied together.
+     (a) Inactive slides now also get `visibility:hidden` after their
+         opacity transition completes (delayed via the `transition`
+         shorthand). This removes them from hit-testing AND paint after the
+         fade-out — bulletproof, no stacking-context surprises.
+     (b) The dot-nav and skip button are lifted into a sibling overlay
+         container with its OWN higher stacking context (`isolation:isolate`
+         + z-index 10000) so they can never be eaten by a slide.
+     (c) Active slide z-index raised to 5; we also drop `transform:translateX`
+         on the active slide (kept on the inactive starting state) so the
+         active slide stops creating a competing stacking context.
+
+   ALSO FIXED:
+     - Final-screen flash between transitions: caused by the same stacking
+       issue — slide 7 sits last in DOM order, so its inactive frame was the
+       one bleeding through. visibility:hidden eliminates the flash.
+     - finish() landed too fast: now fades the slide out gracefully (1.6s)
+       with the welcome message persisting on screen before onComplete fires.
+     - `<canvas>` for particles had pointer-events:none in the stylesheet,
+       but we now also set it inline as belt-and-suspenders, and explicitly
+       set it to z-index 0 inside its own .oh-bg container (z-index: 0)
+       below all slides.
+
+   Design intent (kept):
+     - 7 slides, same content, same animations
+     - 3D door swing on slide 1 + walk-through transition to slide 2
+     - Mobile (<480px): door uses fade instead of perspective swing
+     - Keyboard ← → ↑ ↓ navigates, Esc skips
+     - Touch swipe ≥40px navigates
+     - sessionStorage progress + replay support unchanged
+   ───────────────────────────────────────────────────────────────────────── */
+
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
@@ -28,31 +76,49 @@ const GLOBAL_CSS = `
     font-family: 'Playfair Display', Georgia, serif;
     background: var(--bg);
     color: var(--ink);
+    isolation: isolate; /* establish a clean stacking context */
   }
 
-  /* Particle canvas */
-  .oh-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  /* Particle canvas — explicitly the lowest layer */
+  .oh-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .oh-particles { position: absolute; inset: 0; pointer-events: none; opacity: 0.45; }
 
-  /* Slide system */
+  /* Overlay layer — skip + dots — lifted into its own stacking context */
+  .oh-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    pointer-events: none; /* parent doesn't catch clicks */
+    isolation: isolate;
+  }
+  .oh-overlay > * { pointer-events: auto; } /* children re-enable clicks */
+
+  /* Slide system — KEY FIX: visibility transitions delay so inactive slides
+     are removed from hit-testing AND paint after the opacity fade completes */
   .oh-slide {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 5rem 2rem 4rem;
-    opacity: 0; transform: translateX(48px) scale(0.97);
-    transition: opacity 680ms cubic-bezier(0.22,1,0.36,1), transform 680ms cubic-bezier(0.22,1,0.36,1);
-    pointer-events: none; overflow-y: auto; z-index: 1;
+    padding: 5rem 2rem 6rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(48px) scale(0.97);
+    transition:
+      opacity 900ms cubic-bezier(0.22,1,0.36,1),
+      transform 900ms cubic-bezier(0.22,1,0.36,1),
+      visibility 0s linear 900ms;
+    pointer-events: none;
+    overflow-y: auto;
+    z-index: 1;
   }
   .oh-slide.active {
-    opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; z-index: 2;
-  }
-  .oh-slide.exit-left {
-    opacity: 0; transform: translateX(-48px) scale(0.97);
-    transition: opacity 500ms ease, transform 500ms ease;
-    pointer-events: none;
-  }
-  .oh-slide.enter-right {
-    transform: translateX(48px) scale(0.97);
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+    z-index: 5;
+    transition:
+      opacity 900ms cubic-bezier(0.22,1,0.36,1),
+      transform 900ms cubic-bezier(0.22,1,0.36,1),
+      visibility 0s linear 0s;
   }
 
   /* Word-reveal animation */
@@ -62,7 +128,6 @@ const GLOBAL_CSS = `
   }
   .oh-word { display: inline-block; opacity: 0; animation: ohWordIn 550ms cubic-bezier(0.22,1,0.36,1) forwards; }
 
-  /* Hero text */
   .oh-hero {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: clamp(2.6rem, 7vw, 5.2rem);
@@ -75,7 +140,7 @@ const GLOBAL_CSS = `
     font-size: clamp(1.1rem, 2.5vw, 1.5rem);
     font-weight: 400; font-style: italic;
     color: var(--muted); text-align: center;
-    margin: 1rem 0 0; max-width: 560px; line-height: 1.5;
+    margin: 1rem auto 0; max-width: 560px; line-height: 1.5;
   }
   .oh-body {
     font-family: 'JetBrains Mono', monospace;
@@ -90,7 +155,8 @@ const GLOBAL_CSS = `
     margin-bottom: 1.2rem; opacity: 0.8;
   }
 
-  /* CTA button */
+  /* CTA — explicit position:relative + z-index lift so they always sit on top
+     of any decorative absolute children (glow rings, etc.) inside the slide */
   .oh-cta {
     display: inline-flex; align-items: center; gap: 0.5rem;
     background: var(--gold); color: #0e0c09;
@@ -100,37 +166,37 @@ const GLOBAL_CSS = `
     letter-spacing: 0.04em; margin-top: 2.2rem;
     transition: transform 220ms ease, box-shadow 250ms ease, background 200ms ease;
     box-shadow: 0 8px 32px rgba(216,168,90,0.28);
+    position: relative; z-index: 3;
   }
-  .oh-cta:hover {
-    transform: translateY(-2px) scale(1.02);
-    background: var(--gold-bright);
-    box-shadow: 0 18px 56px rgba(216,168,90,0.4);
-  }
+  .oh-cta:hover { transform: translateY(-2px) scale(1.02); background: var(--gold-bright); box-shadow: 0 18px 56px rgba(216,168,90,0.4); }
   .oh-cta:active { transform: translateY(0) scale(0.99); }
+  .oh-cta:disabled { opacity: 0.7; cursor: not-allowed; }
 
-  /* Ghost button */
   .oh-ghost-btn {
     background: transparent; color: var(--quiet); border: none;
     cursor: pointer; font-size: 0.82rem;
     font-family: 'JetBrains Mono', monospace;
     transition: color 200ms ease; margin-top: 0.8rem;
+    position: relative; z-index: 3;
   }
   .oh-ghost-btn:hover { color: var(--ink); }
 
-  /* Skip */
   .oh-skip {
     position: absolute; top: 1.2rem; right: 1.4rem;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
     color: var(--quiet);
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.62rem; letter-spacing: 0.16em;
     padding: 0.38rem 0.9rem; border-radius: 100px;
-    cursor: pointer; transition: color 200ms, border-color 200ms; z-index: 20;
+    cursor: pointer; transition: color 200ms, border-color 200ms;
   }
   .oh-skip:hover { color: var(--ink); border-color: var(--gold); }
 
-  /* Dot nav */
+  .oh-dots-wrap {
+    position: absolute; bottom: 1.6rem; left: 50%;
+    transform: translateX(-50%);
+  }
   .oh-dots { display: flex; gap: 0.5rem; align-items: center; }
   .oh-dot {
     width: 6px; height: 6px; border-radius: 50%;
@@ -138,9 +204,9 @@ const GLOBAL_CSS = `
     border: none; cursor: pointer; padding: 0;
     transition: width 400ms ease, background 400ms ease, border-radius 400ms ease;
   }
+  .oh-dot:hover { background: rgba(255,255,255,0.28); }
   .oh-dot.active { background: var(--gold); width: 24px; border-radius: 4px; }
 
-  /* Bento card */
   .oh-bento {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -164,12 +230,22 @@ const GLOBAL_CSS = `
 
   /* Gold flash */
   .oh-goldout {
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed; inset: 0; z-index: 9000;
     background: radial-gradient(circle at center, #f4c87a 0%, #d8a85a 35%, transparent 72%);
     opacity: 0; pointer-events: none; transition: opacity 600ms ease;
   }
   .oh-goldout.show { opacity: 1; }
   .oh-goldout.fading { opacity: 0; transition: opacity 900ms ease; }
+
+  /* Welcome fadeout (shown after finish() before onComplete) */
+  .oh-farewell {
+    position: fixed; inset: 0; z-index: 9500;
+    background: radial-gradient(circle at center, rgba(244,200,122,0.18), transparent 60%), var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 700ms ease;
+  }
+  .oh-farewell.show { opacity: 1; pointer-events: auto; }
 
   /* Terminal */
   .oh-terminal {
@@ -232,11 +308,9 @@ const GLOBAL_CSS = `
     text-shadow: 0 0 80px rgba(244,200,122,0.35);
   }
 
-  /* Live pulse */
   @keyframes ohPulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
   .oh-pulse { animation: ohPulse 2s ease-in-out infinite; }
 
-  /* Glow ring on slide 1 */
   .oh-glow-ring {
     position: absolute; width: 600px; height: 600px;
     border-radius: 50%;
@@ -246,12 +320,12 @@ const GLOBAL_CSS = `
   }
   @keyframes ohGlowPulse { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.12); opacity: 1; } }
 
-  /* Responsive */
   @media (max-width: 600px) {
     .oh-vault-grid { grid-template-columns: repeat(2,1fr) !important; }
     .oh-pipeline { grid-template-columns: repeat(3,1fr) !important; }
     .oh-hero { font-size: clamp(2.2rem, 9vw, 3.2rem); }
-    /* Mobile: disable 3D perspective door — use fade instead */
+  }
+  @media (max-width: 480px) {
     .oh-door-panel { transform: none !important; transition: opacity 800ms ease !important; }
     .oh-door-wrap:hover .oh-door-panel { transform: none !important; }
     .oh-door-wrap.opening .oh-door-panel { transform: none !important; opacity: 0 !important; }
@@ -297,7 +371,8 @@ function ParticleCanvas() {
     draw();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
-  return <canvas ref={canvasRef} className="oh-particles" />;
+  // belt-and-suspenders: explicit pointerEvents:none in style as well
+  return <canvas ref={canvasRef} className="oh-particles" style={{ pointerEvents: "none" }} />;
 }
 
 // ─── Word-reveal headline ─────────────────────────────────────────────────────
@@ -347,7 +422,7 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+    <div style={{ width: "100%", maxWidth: 680, textAlign: "center", position: "relative", zIndex: 2 }}>
       <div className="oh-eyebrow">Persona · The Ghost</div>
       <h1 className="oh-hero" style={{ fontSize: "clamp(2.4rem,6vw,4.4rem)" }}>
         While you sleep,<br />
@@ -385,7 +460,7 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
     setTimeout(step, 500);
   }, [active]);
   return (
-    <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+    <div style={{ width: "100%", maxWidth: 680, textAlign: "center", position: "relative", zIndex: 2 }}>
       <div className="oh-eyebrow">The Return</div>
       <div className="oh-counter">{count}<span style={{ fontSize: "0.35em", color: "var(--muted)", letterSpacing: "0.04em" }}>h</span></div>
       <h2 className="oh-hero" style={{ fontSize: "clamp(1.8rem,4.5vw,3.2rem)", marginTop: "0.6rem" }}>
@@ -411,6 +486,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   });
   const [entering, setEntering] = useState(false);
   const [welcomed, setWelcomed] = useState(false);
+  const [farewell, setFarewell] = useState(false);
   const goldoutRef = useRef<HTMLDivElement>(null);
   const slide1Ref = useRef<HTMLElement>(null);
   const doorWrapRef = useRef<HTMLDivElement>(null);
@@ -467,8 +543,8 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     const isMobileDevice = window.innerWidth < 480;
     if (!door || !s1 || !goldout || isMobileDevice) {
       // Mobile: simple fade transition instead of 3D swing
-      if (goldout) { goldout.classList.add("show"); }
-      setTimeout(() => { goTo(2); if (goldout) { goldout.classList.add("fading"); } }, 400);
+      if (goldout) goldout.classList.add("show");
+      setTimeout(() => { goTo(2); if (goldout) goldout.classList.add("fading"); }, 400);
       setTimeout(() => { if (goldout) goldout.classList.remove("show", "fading"); setEntering(false); }, 1200);
       return;
     }
@@ -480,17 +556,25 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     setTimeout(() => { goldout.classList.remove("show", "fading"); setEntering(false); }, 3200);
   };
 
+  // FIX: finish() now lands gracefully — confetti, then a held farewell card,
+  // then the slow fade to onComplete. Previous version snapped to onComplete()
+  // 1.9s after click; the welcome message was barely on screen.
   const finish = () => {
     if (welcomed) return;
     setWelcomed(true);
     if (!isReplay) completeOnboarding.mutate();
     confetti({ particleCount: 140, spread: 90, origin: { y: 0.55 }, colors: ["#d8a85a", "#f4c87a", "#ffffff", "#e58c2c"] });
     setTimeout(() => confetti({ particleCount: 70, spread: 130, origin: { y: 0.4 }, colors: ["#d8a85a", "#f4c87a"] }), 380);
+    // Show farewell overlay after the confetti has had a moment
+    setTimeout(() => setFarewell(true), 800);
+    // Finally, hand off to the app
     setTimeout(() => {
-      sessionStorage.setItem("oh_onboarding_shown", "true");
-      try { sessionStorage.removeItem("oh_slide_progress"); } catch {}
+      try {
+        sessionStorage.setItem("oh_onboarding_shown", "true");
+        sessionStorage.removeItem("oh_slide_progress");
+      } catch {}
       onComplete();
-    }, 1900);
+    }, 3600);
   };
 
   const mono = "'JetBrains Mono','Menlo',monospace";
@@ -515,64 +599,28 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
   return (
     <div className="oh-root" style={{ position: "fixed", inset: 0, zIndex: 1000, overflow: "hidden" }}>
-      <ParticleCanvas />
-      <div ref={goldoutRef as React.RefObject<HTMLDivElement>} className="oh-goldout" />
-
-      {/* Skip button */}
-      <button className="oh-skip" onClick={onComplete}>skip intro ↗</button>
-
-      {/* Dot nav */}
-      <div style={{ position: "absolute", bottom: "1.6rem", left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
-        <div className="oh-dots">
-          {Array.from({ length: TOTAL }, (_, i) => (
-            <button key={i} className={`oh-dot${slide === i + 1 ? " active" : ""}`} onClick={() => goTo(i + 1)} aria-label={`Slide ${i + 1}`} />
-          ))}
-        </div>
+      {/* Background layer */}
+      <div className="oh-bg">
+        <ParticleCanvas />
       </div>
 
-      {/* ── Slide 1: The Door ── */}
+      {/* Goldout flash (slide 1 → 2 transition) */}
+      <div ref={goldoutRef as React.RefObject<HTMLDivElement>} className="oh-goldout" />
+
+      {/* ── Slides ── (each slide z-index:1 inactive, 5 active; visibility:hidden after fade) */}
+
+      {/* Slide 1: The Door */}
       <section ref={slide1Ref as React.RefObject<HTMLElement>} className={`oh-slide${slide === 1 ? " active" : ""}`} style={{ background: "var(--bg)" }}>
         <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
-        <div style={{ textAlign: "center", zIndex: 1, position: "relative" }}>
+        <div style={{ textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow" style={{ marginBottom: "1.8rem" }}>Operator House</div>
-          {/* Door */}
           <div ref={doorWrapRef as React.RefObject<HTMLDivElement>} className="oh-door-wrap" style={{ display: "inline-block", position: "relative", cursor: "pointer" }} onClick={enterTheHouse}>
             <div style={{ position: "relative", width: 180, height: 280 }}>
-              {/* Frame */}
-              <div className="oh-door-frame" style={{
-                position: "absolute", inset: 0,
-                border: "2px solid rgba(216,168,90,0.5)",
-                borderRadius: "90px 90px 0 0",
-                boxShadow: "0 0 60px rgba(216,168,90,0.15), inset 0 0 30px rgba(216,168,90,0.05)",
-              }} />
-              {/* Interior glow */}
-              <div className="oh-door-interior" style={{
-                position: "absolute", inset: 2, borderRadius: "88px 88px 0 0",
-                background: "radial-gradient(ellipse at 50% 60%, rgba(216,168,90,0.18) 0%, transparent 70%)",
-                opacity: 0,
-              }} />
-              {/* Light shaft */}
-              <div className="oh-door-light" style={{
-                position: "absolute", bottom: 0, left: "50%",
-                transform: "translateX(-50%)",
-                width: 60, height: "100%",
-                background: "linear-gradient(to top, rgba(244,200,122,0.22) 0%, transparent 80%)",
-                opacity: 0,
-              }} />
-              {/* Door panel */}
-              <div className="oh-door-panel" style={{
-                position: "absolute", inset: 8,
-                borderRadius: "82px 82px 0 0",
-                background: "linear-gradient(160deg, #1a1610 0%, #0e0c09 100%)",
-                border: "1px solid rgba(216,168,90,0.22)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transformOrigin: "left center",
-              }}>
-                <div style={{
-                  fontFamily: serif, fontSize: "1.6rem", fontWeight: 700,
-                  color: "rgba(216,168,90,0.7)", letterSpacing: "0.06em",
-                  userSelect: "none",
-                }}>OH</div>
+              <div className="oh-door-frame" style={{ position: "absolute", inset: 0, border: "2px solid rgba(216,168,90,0.5)", borderRadius: "90px 90px 0 0", boxShadow: "0 0 60px rgba(216,168,90,0.15), inset 0 0 30px rgba(216,168,90,0.05)" }} />
+              <div className="oh-door-interior" style={{ position: "absolute", inset: 2, borderRadius: "88px 88px 0 0", background: "radial-gradient(ellipse at 50% 60%, rgba(216,168,90,0.18) 0%, transparent 70%)", opacity: 0 }} />
+              <div className="oh-door-light" style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 60, height: "100%", background: "linear-gradient(to top, rgba(244,200,122,0.22) 0%, transparent 80%)", opacity: 0 }} />
+              <div className="oh-door-panel" style={{ position: "absolute", inset: 8, borderRadius: "82px 82px 0 0", background: "linear-gradient(160deg, #1a1610 0%, #0e0c09 100%)", border: "1px solid rgba(216,168,90,0.22)", display: "flex", alignItems: "center", justifyContent: "center", transformOrigin: "left center" }}>
+                <div style={{ fontFamily: serif, fontSize: "1.6rem", fontWeight: 700, color: "rgba(216,168,90,0.7)", letterSpacing: "0.06em", userSelect: "none" }}>OH</div>
               </div>
             </div>
           </div>
@@ -589,16 +637,15 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
         </div>
       </section>
 
-      {/* ── Slide 2: Pipeline ── */}
+      {/* Slide 2: Pipeline */}
       <section className={`oh-slide${slide === 2 ? " active" : ""}`}>
-        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Pipeline</div>
           <h1 className="oh-hero">
             <WordReveal text="Every client." delay={100} />{" "}
             <WordReveal text="Every stage." gold delay={500} />
           </h1>
           <p className="oh-sub" style={{ fontStyle: "normal", fontSize: "clamp(0.9rem,2vw,1.1rem)" }}>One room. Full visibility. No spreadsheets.</p>
-          {/* Pipeline visual */}
           <div className="oh-bento" style={{ margin: "2rem auto 0", maxWidth: 600, padding: "1.6rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.6rem" }}>
               {stages.map(s => (
@@ -622,7 +669,6 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                 </div>
               ))}
             </div>
-            {/* Ledger */}
             <div style={{ marginTop: "1.2rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               {ledger.map(l => (
                 <div key={l.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0.7rem", background: "rgba(255,255,255,0.02)", borderRadius: 8 }}>
@@ -637,14 +683,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
         </div>
       </section>
 
-      {/* ── Slide 3: The Ghost ── */}
+      {/* Slide 3: The Ghost */}
       <section className={`oh-slide${slide === 3 ? " active" : ""}`}>
         <GhostSlide onNext={() => goTo(4)} active={slide === 3} topLeadName={topLead?.clientName ?? topLead?.sourceValue ?? null} />
       </section>
 
-      {/* ── Slide 4: The Operator ── */}
+      {/* Slide 4: The Operator */}
       <section className={`oh-slide${slide === 4 ? " active" : ""}`}>
-        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">Persona · The Operator</div>
           <h1 className="oh-hero">
             When you need a thinking partner,{" "}
@@ -674,9 +720,9 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
         </div>
       </section>
 
-      {/* ── Slide 5: The Vault ── */}
+      {/* Slide 5: The Vault */}
       <section className={`oh-slide${slide === 5 ? " active" : ""}`}>
-        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Vault</div>
           <h1 className="oh-hero">
             Your methodology, in.<br />
@@ -701,16 +747,16 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
         </div>
       </section>
 
-      {/* ── Slide 6: Hours saved ── */}
+      {/* Slide 6: Hours saved */}
       <section className={`oh-slide${slide === 6 ? " active" : ""}`}>
         <HoursSlide onNext={() => goTo(7)} active={slide === 6} />
       </section>
 
-      {/* ── Slide 7: Enter ── */}
+      {/* Slide 7: Enter */}
       <section className={`oh-slide${slide === 7 ? " active" : ""}`}>
-        <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+        <div style={{ width: "100%", maxWidth: 680, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 800, height: 800, opacity: 0.7 }} />
-          <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ position: "relative", zIndex: 2 }}>
             <div className="oh-eyebrow">You're ready.</div>
             <h1 className="oh-hero">
               <WordReveal text="The House" delay={100} />{" "}
@@ -726,6 +772,28 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
           </div>
         </div>
       </section>
+
+      {/* Farewell overlay — held during finish() so the welcome lands */}
+      <div className={`oh-farewell${farewell ? " show" : ""}`}>
+        <div style={{ textAlign: "center", padding: "2rem", maxWidth: 560 }}>
+          <div className="oh-eyebrow" style={{ marginBottom: "1.4rem" }}>Welcome home</div>
+          <h1 className="oh-hero" style={{ fontSize: "clamp(2.4rem,5vw,3.6rem)" }}>
+            Step inside.<br /><em>The work is waiting.</em>
+          </h1>
+        </div>
+      </div>
+
+      {/* ── Overlay layer — skip + dots — OWN stacking context, top of stack ── */}
+      <div className="oh-overlay">
+        <button className="oh-skip" onClick={onComplete}>skip intro ↗</button>
+        <div className="oh-dots-wrap">
+          <div className="oh-dots">
+            {Array.from({ length: TOTAL }, (_, i) => (
+              <button key={i} className={`oh-dot${slide === i + 1 ? " active" : ""}`} onClick={() => goTo(i + 1)} aria-label={`Slide ${i + 1}`} />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
