@@ -4,7 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle, CreditCard } from "lucide-react";
+import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle, CreditCard, Bell } from "lucide-react";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 
 const APP_VERSION = "1.0.0";
@@ -16,6 +16,75 @@ const TIMEZONES = [
   "Europe/London", "Europe/Paris", "Europe/Berlin",
   "Asia/Tokyo", "Asia/Shanghai", "Asia/Dubai", "Australia/Sydney",
 ];
+
+
+// --- Section Header (shared) ---
+const SectionHeader = ({ icon: Icon, label }: { icon: React.ElementType; label: string }) => (
+  <div className="flex items-center gap-2 mb-4">
+    <Icon size={15} style={{ color: "var(--amber)" }} />
+    <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>{label}</span>
+  </div>
+);
+
+// --- Notification Preferences ---
+const NOTIF_TYPES = [
+  { key: "new_client", label: "New client added" },
+  { key: "deal_moved", label: "Deal stage changed" },
+  { key: "payment", label: "Payment received" },
+  { key: "briefing_ready", label: "Daily briefing ready" },
+] as const;
+type NotifKey = (typeof NOTIF_TYPES)[number]["key"];
+const NOTIF_STORAGE_KEY = "oh_notif_prefs";
+function loadNotifPrefs(): Record<NotifKey, boolean> {
+  try { return JSON.parse(localStorage.getItem(NOTIF_STORAGE_KEY) ?? "{}"); } catch { return {} as Record<NotifKey, boolean>; }
+}
+function NotificationPrefsSection() {
+  const [prefs, setPrefs] = useState<Record<NotifKey, boolean>>(() => {
+    const saved = loadNotifPrefs();
+    const defaults = Object.fromEntries(NOTIF_TYPES.map(t => [t.key, true])) as Record<NotifKey, boolean>;
+    return { ...defaults, ...saved };
+  });
+  const toggle = (key: NotifKey) => {
+    setPrefs(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(next));
+      toast.success(next[key] ? "Notification enabled" : "Notification muted");
+      return next;
+    });
+  };
+  return (
+    <div className="p-6" style={{ background: "var(--card-bg)", border: "1px solid var(--border-subtle)", borderRadius: "8px" }}>
+      <SectionHeader icon={Bell} label="Notification Preferences" />
+      <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "1rem", lineHeight: 1.5 }}>
+        Choose which events trigger a bell notification and toast pop-up.
+      </p>
+      <div className="flex flex-col gap-3">
+        {NOTIF_TYPES.map(({ key, label }) => (
+          <div key={key} className="flex items-center justify-between">
+            <span style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "DM Sans, sans-serif" }}>{label}</span>
+            <button
+              onClick={() => toggle(key)}
+              className="relative flex-shrink-0"
+              style={{
+                width: 40, height: 22, borderRadius: 11,
+                background: prefs[key] ? "var(--amber)" : "var(--border-subtle)",
+                border: "none", cursor: "pointer", transition: "background 200ms",
+              }}
+              aria-label={"Toggle " + label}
+            >
+              <span style={{
+                position: "absolute", top: 3, left: prefs[key] ? 21 : 3,
+                width: 16, height: 16, borderRadius: "50%", background: "white",
+                transition: "left 200ms", display: "block",
+              }} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 // ─── Delete Account Confirmation Modal ────────────────────────────────────────
 function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
@@ -241,14 +310,6 @@ export default function Settings() {
 
   const handleSave = () => upsertProfile.mutate({ companyName, timezone });
 
-  const SectionHeader = ({ icon: Icon, label }: { icon: React.ElementType; label: string }) => (
-    <div className="flex items-center gap-2 mb-4">
-      <Icon size={15} style={{ color: "var(--amber)" }} />
-      <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--amber)", fontFamily: "Fira Code, monospace" }}>
-        {label}
-      </h2>
-    </div>
-  );
 
   return (
     <AppLayout title="Settings" subtitle="Profile, preferences, and account management">
@@ -358,6 +419,10 @@ export default function Settings() {
               Terms of Service
             </a>
           </div>
+          {/* Notification Preferences */}
+          <NotificationPrefsSection />
+          {/* Notification Preferences */}
+          <NotificationPrefsSection />
           {/* Manage Subscription */}
           <ManageSubscriptionButton />
           {/* Replay Intro */}

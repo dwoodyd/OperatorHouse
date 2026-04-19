@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import confetti from "canvas-confetti";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -43,9 +44,10 @@ const GLOBAL_CSS = `
   @media(max-width:600px){.oh-pipeline-cols{grid-template-columns:repeat(2,1fr)!important;}.oh-vault-grid{grid-template-columns:repeat(2,1fr)!important;}.oh-ledger{grid-template-columns:repeat(1,1fr)!important;}}
 `;
 
-function GhostSlide({ onNext, active }: { onNext: () => void; active: boolean }) {
+function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; active: boolean; topLeadName?: string | null }) {
+  const leadRef = topLeadName ?? "acme-corp";
   const lines = [
-    { text: "> analyze lead acme-corp", type: "user" },
+    { text: `> analyze lead ${leadRef}`, type: "user" },
     { text: "  Running Operator Audit...", type: "muted" },
     { text: "  Intent score: 87  ·  Stage: Proposal", type: "gold" },
     { text: "> generate strategy Q3-retainer", type: "user" },
@@ -146,6 +148,7 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
 
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
+  const { data: topLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
   const [slide, setSlide] = useState(1);
   const [entering, setEntering] = useState(false);
   const [welcomed, setWelcomed] = useState(false);
@@ -163,6 +166,21 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   }, []);
 
   const goTo = (n: number) => { setSlide(n); window.scrollTo({ top: 0, behavior: "instant" }); };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        setSlide(s => Math.min(s + 1, TOTAL));
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        setSlide(s => Math.max(s - 1, 1));
+      } else if (e.key === "Escape") {
+        onComplete();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onComplete]);
 
   const enterTheHouse = () => {
     if (entering || slide !== 1) { goTo(2); return; }
@@ -182,7 +200,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const finish = () => {
     setWelcomed(true);
     if (!isReplay) completeOnboarding.mutate();
-    setTimeout(() => { sessionStorage.setItem("oh_onboarding_shown", "true"); onComplete(); }, 1200);
+    // Confetti burst
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ["#d8a85a", "#f4c87a", "#ffffff", "#e58c2c"] });
+    setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.4 }, colors: ["#d8a85a", "#f4c87a"] }), 350);
+    setTimeout(() => { sessionStorage.setItem("oh_onboarding_shown", "true"); onComplete(); }, 1800);
   };
 
   const mono = "'JetBrains Mono','Menlo',monospace";
@@ -266,7 +287,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
           </section>
 
           <section className={`oh-v2-slide${slide === 3 ? " active" : ""}`}>
-            <GhostSlide onNext={() => goTo(4)} active={slide === 3} />
+            <GhostSlide onNext={() => goTo(4)} active={slide === 3} topLeadName={topLead?.clientName ?? topLead?.sourceValue ?? null} />
           </section>
 
           <section className={`oh-v2-slide${slide === 4 ? " active" : ""}`}>

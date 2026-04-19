@@ -513,6 +513,28 @@ ${contextBlock}`;
   }),
 
   onboarding: router({
+    topLead: protectedProcedure.query(async ({ ctx }) => {
+      const allLeads = await getLeads(ctx.user.id);
+      if (!allLeads.length) return null;
+      const top = allLeads
+        .filter(l => l.intentScore !== null)
+        .sort((a, b) => (b.intentScore ?? 0) - (a.intentScore ?? 0))[0]
+        ?? allLeads[0];
+      // Try to get client name for the lead
+      let clientName: string | null = null;
+      if (top.clientId) {
+        const allClients = await getClients(ctx.user.id);
+        const c = allClients.find(c => c.id === top.clientId);
+        clientName = c?.company ?? c?.name ?? null;
+      }
+      return {
+        id: top.id,
+        sourceValue: top.sourceValue ?? null,
+        intentScore: top.intentScore ?? null,
+        status: top.status,
+        clientName,
+      };
+    }),
     complete: protectedProcedure.mutation(async ({ ctx }) => {
       await logActivity({
         userId: ctx.user.id,
