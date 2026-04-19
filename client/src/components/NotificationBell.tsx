@@ -67,18 +67,25 @@ export default function NotificationBell({
     },
   });
 
-  // ── Toast on new notifications ────────────────────────────────────────────
+  // ── Toast on new notifications (respects oh_notif_prefs) ───────────────────
   const prevCountRef = useRef<number>(unreadCount);
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
-      // Fetch the latest to get the newest notification title
       utils.notifications.list.fetch({ limit: 1 }).then((items) => {
         const newest = items[0];
         if (newest && !newest.isRead) {
-          toast(newest.title, {
-            description: newest.body ?? undefined,
-            duration: 5000,
-          });
+          // Check user's notification preference for this type
+          let muted = false;
+          try {
+            const prefs = JSON.parse(localStorage.getItem("oh_notif_prefs") ?? "{}");
+            if (newest.type && prefs[newest.type] === false) muted = true;
+          } catch {}
+          if (!muted) {
+            toast(newest.title, {
+              description: newest.body ?? undefined,
+              duration: 5000,
+            });
+          }
         }
       }).catch(() => {});
     }

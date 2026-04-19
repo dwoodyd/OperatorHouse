@@ -148,13 +148,19 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
 
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
-  const { data: topLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
-  const [slide, setSlide] = useState(1);
+  const { data: topLead, refetch: refetchTopLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
+  const [slide, setSlide] = useState(() => {
+    try { const s = parseInt(sessionStorage.getItem("oh_slide_progress") ?? "1", 10); return isNaN(s) ? 1 : Math.max(1, Math.min(s, 7)); } catch { return 1; }
+  });
   const [entering, setEntering] = useState(false);
   const [welcomed, setWelcomed] = useState(false);
   const goldoutRef = useRef<HTMLDivElement>(null);
   const slide1Ref = useRef<HTMLElement>(null);
   const doorWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isReplay) { refetchTopLead(); }
+  }, [isReplay]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (document.getElementById("oh-v2-styles")) return;
@@ -165,7 +171,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     return () => { document.getElementById("oh-v2-styles")?.remove(); };
   }, []);
 
-  const goTo = (n: number) => { setSlide(n); window.scrollTo({ top: 0, behavior: "instant" }); };
+  const goTo = (n: number) => { setSlide(n); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} window.scrollTo({ top: 0, behavior: "instant" }); };
 
   // Keyboard navigation
   useEffect(() => {
@@ -203,7 +209,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     // Confetti burst
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ["#d8a85a", "#f4c87a", "#ffffff", "#e58c2c"] });
     setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.4 }, colors: ["#d8a85a", "#f4c87a"] }), 350);
-    setTimeout(() => { sessionStorage.setItem("oh_onboarding_shown", "true"); onComplete(); }, 1800);
+    setTimeout(() => { sessionStorage.setItem("oh_onboarding_shown", "true"); try { sessionStorage.removeItem("oh_slide_progress"); } catch {} onComplete(); }, 1800);
   };
 
   const mono = "'JetBrains Mono','Menlo',monospace";
