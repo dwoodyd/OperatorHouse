@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
 
@@ -7,47 +7,309 @@ interface OnboardingFlowProps {
   isReplay?: boolean;
 }
 
+const TOTAL = 7;
+
+// ─── Global CSS ───────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-  .oh-v2-root{--bg:#0b0a08;--ink:#efe9dc;--muted:#908775;--quiet:#5a5346;--gold:#d8a85a;--gold-bright:#f4c87a;--amber:#e58c2c;--term:#5fbf6f;--signal:#6b9bd6;--card:rgba(255,255,255,0.025);--card-border:rgba(216,168,90,0.14);}
-  .oh-v2-slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;opacity:0;transform:translateY(14px);transition:opacity 700ms ease,transform 700ms ease;pointer-events:none;overflow-y:auto;}
-  .oh-v2-slide.active{opacity:1;transform:translateY(0);pointer-events:auto;}
-  .oh-dot-p{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.13);transition:width 400ms ease,background 400ms ease;border:none;cursor:pointer;padding:0;}
-  .oh-dot-p.active{background:var(--gold);width:22px;border-radius:4px;}
-  .oh-door-panel{transform:perspective(900px) rotateY(-22deg);transition:transform 1300ms cubic-bezier(0.22,0.95,0.4,1);}
-  .oh-door-wrap:hover .oh-door-panel{transform:perspective(900px) rotateY(-30deg);}
-  .oh-door-wrap.opening .oh-door-panel{transform:perspective(900px) rotateY(-100deg);}
-  .oh-door-wrap.walking{transform:scale(14) translateY(-8%);transition:transform 1800ms cubic-bezier(0.55,0,0.65,0);}
-  .oh-door-light{transition:opacity 1200ms ease,transform 1200ms ease;}
-  .oh-door-wrap.opening .oh-door-light{opacity:1!important;transform:translateX(-50%) scaleY(1.15)!important;}
-  .oh-door-wrap:hover .oh-door-light{opacity:0.75!important;}
-  .oh-door-interior{transition:opacity 800ms ease;}
-  .oh-door-wrap.opening .oh-door-interior{opacity:1!important;}
-  .oh-door-wrap:hover .oh-door-interior{opacity:0.6!important;}
-  .oh-door-frame{transition:box-shadow 1200ms ease;}
-  .oh-door-wrap.opening .oh-door-frame{box-shadow:0 0 160px rgba(244,200,122,0.45),inset 0 0 60px rgba(244,200,122,0.15)!important;}
-  .oh-goldout{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at center,#f4c87a 0%,#d8a85a 30%,transparent 70%);opacity:0;pointer-events:none;transition:opacity 600ms ease;}
-  .oh-goldout.show{opacity:1;}
-  .oh-goldout.fading{opacity:0;transition:opacity 800ms ease;}
-  .oh-col-card{height:14px;border-radius:3px;margin-bottom:0.35rem;opacity:0;transform:translateY(4px);animation:ohCardSlide 600ms ease-out forwards;}
-  .oh-col-card.flow{background:linear-gradient(90deg,rgba(216,168,90,0.4),rgba(216,168,90,0.06));animation:ohCardFlow 3.6s linear infinite;}
-  @keyframes ohCardSlide{to{opacity:1;transform:translateY(0);}}
-  @keyframes ohCardFlow{0%{opacity:0.4;}50%{opacity:1;}100%{opacity:0.4;}}
-  @keyframes ohPulseLive{0%,100%{opacity:0.6;}50%{opacity:1;}}
-  .oh-live-dot{animation:ohPulseLive 2s ease-in-out infinite;}
-  .oh-cta{background:var(--gold);color:#14110c;border:none;padding:0.9rem 2.2rem;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:0.01em;transition:transform 200ms ease,box-shadow 250ms ease,background 200ms ease;}
-  .oh-cta:hover{transform:translateY(-1px);background:var(--gold-bright);box-shadow:0 16px 50px rgba(216,168,90,0.32);}
-  .oh-ghost-btn{background:transparent;color:var(--quiet);border:none;cursor:pointer;font-size:0.85rem;font-family:inherit;transition:color 200ms ease;}
-  .oh-ghost-btn:hover{color:var(--ink);}
-  .oh-skip{position:absolute;top:1.1rem;right:1.1rem;background:transparent;border:1px solid rgba(255,255,255,0.10);color:var(--quiet);font-family:'JetBrains Mono','Menlo',monospace;font-size:0.65rem;letter-spacing:0.14em;padding:0.35rem 0.85rem;border-radius:6px;cursor:pointer;transition:color 200ms,border-color 200ms;z-index:10;}
-  .oh-skip:hover{color:var(--ink);border-color:var(--gold);}
-  @media(max-width:600px){.oh-pipeline-cols{grid-template-columns:repeat(2,1fr)!important;}.oh-vault-grid{grid-template-columns:repeat(2,1fr)!important;}.oh-ledger{grid-template-columns:repeat(1,1fr)!important;}}
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+  .oh-root {
+    --bg: #050504;
+    --ink: #f0ead8;
+    --muted: #8a7e6a;
+    --quiet: #4a4438;
+    --gold: #d8a85a;
+    --gold-bright: #f4c87a;
+    --amber: #e58c2c;
+    --term: #5fbf6f;
+    --signal: #6b9bd6;
+    --card: rgba(255,255,255,0.03);
+    --card-border: rgba(216,168,90,0.16);
+    font-family: 'Playfair Display', Georgia, serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  /* Particle canvas */
+  .oh-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+
+  /* Slide system */
+  .oh-slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 5rem 2rem 4rem;
+    opacity: 0; transform: translateY(22px) scale(0.985);
+    transition: opacity 750ms cubic-bezier(0.22,1,0.36,1), transform 750ms cubic-bezier(0.22,1,0.36,1);
+    pointer-events: none; overflow-y: auto; z-index: 1;
+  }
+  .oh-slide.active {
+    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+  }
+  .oh-slide.exit-up {
+    opacity: 0; transform: translateY(-22px) scale(0.985);
+    transition: opacity 500ms ease, transform 500ms ease;
+  }
+
+  /* Word-reveal animation */
+  @keyframes ohWordIn {
+    from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+  }
+  .oh-word { display: inline-block; opacity: 0; animation: ohWordIn 550ms cubic-bezier(0.22,1,0.36,1) forwards; }
+
+  /* Hero text */
+  .oh-hero {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    font-weight: 700; line-height: 1.08; letter-spacing: -0.02em;
+    color: var(--ink); text-align: center; margin: 0;
+  }
+  .oh-hero em { font-style: italic; color: var(--gold-bright); }
+  .oh-sub {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 400; font-style: italic;
+    color: var(--muted); text-align: center;
+    margin: 1rem 0 0; max-width: 560px; line-height: 1.5;
+  }
+  .oh-body {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.78rem, 1.6vw, 0.92rem);
+    color: var(--muted); text-align: center;
+    max-width: 520px; line-height: 1.75; margin: 1.4rem auto 0;
+  }
+  .oh-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 1.2rem; opacity: 0.8;
+  }
+
+  /* CTA button */
+  .oh-cta {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--gold); color: #0e0c09;
+    border: none; padding: 0.95rem 2.4rem;
+    border-radius: 100px; font-size: 0.92rem; font-weight: 700;
+    cursor: pointer; font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; margin-top: 2.2rem;
+    transition: transform 220ms ease, box-shadow 250ms ease, background 200ms ease;
+    box-shadow: 0 8px 32px rgba(216,168,90,0.28);
+  }
+  .oh-cta:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: var(--gold-bright);
+    box-shadow: 0 18px 56px rgba(216,168,90,0.4);
+  }
+  .oh-cta:active { transform: translateY(0) scale(0.99); }
+
+  /* Ghost button */
+  .oh-ghost-btn {
+    background: transparent; color: var(--quiet); border: none;
+    cursor: pointer; font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 200ms ease; margin-top: 0.8rem;
+  }
+  .oh-ghost-btn:hover { color: var(--ink); }
+
+  /* Skip */
+  .oh-skip {
+    position: absolute; top: 1.2rem; right: 1.4rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--quiet);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.16em;
+    padding: 0.38rem 0.9rem; border-radius: 100px;
+    cursor: pointer; transition: color 200ms, border-color 200ms; z-index: 20;
+  }
+  .oh-skip:hover { color: var(--ink); border-color: var(--gold); }
+
+  /* Dot nav */
+  .oh-dots { display: flex; gap: 0.5rem; align-items: center; }
+  .oh-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: none; cursor: pointer; padding: 0;
+    transition: width 400ms ease, background 400ms ease, border-radius 400ms ease;
+  }
+  .oh-dot.active { background: var(--gold); width: 24px; border-radius: 4px; }
+
+  /* Bento card */
+  .oh-bento {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 300ms ease, box-shadow 300ms ease;
+  }
+  .oh-bento:hover { transform: translateY(-2px); box-shadow: 0 24px 64px rgba(0,0,0,0.5); }
+
+  /* Door */
+  .oh-door-panel { transform: perspective(1000px) rotateY(-18deg); transition: transform 1400ms cubic-bezier(0.22,0.95,0.4,1); }
+  .oh-door-wrap:hover .oh-door-panel { transform: perspective(1000px) rotateY(-28deg); }
+  .oh-door-wrap.opening .oh-door-panel { transform: perspective(1000px) rotateY(-108deg); }
+  .oh-door-wrap.walking { transform: scale(16) translateY(-6%); transition: transform 2000ms cubic-bezier(0.55,0,0.65,0); }
+  .oh-door-light { transition: opacity 1200ms ease, transform 1200ms ease; }
+  .oh-door-wrap.opening .oh-door-light { opacity: 1 !important; transform: translateX(-50%) scaleY(1.2) !important; }
+  .oh-door-interior { transition: opacity 800ms ease; }
+  .oh-door-wrap.opening .oh-door-interior { opacity: 1 !important; }
+  .oh-door-frame { transition: box-shadow 1200ms ease; }
+  .oh-door-wrap.opening .oh-door-frame { box-shadow: 0 0 200px rgba(244,200,122,0.6), inset 0 0 80px rgba(244,200,122,0.2) !important; }
+
+  /* Gold flash */
+  .oh-goldout {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(circle at center, #f4c87a 0%, #d8a85a 35%, transparent 72%);
+    opacity: 0; pointer-events: none; transition: opacity 600ms ease;
+  }
+  .oh-goldout.show { opacity: 1; }
+  .oh-goldout.fading { opacity: 0; transition: opacity 900ms ease; }
+
+  /* Terminal */
+  .oh-terminal {
+    background: #050505;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; line-height: 1.75;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    text-align: left;
+  }
+  .oh-terminal-bar {
+    display: flex; align-items: center; gap: 0.4rem;
+    margin-bottom: 0.9rem; padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .oh-term-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* Operator card */
+  .oh-operator-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 1.4rem 1.6rem;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    text-align: left;
+  }
+
+  /* Vault grid */
+  .oh-vault-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.55rem; }
+  .oh-vault-item {
+    padding: 0.85rem 0.65rem;
+    background: rgba(216,168,90,0.04);
+    border: 1px solid rgba(216,168,90,0.13);
+    border-radius: 10px;
+    transition: background 200ms, border-color 200ms;
+  }
+  .oh-vault-item:hover { background: rgba(216,168,90,0.08); border-color: rgba(216,168,90,0.28); }
+
+  /* Pipeline */
+  .oh-pipeline { display: grid; grid-template-columns: repeat(5,1fr); gap: 0.45rem; }
+  .oh-pipeline-col { display: flex; flex-direction: column; gap: 0.35rem; }
+  .oh-pipeline-card {
+    height: 14px; border-radius: 4px; opacity: 0;
+    transform: translateY(5px);
+    animation: ohCardIn 500ms ease-out forwards;
+  }
+  .oh-pipeline-card.flow {
+    background: linear-gradient(90deg, rgba(216,168,90,0.45), rgba(216,168,90,0.08));
+    animation: ohCardFlow 3.8s linear infinite;
+  }
+  @keyframes ohCardIn { to { opacity: 1; transform: translateY(0); } }
+  @keyframes ohCardFlow { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* Hours counter */
+  .oh-counter {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(4rem, 14vw, 9rem);
+    font-weight: 700; color: var(--gold-bright);
+    line-height: 1; letter-spacing: -0.03em;
+    text-shadow: 0 0 80px rgba(244,200,122,0.35);
+  }
+
+  /* Live pulse */
+  @keyframes ohPulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+  .oh-pulse { animation: ohPulse 2s ease-in-out infinite; }
+
+  /* Glow ring on slide 1 */
+  .oh-glow-ring {
+    position: absolute; width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(216,168,90,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: ohGlowPulse 4s ease-in-out infinite;
+  }
+  @keyframes ohGlowPulse { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.12); opacity: 1; } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .oh-vault-grid { grid-template-columns: repeat(2,1fr) !important; }
+    .oh-pipeline { grid-template-columns: repeat(3,1fr) !important; }
+    .oh-hero { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+  }
 `;
 
+// ─── Particle system ──────────────────────────────────────────────────────────
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let raf: number;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    const particles = Array.from({ length: 55 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.18,
+      o: Math.random() * 0.4 + 0.1,
+    }));
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(216,168,90,${p.o})`;
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} className="oh-particles" />;
+}
+
+// ─── Word-reveal headline ─────────────────────────────────────────────────────
+function WordReveal({ text, className, gold, delay = 0 }: { text: string; className?: string; gold?: boolean; delay?: number }) {
+  const words = text.split(" ");
+  return (
+    <span className={className}>
+      {words.map((w, i) => (
+        <span key={i} className="oh-word" style={{ animationDelay: `${delay + i * 80}ms` }}>
+          {gold ? <em>{w}</em> : w}{i < words.length - 1 ? "\u00a0" : ""}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// ─── Ghost terminal slide ─────────────────────────────────────────────────────
 function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; active: boolean; topLeadName?: string | null }) {
-  const leadRef = topLeadName ?? "acme-corp";
+  const lead = topLeadName ?? "acme-corp";
   const lines = [
-    { text: `> analyze lead ${leadRef}`, type: "user" },
+    { text: `> analyze lead ${lead}`, type: "user" },
     { text: "  Running Operator Audit...", type: "muted" },
     { text: "  Intent score: 87  ·  Stage: Proposal", type: "gold" },
     { text: "> generate strategy Q3-retainer", type: "user" },
@@ -56,101 +318,87 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
     { text: "> briefing today", type: "user" },
     { text: "  3 clients  ·  2 proposals  ·  1 stale deal", type: "gold" },
   ];
+  const colorMap: Record<string, string> = { user: "var(--term)", muted: "var(--muted)", gold: "var(--gold-bright)" };
   const [displayed, setDisplayed] = useState<string[]>(lines.map(() => ""));
   const animated = useRef(false);
+
   useEffect(() => {
     if (!active || animated.current) return;
     animated.current = true;
-    lines.forEach((line, i) => {
-      setTimeout(() => {
-        if (line.type === "user") {
-          let idx = 0;
-          const type = () => {
-            setDisplayed(prev => { const n = [...prev]; n[i] = line.text.slice(0, idx); return n; });
-            idx++;
-            if (idx <= line.text.length) setTimeout(type, 22 + Math.random() * 28);
-          };
-          type();
-        } else {
-          setDisplayed(prev => { const n = [...prev]; n[i] = line.text; return n; });
-        }
-      }, i * 580);
-    });
+    let lineIdx = 0, charIdx = 0;
+    const tick = () => {
+      if (lineIdx >= lines.length) return;
+      const full = lines[lineIdx].text;
+      charIdx++;
+      setDisplayed(prev => { const n = [...prev]; n[lineIdx] = full.slice(0, charIdx); return n; });
+      if (charIdx < full.length) { setTimeout(tick, 22); }
+      else { lineIdx++; charIdx = 0; if (lineIdx < lines.length) setTimeout(tick, 260); }
+    };
+    setTimeout(tick, 400);
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
-  const colorMap: Record<string, string> = { user: "var(--term)", muted: "var(--quiet)", gold: "var(--gold)" };
-  const mono = "'JetBrains Mono','Menlo',monospace";
-  const serif = "'Iowan Old Style','Apple Garamond','Georgia',serif";
+
   return (
-    <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-      <div style={{ fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.24em", textTransform: "uppercase" as const, color: "var(--term)", marginBottom: "1.2rem" }}>Persona · The Ghost</div>
-      <h1 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(1.9rem,4.6vw,2.8rem)", lineHeight: 1.13, color: "white", marginBottom: "1.2rem" }}>
-        While you sleep,<br /><span style={{ color: "var(--gold-bright)", fontStyle: "italic" }}>someone is preparing your day.</span>
+    <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+      <div className="oh-eyebrow">Persona · The Ghost</div>
+      <h1 className="oh-hero" style={{ fontSize: "clamp(2.4rem,6vw,4.4rem)" }}>
+        While you sleep,<br />
+        <em>someone is preparing your day.</em>
       </h1>
-      <p style={{ color: "var(--muted)", fontSize: "0.92rem", lineHeight: 1.65, maxWidth: 520, margin: "0 auto" }}>
-        The Ghost is your autonomous worker — running lead audits, drafting follow-ups, surfacing stale deals. By the time you sit down at the desk, 90% is already done.
-      </p>
-      <div style={{ margin: "1.4rem auto 0", maxWidth: 600, background: "#050505", border: "1px solid var(--card-border)", borderRadius: 10, padding: "1rem 1.2rem", textAlign: "left" as const, fontFamily: mono, fontSize: "0.82rem", lineHeight: 1.7, boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.8rem", paddingBottom: "0.55rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--term)" }} />
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--gold)" }} />
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.18)" }} />
-          <div style={{ color: "var(--quiet)", fontSize: "0.63rem", letterSpacing: "0.16em", textTransform: "uppercase" as const, marginLeft: "auto" }}>ghost · activity log · 04:12 am</div>
+      <p className="oh-body">The Ghost runs lead audits, drafts follow-ups, and surfaces stale deals autonomously. By the time you sit down, 90% is already done.</p>
+      <div className="oh-terminal" style={{ margin: "2rem auto 0", maxWidth: 580 }}>
+        <div className="oh-terminal-bar">
+          <div className="oh-term-dot" style={{ background: "#ff5f57" }} />
+          <div className="oh-term-dot" style={{ background: "#febc2e" }} />
+          <div className="oh-term-dot" style={{ background: "#28c840" }} />
+          <div style={{ marginLeft: "auto", color: "var(--quiet)", fontFamily: "'JetBrains Mono',monospace", fontSize: "0.6rem", letterSpacing: "0.16em", textTransform: "uppercase" as const }}>ghost · activity log · 04:12 am</div>
         </div>
         {lines.map((line, i) => (
-          <div key={i} style={{ color: colorMap[line.type], whiteSpace: "nowrap" as const, overflow: "hidden", minHeight: "1.4em" }}>{displayed[i]}</div>
+          <div key={i} style={{ color: colorMap[line.type], whiteSpace: "nowrap" as const, minHeight: "1.5em" }}>{displayed[i]}</div>
         ))}
       </div>
-      <div style={{ marginTop: "1.8rem" }}><button className="oh-cta" onClick={onNext}>And during the day? →</button></div>
+      <button className="oh-cta" onClick={onNext}>Meet The Operator →</button>
     </div>
   );
 }
 
+// ─── Hours counter slide ──────────────────────────────────────────────────────
 function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean }) {
   const [count, setCount] = useState(0);
-  const [done, setDone] = useState(false);
-  const animated = useRef(false);
+  const target = 47;
   useEffect(() => {
-    if (!active || animated.current) return;
-    animated.current = true;
+    if (!active) return;
     let n = 0;
-    const tick = () => { if (n <= 47) { setCount(n); n++; setTimeout(tick, 38); } else { setDone(true); } };
-    tick();
+    const step = () => {
+      n = Math.min(n + 1, target);
+      setCount(n);
+      if (n < target) setTimeout(step, 38);
+    };
+    setTimeout(step, 500);
   }, [active]);
-  const mono = "'JetBrains Mono','Menlo',monospace";
-  const serif = "'Iowan Old Style','Apple Garamond','Georgia',serif";
-  const ledger = [{ what: "Lead audits", amt: "14h" }, { what: "Strategy drafts", amt: "19h" }, { what: "Follow-ups", amt: "14h" }];
   return (
-    <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-      <div style={{ fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.24em", textTransform: "uppercase" as const, color: "var(--amber)", marginBottom: "1.2rem" }}>The metric that matters</div>
-      <div style={{ width: 260, margin: "0 auto 1.4rem", padding: "1.6rem 1.8rem", background: "linear-gradient(180deg,rgba(216,168,90,0.08),rgba(255,255,255,0.01))", border: "1px solid rgba(216,168,90,0.25)", borderRadius: 14, textAlign: "center" as const }}>
-        <div style={{ color: "var(--gold)", fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.18em", textTransform: "uppercase" as const, marginBottom: "0.55rem" }}>Hours saved this month</div>
-        <div style={{ fontFamily: serif, fontSize: "3.8rem", color: "var(--gold-bright)", lineHeight: 1 }}>
-          {count}{done && <span style={{ fontSize: "1.5rem", color: "var(--muted)", marginLeft: 4 }}>h</span>}
-        </div>
-        <div style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.35rem" }}>prep, follow-ups, drafting, briefing</div>
-      </div>
-      <h1 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(1.9rem,4.6vw,2.8rem)", lineHeight: 1.13, color: "white", marginBottom: "1.2rem" }}>
-        Time, returned.<br /><span style={{ color: "var(--gold-bright)", fontStyle: "italic" }}>Back where it belongs.</span>
-      </h1>
-      <p style={{ color: "var(--muted)", fontSize: "0.92rem", lineHeight: 1.65, maxWidth: 520, margin: "0 auto" }}>Ghost Efficiency target: 90%. Average user reclaims a workday and a half every week — for the strategy, the relationships, the craft you went solo to do.</p>
-      <div className="oh-ledger" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "0.55rem", maxWidth: 520, margin: "1.2rem auto 0" }}>
-        {ledger.map(l => (
-          <div key={l.what} style={{ padding: "0.7rem 0.55rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 8, textAlign: "left" as const }}>
-            <div style={{ color: "var(--muted)", fontFamily: mono, fontSize: "0.58rem", letterSpacing: "0.14em", textTransform: "uppercase" as const }}>{l.what}</div>
-            <div style={{ color: "var(--gold)", fontFamily: serif, fontSize: "1.25rem", marginTop: "0.12rem" }}>{l.amt}</div>
-          </div>
+    <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+      <div className="oh-eyebrow">The Return</div>
+      <div className="oh-counter">{count}<span style={{ fontSize: "0.35em", color: "var(--muted)", letterSpacing: "0.04em" }}>h</span></div>
+      <h2 className="oh-hero" style={{ fontSize: "clamp(1.8rem,4.5vw,3.2rem)", marginTop: "0.6rem" }}>
+        saved per month,<br /><em>on average.</em>
+      </h2>
+      <p className="oh-body">Lead research. Proposal drafts. Strategy docs. Follow-up emails. The Ghost handles the repeatable work so you can focus on the work only you can do.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.6rem", marginTop: "1.8rem" }}>
+        {["Lead audits: 12h", "Strategy docs: 8h", "Follow-ups: 9h", "Briefings: 6h", "Reporting: 12h"].map(l => (
+          <div key={l} style={{ padding: "0.42rem 0.9rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 100, color: "var(--muted)", fontFamily: "'JetBrains Mono',monospace", fontSize: "0.72rem" }}>{l}</div>
         ))}
       </div>
-      <div style={{ marginTop: "1.8rem" }}><button className="oh-cta" onClick={onNext}>Take me inside →</button></div>
+      <button className="oh-cta" onClick={onNext}>I'm ready →</button>
     </div>
   );
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
   const { data: topLead, refetch: refetchTopLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
   const [slide, setSlide] = useState(() => {
-    try { const s = parseInt(sessionStorage.getItem("oh_slide_progress") ?? "1", 10); return isNaN(s) ? 1 : Math.max(1, Math.min(s, 7)); } catch { return 1; }
+    try { const s = parseInt(sessionStorage.getItem("oh_slide_progress") ?? "1", 10); return isNaN(s) ? 1 : Math.max(1, Math.min(s, TOTAL)); } catch { return 1; }
   });
   const [entering, setEntering] = useState(false);
   const [welcomed, setWelcomed] = useState(false);
@@ -158,231 +406,294 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const slide1Ref = useRef<HTMLElement>(null);
   const doorWrapRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isReplay) { refetchTopLead(); }
-  }, [isReplay]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (isReplay) refetchTopLead(); }, [isReplay]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (document.getElementById("oh-v2-styles")) return;
-    const style = document.createElement("style");
-    style.id = "oh-v2-styles";
-    style.textContent = GLOBAL_CSS;
-    document.head.appendChild(style);
-    return () => { document.getElementById("oh-v2-styles")?.remove(); };
+    if (document.getElementById("oh-v3-styles")) return;
+    const el = document.createElement("style");
+    el.id = "oh-v3-styles";
+    el.textContent = GLOBAL_CSS;
+    document.head.appendChild(el);
+    return () => { document.getElementById("oh-v3-styles")?.remove(); };
   }, []);
 
-  const goTo = (n: number) => { setSlide(n); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} window.scrollTo({ top: 0, behavior: "instant" }); };
+  const goTo = useCallback((n: number) => {
+    setSlide(n);
+    try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {}
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
 
-  // Keyboard navigation
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        setSlide(s => Math.min(s + 1, TOTAL));
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        setSlide(s => Math.max(s - 1, 1));
-      } else if (e.key === "Escape") {
-        onComplete();
-      }
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") setSlide(s => { const n = Math.min(s + 1, TOTAL); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} return n; });
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") setSlide(s => { const n = Math.max(s - 1, 1); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} return n; });
+      else if (e.key === "Escape") onComplete();
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
   }, [onComplete]);
 
   const enterTheHouse = () => {
-    if (entering || slide !== 1) { goTo(2); return; }
+    if (entering) return;
     setEntering(true);
     const door = doorWrapRef.current;
     const s1 = slide1Ref.current;
     const goldout = goldoutRef.current;
     if (!door || !s1 || !goldout) { goTo(2); setEntering(false); return; }
     door.classList.add("opening");
-    setTimeout(() => { s1.classList.add("exiting"); door.classList.add("walking"); }, 450);
-    setTimeout(() => { goldout.classList.add("show"); }, 1500);
-    setTimeout(() => { goTo(2); door.classList.remove("opening", "walking"); s1.classList.remove("exiting"); }, 2050);
-    setTimeout(() => { goldout.classList.add("fading"); }, 2200);
-    setTimeout(() => { goldout.classList.remove("show", "fading"); setEntering(false); }, 3000);
+    setTimeout(() => { door.classList.add("walking"); }, 500);
+    setTimeout(() => { goldout.classList.add("show"); }, 1600);
+    setTimeout(() => { goTo(2); door.classList.remove("opening", "walking"); }, 2200);
+    setTimeout(() => { goldout.classList.add("fading"); }, 2400);
+    setTimeout(() => { goldout.classList.remove("show", "fading"); setEntering(false); }, 3200);
   };
 
   const finish = () => {
+    if (welcomed) return;
     setWelcomed(true);
     if (!isReplay) completeOnboarding.mutate();
-    // Confetti burst
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ["#d8a85a", "#f4c87a", "#ffffff", "#e58c2c"] });
-    setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.4 }, colors: ["#d8a85a", "#f4c87a"] }), 350);
-    setTimeout(() => { sessionStorage.setItem("oh_onboarding_shown", "true"); try { sessionStorage.removeItem("oh_slide_progress"); } catch {} onComplete(); }, 1800);
+    confetti({ particleCount: 140, spread: 90, origin: { y: 0.55 }, colors: ["#d8a85a", "#f4c87a", "#ffffff", "#e58c2c"] });
+    setTimeout(() => confetti({ particleCount: 70, spread: 130, origin: { y: 0.4 }, colors: ["#d8a85a", "#f4c87a"] }), 380);
+    setTimeout(() => {
+      sessionStorage.setItem("oh_onboarding_shown", "true");
+      try { sessionStorage.removeItem("oh_slide_progress"); } catch {}
+      onComplete();
+    }, 1900);
   };
 
   const mono = "'JetBrains Mono','Menlo',monospace";
-  const serif = "'Iowan Old Style','Apple Garamond','Georgia',serif";
+  const serif = "'Playfair Display',Georgia,serif";
   const stages = ["Discovery", "Analysis", "Strategy", "Proposal", "Closed"];
   const flowDelays = [0, 0.7, 1.3, 1.7, 2.3];
   const extraDelays: (number | null)[] = [0.4, 1.0, null, 2.0, 2.5];
   const vaultItems = [
-    { tag: "Framework", title: "Vibe Check + Engineering Map" },
-    { tag: "Case Study", title: "Acme Q3 retainer · $47k" },
-    { tag: "Template", title: "First-touch email · founder" },
-    { tag: "Pricing", title: "Fractional COO scope ladder" },
-    { tag: "Script", title: "Stalled-proposal recovery" },
-    { tag: "Voice Note", title: "How I close on value" },
+    { tag: "Framework", title: "Retainer Pricing Logic" },
+    { tag: "Template", title: "90-Day Onboarding Plan" },
+    { tag: "Playbook", title: "Objection Handling" },
+    { tag: "Case Study", title: "SaaS Growth — 3x ARR" },
+    { tag: "Voice", title: "Brand Tone & Language" },
+    { tag: "Process", title: "Discovery Call Script" },
   ];
-  const chips = ["Today's focus", "Pipeline health", "Stale deals", "Draft outreach"];
-  const TOTAL = 7;
-
-  const eyebrow = (label: string, color = "var(--gold)") => (
-    <div style={{ fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.24em", textTransform: "uppercase" as const, color, marginBottom: "1.2rem" }}>{label}</div>
-  );
-  const hl = (main: string, accent: string) => (
-    <h1 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(1.9rem,4.6vw,2.8rem)", lineHeight: 1.13, letterSpacing: "-0.012em", color: "white", marginBottom: "1.2rem" }}>
-      {main}<br /><span style={{ color: "var(--gold-bright)", fontStyle: "italic" }}>{accent}</span>
-    </h1>
-  );
-  const body = (text: string) => (
-    <p style={{ color: "var(--muted)", fontSize: "0.92rem", lineHeight: 1.65, maxWidth: 520, margin: "0 auto" }}>{text}</p>
-  );
-  const cta = (label: string, onClick: () => void) => (
-    <div style={{ marginTop: "1.8rem" }}><button className="oh-cta" onClick={onClick}>{label}</button></div>
-  );
+  const chips = ["Pipeline context", "Lead history", "Vault knowledge", "Your tone"];
+  const ledger = [
+    { label: "Acme Corp", stage: "Proposal", amt: "$12,000" },
+    { label: "Vertex Labs", stage: "Strategy", amt: "$8,500" },
+    { label: "Meridian Co.", stage: "Closed", amt: "$22,000" },
+  ];
 
   return (
-    <>
-      <div ref={goldoutRef} className="oh-goldout" />
-      <div className="oh-v2-root" style={{ position: "fixed", inset: 0, zIndex: 1000, background: "var(--bg)", overflow: "hidden" }}>
-        <div style={{ position: "fixed", inset: 0, pointerEvents: "none", background: "radial-gradient(circle,rgba(216,168,90,0.07),transparent 65%)", filter: "blur(40px)" }} />
-        <button className="oh-skip" onClick={onComplete}>Skip</button>
+    <div className="oh-root" style={{ position: "fixed", inset: 0, zIndex: 1000, overflow: "hidden" }}>
+      <ParticleCanvas />
+      <div ref={goldoutRef as React.RefObject<HTMLDivElement>} className="oh-goldout" />
 
-        <div style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* Skip button */}
+      <button className="oh-skip" onClick={onComplete}>skip intro ↗</button>
 
-          <section ref={slide1Ref} className={`oh-v2-slide${slide === 1 ? " active" : ""}`}>
-            <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-              <div ref={doorWrapRef} className="oh-door-wrap" onClick={enterTheHouse}
-                style={{ position: "relative", width: 200, height: 270, margin: "0 auto 1.8rem", transformOrigin: "50% 65%", cursor: "pointer" }}>
-                <div className="oh-door-frame" style={{ position: "absolute", inset: 0, border: "1px solid rgba(216,168,90,0.35)", borderRadius: "100px 100px 0 0", boxShadow: "0 0 80px rgba(216,168,90,0.15),inset 0 0 30px rgba(216,168,90,0.05)" }} />
-                <div className="oh-door-light" style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%) scaleY(0.55)", width: "90%", height: "90%", background: "radial-gradient(ellipse at bottom,rgba(216,168,90,0.45),transparent 70%)", borderRadius: "50%", transformOrigin: "bottom center", opacity: 0.55 }} />
-                <div className="oh-door-panel" style={{ position: "absolute", inset: 6, background: "linear-gradient(180deg,#1a1610 0%,#0b0a08 100%)", borderRadius: "95px 95px 0 0", transformOrigin: "left center", boxShadow: "-2px 0 20px rgba(0,0,0,0.6)" }} />
-                <div className="oh-door-interior" style={{ position: "absolute", left: "50%", top: "60%", transform: "translate(-50%,-50%)", fontFamily: mono, fontSize: "0.6rem", letterSpacing: "0.22em", color: "var(--gold)", textTransform: "uppercase" as const, opacity: 0 }}>HQ</div>
-              </div>
-              {eyebrow("Operator House · HQ")}
-              {hl("You run the practice.", "We run the prep.")}
-              <p style={{ color: "var(--ink)", opacity: 0.85, fontSize: "clamp(0.95rem,1.7vw,1.08rem)", lineHeight: 1.65, maxWidth: 560, margin: "0 auto" }}>
-                A single intelligent workspace that thinks like your best associate — so the work you actually love is the work you actually do.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.8rem", marginTop: "2rem" }}>
-                <button className="oh-cta" onClick={enterTheHouse}>Open the door →</button>
-                <button className="oh-ghost-btn" onClick={enterTheHouse}>Show me what's inside</button>
-              </div>
-            </div>
-          </section>
-
-          <section className={`oh-v2-slide${slide === 2 ? " active" : ""}`}>
-            <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-              {eyebrow("Who lives here", "var(--signal)")}
-              {hl("For independent consultants", "and fractional operators.")}
-              {body("The brilliant solo professional drowning in CRMs, follow-ups, and proposal prep. The fractional CXO running three engagements at once. The strategist whose pipeline lives in seven tabs. Operator House replaces the stack with a room.")}
-              <div className="oh-pipeline-cols" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: "0.4rem", maxWidth: 580, margin: "1.4rem auto 0" }}>
-                {stages.map((s, i) => (
-                  <div key={s} style={{ background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 8, padding: "0.65rem 0.5rem", minHeight: 110, display: "flex", flexDirection: "column" }}>
-                    <div style={{ color: "var(--gold)", fontFamily: mono, fontSize: "0.58rem", letterSpacing: "0.16em", textTransform: "uppercase" as const, marginBottom: "0.6rem", textAlign: "left" as const }}>{s}</div>
-                    <div className="oh-col-card flow" style={{ animationDelay: `${flowDelays[i]}s` }} />
-                    {extraDelays[i] !== null && <div className="oh-col-card" style={{ animationDelay: `${extraDelays[i]}s`, background: "rgba(216,168,90,0.06)", border: "1px solid rgba(216,168,90,0.18)" }} />}
-                  </div>
-                ))}
-              </div>
-              <p style={{ color: "var(--quiet)", fontSize: "0.8rem", letterSpacing: "0.04em", marginTop: "0.9rem", fontStyle: "italic" }}>Every client. Every stage. One room.</p>
-              {cta("Who's working in here? →", () => goTo(3))}
-            </div>
-          </section>
-
-          <section className={`oh-v2-slide${slide === 3 ? " active" : ""}`}>
-            <GhostSlide onNext={() => goTo(4)} active={slide === 3} topLeadName={topLead?.clientName ?? topLead?.sourceValue ?? null} />
-          </section>
-
-          <section className={`oh-v2-slide${slide === 4 ? " active" : ""}`}>
-            <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-              {eyebrow("Persona · The Operator")}
-              {hl("When you need a thinking partner,", "just ask.")}
-              {body("The Operator is your AI strategist on demand — with full context on your pipeline, your leads, and your vault. Not a chatbot. Your associate.")}
-              <div style={{ margin: "1.4rem auto 0", maxWidth: 560, background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 12, padding: "1.2rem 1.4rem", textAlign: "left" as const, boxShadow: "0 30px 80px rgba(0,0,0,0.45)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--gold)", fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.18em", textTransform: "uppercase" as const, marginBottom: "0.8rem" }}>
-                  <div className="oh-live-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--term)", boxShadow: "0 0 8px var(--term)" }} />
-                  The Operator · Active
-                </div>
-                <div style={{ color: "var(--muted)", fontFamily: mono, fontSize: "0.76rem", padding: "0.45rem 0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: 6, marginBottom: "0.8rem" }}>
-                  <span style={{ color: "var(--gold)" }}>&gt; </span>What's blocking my top deals?
-                </div>
-                <div style={{ color: "var(--ink)", fontFamily: serif, fontSize: "0.97rem", lineHeight: 1.55, padding: "0.8rem 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                  Two of your three highest-value deals are stalled because the proposal step has been open more than nine days. The Ghost has drafted next-touch emails for both — both are{" "}
-                  <strong style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 500 }}>in your queue, ready to send.</strong>{" "}
-                  One has signal: their CFO viewed your last deck twice.
-                </div>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.5rem", marginTop: "1.1rem" }}>
-                {chips.map(c => <div key={c} style={{ padding: "0.38rem 0.8rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 999, color: "var(--muted)", fontFamily: mono, fontSize: "0.7rem" }}>{c}</div>)}
-              </div>
-              {cta("How does it know my voice? →", () => goTo(5))}
-            </div>
-          </section>
-
-          <section className={`oh-v2-slide${slide === 5 ? " active" : ""}`}>
-            <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-              {eyebrow("The Vault")}
-              {hl("Your methodology, in.", "Your voice, out.")}
-              {body("Generic AI gives generic advice. The Vault holds your frameworks, your case studies, your pricing logic, your objection scripts — and the AI reads it before every analysis. The output is your work, faster.")}
-              <div style={{ margin: "1.4rem auto 0", maxWidth: 560, background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 12, padding: "1.4rem" }}>
-                <div className="oh-vault-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "0.5rem" }}>
-                  {vaultItems.map(item => (
-                    <div key={item.title} style={{ padding: "0.8rem 0.55rem", background: "rgba(216,168,90,0.04)", border: "1px solid rgba(216,168,90,0.14)", borderRadius: 8, textAlign: "left" as const }}>
-                      <div style={{ color: "var(--gold)", fontFamily: mono, fontSize: "0.52rem", letterSpacing: "0.16em", textTransform: "uppercase" as const, marginBottom: "0.28rem" }}>{item.tag}</div>
-                      <div style={{ color: "var(--ink)", fontSize: "0.75rem", lineHeight: 1.35 }}>{item.title}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ textAlign: "center" as const, margin: "0.8rem auto", color: "var(--gold)", fontFamily: mono, fontSize: "0.68rem", letterSpacing: "0.14em" }}>Auto-injected into every AI call ↓</div>
-                <div style={{ padding: "0.8rem 0.95rem", background: "rgba(255,255,255,0.02)", borderLeft: "2px solid var(--gold)", borderRadius: "0 6px 6px 0", color: "var(--ink)", fontFamily: serif, fontStyle: "italic", fontSize: "0.9rem", lineHeight: 1.5, textAlign: "left" as const }}>
-                  "Drafted using your Vibe Check + Engineering Map framework. Pricing pulled from your fractional ladder. Tone matches your last close."
-                </div>
-              </div>
-              {cta("What's it actually saving me? →", () => goTo(6))}
-            </div>
-          </section>
-
-          <section className={`oh-v2-slide${slide === 6 ? " active" : ""}`}>
-            <HoursSlide onNext={() => goTo(7)} active={slide === 6} />
-          </section>
-
-          <section className={`oh-v2-slide${slide === 7 ? " active" : ""}`}>
-            <div className="oh-inner" style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-              {welcomed ? (
-                <>
-                  {eyebrow("Door · open")}
-                  {hl("Welcome to", "your HQ.")}
-                  <p style={{ color: "var(--ink)", opacity: 0.85, fontSize: "clamp(0.95rem,1.7vw,1.08rem)", lineHeight: 1.65, maxWidth: 560, margin: "0 auto" }}>
-                    The Ghost is on the clock. The Operator is online. The Vault is yours to load. We'll see you at the desk.
-                  </p>
-                </>
-              ) : (
-                <>
-                  {eyebrow("One last thing")}
-                  {hl("You went solo for the work.", "We'll handle everything else.")}
-                  <p style={{ color: "var(--ink)", opacity: 0.85, fontSize: "clamp(0.95rem,1.7vw,1.08rem)", lineHeight: 1.65, maxWidth: 560, margin: "0 auto" }}>
-                    Operator House isn't a CRM. It's the room you walk into already prepared — with the Ghost's overnight work briefed, the Operator standing by, and your Vault remembering exactly how you do things.
-                  </p>
-                  <p style={{ fontFamily: serif, fontStyle: "italic", color: "var(--gold)", fontSize: "1rem", marginTop: "1.4rem" }}>— enter the house.</p>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.8rem", marginTop: "1.8rem" }}>
-                    <button className="oh-cta" onClick={finish}>Enter the House</button>
-                    <button className="oh-ghost-btn" onClick={() => goTo(1)}>Walk it again</button>
-                  </div>
-                </>
-              )}
-            </div>
-          </section>
-        </div>
-
-        <div style={{ position: "fixed", bottom: "1.8rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "0.4rem", zIndex: 20 }}>
+      {/* Dot nav */}
+      <div style={{ position: "absolute", bottom: "1.6rem", left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
+        <div className="oh-dots">
           {Array.from({ length: TOTAL }, (_, i) => (
-            <button key={i} className={`oh-dot-p${slide === i + 1 ? " active" : ""}`} onClick={() => goTo(i + 1)} aria-label={`Go to slide ${i + 1}`} />
+            <button key={i} className={`oh-dot${slide === i + 1 ? " active" : ""}`} onClick={() => goTo(i + 1)} aria-label={`Slide ${i + 1}`} />
           ))}
         </div>
       </div>
-    </>
+
+      {/* ── Slide 1: The Door ── */}
+      <section ref={slide1Ref as React.RefObject<HTMLElement>} className={`oh-slide${slide === 1 ? " active" : ""}`} style={{ background: "var(--bg)" }}>
+        <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+        <div style={{ textAlign: "center", zIndex: 1, position: "relative" }}>
+          <div className="oh-eyebrow" style={{ marginBottom: "1.8rem" }}>Operator House</div>
+          {/* Door */}
+          <div ref={doorWrapRef as React.RefObject<HTMLDivElement>} className="oh-door-wrap" style={{ display: "inline-block", position: "relative", cursor: "pointer" }} onClick={enterTheHouse}>
+            <div style={{ position: "relative", width: 180, height: 280 }}>
+              {/* Frame */}
+              <div className="oh-door-frame" style={{
+                position: "absolute", inset: 0,
+                border: "2px solid rgba(216,168,90,0.5)",
+                borderRadius: "90px 90px 0 0",
+                boxShadow: "0 0 60px rgba(216,168,90,0.15), inset 0 0 30px rgba(216,168,90,0.05)",
+              }} />
+              {/* Interior glow */}
+              <div className="oh-door-interior" style={{
+                position: "absolute", inset: 2, borderRadius: "88px 88px 0 0",
+                background: "radial-gradient(ellipse at 50% 60%, rgba(216,168,90,0.18) 0%, transparent 70%)",
+                opacity: 0,
+              }} />
+              {/* Light shaft */}
+              <div className="oh-door-light" style={{
+                position: "absolute", bottom: 0, left: "50%",
+                transform: "translateX(-50%)",
+                width: 60, height: "100%",
+                background: "linear-gradient(to top, rgba(244,200,122,0.22) 0%, transparent 80%)",
+                opacity: 0,
+              }} />
+              {/* Door panel */}
+              <div className="oh-door-panel" style={{
+                position: "absolute", inset: 8,
+                borderRadius: "82px 82px 0 0",
+                background: "linear-gradient(160deg, #1a1610 0%, #0e0c09 100%)",
+                border: "1px solid rgba(216,168,90,0.22)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transformOrigin: "left center",
+              }}>
+                <div style={{
+                  fontFamily: serif, fontSize: "1.6rem", fontWeight: 700,
+                  color: "rgba(216,168,90,0.7)", letterSpacing: "0.06em",
+                  userSelect: "none",
+                }}>OH</div>
+              </div>
+            </div>
+          </div>
+          <h1 className="oh-hero" style={{ marginTop: "2rem", fontSize: "clamp(2.8rem,7vw,5rem)" }}>
+            <WordReveal text="The House is" delay={200} />
+            {" "}<WordReveal text="ready." gold delay={600} />
+          </h1>
+          <p className="oh-sub">Your autonomous operator is standing by.</p>
+          <div style={{ marginTop: "2.4rem" }}>
+            <button className="oh-cta" onClick={enterTheHouse} disabled={entering}>
+              {entering ? "Opening…" : "Enter the House →"}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Slide 2: Pipeline ── */}
+      <section className={`oh-slide${slide === 2 ? " active" : ""}`}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+          <div className="oh-eyebrow">The Pipeline</div>
+          <h1 className="oh-hero">
+            <WordReveal text="Every client." delay={100} />{" "}
+            <WordReveal text="Every stage." gold delay={500} />
+          </h1>
+          <p className="oh-sub" style={{ fontStyle: "normal", fontSize: "clamp(0.9rem,2vw,1.1rem)" }}>One room. Full visibility. No spreadsheets.</p>
+          {/* Pipeline visual */}
+          <div className="oh-bento" style={{ margin: "2rem auto 0", maxWidth: 600, padding: "1.6rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+              {stages.map(s => (
+                <div key={s} style={{ fontFamily: mono, fontSize: "0.58rem", letterSpacing: "0.14em", textTransform: "uppercase" as const, color: "var(--quiet)" }}>{s}</div>
+              ))}
+            </div>
+            <div className="oh-pipeline">
+              {stages.map((_, ci) => (
+                <div key={ci} className="oh-pipeline-col">
+                  {Array.from({ length: ci === 4 ? 1 : 3 - Math.floor(ci / 2) }, (__, ri) => {
+                    const delay = flowDelays[ci] + ri * 0.25;
+                    const isFlow = extraDelays[ci] !== null && ri === 0;
+                    return (
+                      <div key={ri} className={`oh-pipeline-card${isFlow ? " flow" : ""}`}
+                        style={{
+                          background: isFlow ? undefined : `rgba(216,168,90,${0.12 + ri * 0.06})`,
+                          animationDelay: `${delay}s`,
+                        }} />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            {/* Ledger */}
+            <div style={{ marginTop: "1.2rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              {ledger.map(l => (
+                <div key={l.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0.7rem", background: "rgba(255,255,255,0.02)", borderRadius: 8 }}>
+                  <span style={{ fontFamily: serif, fontSize: "0.88rem", color: "var(--ink)" }}>{l.label}</span>
+                  <span style={{ fontFamily: mono, fontSize: "0.65rem", color: "var(--muted)", letterSpacing: "0.1em" }}>{l.stage}</span>
+                  <span style={{ fontFamily: mono, fontSize: "0.82rem", color: "var(--gold)" }}>{l.amt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button className="oh-cta" onClick={() => goTo(3)}>Who's working in here? →</button>
+        </div>
+      </section>
+
+      {/* ── Slide 3: The Ghost ── */}
+      <section className={`oh-slide${slide === 3 ? " active" : ""}`}>
+        <GhostSlide onNext={() => goTo(4)} active={slide === 3} topLeadName={topLead?.clientName ?? topLead?.sourceValue ?? null} />
+      </section>
+
+      {/* ── Slide 4: The Operator ── */}
+      <section className={`oh-slide${slide === 4 ? " active" : ""}`}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+          <div className="oh-eyebrow">Persona · The Operator</div>
+          <h1 className="oh-hero">
+            When you need a thinking partner,{" "}
+            <em>just ask.</em>
+          </h1>
+          <p className="oh-body">The Operator is your AI strategist on demand — with full context on your pipeline, leads, and vault. Not a chatbot. Your associate.</p>
+          <div className="oh-operator-card" style={{ margin: "2rem auto 0", maxWidth: 560 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.9rem" }}>
+              <div className="oh-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--term)", boxShadow: "0 0 10px var(--term)" }} />
+              <span style={{ fontFamily: mono, fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--gold)" }}>The Operator · Active</span>
+            </div>
+            <div style={{ padding: "0.5rem 0.7rem", background: "rgba(255,255,255,0.02)", borderRadius: 6, marginBottom: "0.9rem", fontFamily: mono, fontSize: "0.78rem", color: "var(--muted)" }}>
+              <span style={{ color: "var(--gold)" }}>&gt; </span>What's blocking my top deals?
+            </div>
+            <div style={{ fontFamily: serif, fontSize: "0.98rem", lineHeight: 1.6, color: "var(--ink)", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "0.9rem" }}>
+              Two of your highest-value deals are stalled — the proposal step has been open more than nine days. The Ghost has drafted next-touch emails for both.{" "}
+              <strong style={{ color: "var(--gold-bright)", fontStyle: "italic", fontWeight: 500 }}>Both are in your queue, ready to send.</strong>{" "}
+              One has signal: their CFO viewed your last deck twice.
+            </div>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.5rem", marginTop: "1.2rem" }}>
+            {chips.map(c => (
+              <div key={c} style={{ padding: "0.38rem 0.85rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 100, color: "var(--muted)", fontFamily: mono, fontSize: "0.68rem" }}>{c}</div>
+            ))}
+          </div>
+          <button className="oh-cta" onClick={() => goTo(5)}>How does it know my voice? →</button>
+        </div>
+      </section>
+
+      {/* ── Slide 5: The Vault ── */}
+      <section className={`oh-slide${slide === 5 ? " active" : ""}`}>
+        <div style={{ width: "100%", maxWidth: 720, textAlign: "center" }}>
+          <div className="oh-eyebrow">The Vault</div>
+          <h1 className="oh-hero">
+            Your methodology, in.<br />
+            <em>Your voice, out.</em>
+          </h1>
+          <p className="oh-body">Generic AI gives generic advice. The Vault holds your frameworks, pricing logic, and objection scripts — and the AI reads it before every analysis.</p>
+          <div className="oh-bento" style={{ margin: "2rem auto 0", maxWidth: 560, padding: "1.4rem" }}>
+            <div className="oh-vault-grid">
+              {vaultItems.map(item => (
+                <div key={item.title} className="oh-vault-item">
+                  <div style={{ fontFamily: mono, fontSize: "0.5rem", letterSpacing: "0.16em", textTransform: "uppercase" as const, color: "var(--gold)", marginBottom: "0.3rem" }}>{item.tag}</div>
+                  <div style={{ fontFamily: serif, fontSize: "0.78rem", color: "var(--ink)", lineHeight: 1.35 }}>{item.title}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center" as const, margin: "0.9rem auto 0.5rem", fontFamily: mono, fontSize: "0.62rem", letterSpacing: "0.14em", color: "var(--gold)" }}>Auto-injected into every AI call ↓</div>
+            <div style={{ padding: "0.85rem 1rem", background: "rgba(255,255,255,0.02)", borderLeft: "2px solid var(--gold)", borderRadius: "0 8px 8px 0", fontFamily: serif, fontStyle: "italic", fontSize: "0.9rem", color: "var(--ink)", lineHeight: 1.55, textAlign: "left" as const }}>
+              "Based on your retainer pricing framework and the SaaS growth case study, here's a three-tier proposal for Acme Corp…"
+            </div>
+          </div>
+          <button className="oh-cta" onClick={() => goTo(6)}>What does this save me? →</button>
+        </div>
+      </section>
+
+      {/* ── Slide 6: Hours saved ── */}
+      <section className={`oh-slide${slide === 6 ? " active" : ""}`}>
+        <HoursSlide onNext={() => goTo(7)} active={slide === 6} />
+      </section>
+
+      {/* ── Slide 7: Enter ── */}
+      <section className={`oh-slide${slide === 7 ? " active" : ""}`}>
+        <div style={{ width: "100%", maxWidth: 680, textAlign: "center" }}>
+          <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 800, height: 800, opacity: 0.7 }} />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div className="oh-eyebrow">You're ready.</div>
+            <h1 className="oh-hero">
+              <WordReveal text="The House" delay={100} />{" "}
+              <WordReveal text="is yours." gold delay={500} />
+            </h1>
+            <p className="oh-sub">Your operator is standing by. Your pipeline is waiting. Your Ghost is already working.</p>
+            <div style={{ marginTop: "2.4rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.8rem" }}>
+              <button className="oh-cta" style={{ fontSize: "1rem", padding: "1.1rem 2.8rem" }} onClick={finish} disabled={welcomed}>
+                {welcomed ? "Welcome home…" : "Enter the House →"}
+              </button>
+              <button className="oh-ghost-btn" onClick={() => goTo(1)}>Walk it again</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
