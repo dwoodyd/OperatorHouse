@@ -9,7 +9,7 @@
       greeting, OH lockup, and slow ambient light sweep (2800–4800ms)
    5. Welcome Moment fades out → onComplete fires (4800–5300ms)
    ============================================================================= */
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -24,6 +24,39 @@ function getGreeting() {
 
 interface OHSplashProps {
   onComplete: () => void;
+}
+
+
+// Ambient particle canvas for the welcome moment
+function SplashParticles() {
+  const ref = React.useRef<HTMLCanvasElement>(null);
+  React.useEffect(() => {
+    const canvas = ref.current; if (!canvas) return;
+    const ctx = canvas.getContext('2d'); if (!ctx) return;
+    let raf: number;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize(); window.addEventListener('resize', resize);
+    const pts = Array.from({ length: 40 }, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.3,
+      vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
+      o: Math.random() * 0.35 + 0.08,
+    }));
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pts.forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(216,168,90,${p.o})`; ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+  return <canvas ref={ref} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5 }} />;
 }
 
 export default function OHSplash({ onComplete }: OHSplashProps) {
@@ -128,6 +161,7 @@ export default function OHSplash({ onComplete }: OHSplashProps) {
             overflow: "hidden",
           }}
         >
+          <SplashParticles />
           {/* Slow ambient light sweep */}
           <div style={{
             position: "absolute", inset: 0, pointerEvents: "none",
@@ -157,16 +191,24 @@ export default function OHSplash({ onComplete }: OHSplashProps) {
           <div style={{
             marginTop: 28,
             fontFamily: "Playfair Display, serif",
-            fontSize: "clamp(22px, 4vw, 32px)",
-            fontWeight: 600,
+            fontSize: "clamp(26px, 5vw, 42px)",
+            fontWeight: 700,
             color: "#f5f0e8",
-            letterSpacing: "0.01em",
+            letterSpacing: "-0.01em",
             textAlign: "center",
             opacity: welcomeIn ? 1 : 0,
             transform: welcomeIn ? "translateY(0)" : "translateY(10px)",
             transition: "opacity 700ms ease 300ms, transform 700ms ease 300ms",
           }}>
-            {greeting}
+            {greeting.split(' ').map((w, i) => (
+              <span key={i} style={{
+                display: 'inline-block',
+                opacity: welcomeIn ? 1 : 0,
+                transform: welcomeIn ? 'translateY(0)' : 'translateY(10px)',
+                transition: `opacity 600ms ease ${300 + i * 90}ms, transform 600ms cubic-bezier(0.22,1,0.36,1) ${300 + i * 90}ms`,
+                marginRight: i < greeting.split(' ').length - 1 ? '0.28em' : 0,
+              }}>{w}</span>
+            ))}
           </div>
 
           {/* Sub-line */}

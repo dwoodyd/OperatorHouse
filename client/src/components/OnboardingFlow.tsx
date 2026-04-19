@@ -39,16 +39,20 @@ const GLOBAL_CSS = `
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: 5rem 2rem 4rem;
-    opacity: 0; transform: translateY(22px) scale(0.985);
-    transition: opacity 750ms cubic-bezier(0.22,1,0.36,1), transform 750ms cubic-bezier(0.22,1,0.36,1);
+    opacity: 0; transform: translateX(48px) scale(0.97);
+    transition: opacity 680ms cubic-bezier(0.22,1,0.36,1), transform 680ms cubic-bezier(0.22,1,0.36,1);
     pointer-events: none; overflow-y: auto; z-index: 1;
   }
   .oh-slide.active {
-    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+    opacity: 1; transform: translateX(0) scale(1); pointer-events: auto;
   }
-  .oh-slide.exit-up {
-    opacity: 0; transform: translateY(-22px) scale(0.985);
+  .oh-slide.exit-left {
+    opacity: 0; transform: translateX(-48px) scale(0.97);
     transition: opacity 500ms ease, transform 500ms ease;
+    pointer-events: none;
+  }
+  .oh-slide.enter-right {
+    transform: translateX(48px) scale(0.97);
   }
 
   /* Word-reveal animation */
@@ -405,6 +409,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const goldoutRef = useRef<HTMLDivElement>(null);
   const slide1Ref = useRef<HTMLElement>(null);
   const doorWrapRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => { if (isReplay) refetchTopLead(); }, [isReplay]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -432,6 +437,22 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onComplete]);
+
+  // Touch swipe
+  useEffect(() => {
+    const onStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+    const onEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      touchStartX.current = null;
+      if (Math.abs(dx) < 40) return;
+      if (dx < 0) setSlide(s => { const n = Math.min(s + 1, TOTAL); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} return n; });
+      else setSlide(s => { const n = Math.max(s - 1, 1); try { sessionStorage.setItem("oh_slide_progress", String(n)); } catch {} return n; });
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
+  }, []);
 
   const enterTheHouse = () => {
     if (entering) return;
