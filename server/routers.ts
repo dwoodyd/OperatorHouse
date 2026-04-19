@@ -544,6 +544,18 @@ ${contextBlock}`;
         });
         return { url: session.url };
       }),
+    billingPortal: protectedProcedure
+      .input(z.object({ origin: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const { stripe: stripeClient } = await import('./stripe');
+        const user = ctx.user as { stripeCustomerId?: string };
+        if (!user.stripeCustomerId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'No subscription found' });
+        const session = await stripeClient.billingPortal.sessions.create({
+          customer: user.stripeCustomerId,
+          return_url: `${input.origin}/settings`,
+        });
+        return { url: session.url };
+      }),
     subscriptionStatus: protectedProcedure.query(async ({ ctx }) => ({
       status: (ctx.user as { subscriptionStatus?: string }).subscriptionStatus ?? 'inactive',
     })),

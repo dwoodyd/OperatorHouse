@@ -4,7 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle } from "lucide-react";
+import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle, CreditCard } from "lucide-react";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 
 const APP_VERSION = "1.0.0";
@@ -132,6 +132,41 @@ function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Manage Subscription Button ──────────────────────────────────────────────
+function ManageSubscriptionButton() {
+  const billingPortal = trpc.stripe.billingPortal.useMutation({
+    onSuccess: ({ url }) => { if (url) window.open(url, '_blank'); },
+    onError: (e) => toast.error(e.message),
+  });
+  return (
+    <button
+      onClick={() => billingPortal.mutate({ origin: window.location.origin })}
+      disabled={billingPortal.isPending}
+      style={{
+        marginTop: "10px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "9px 16px",
+        background: "transparent",
+        border: "1px solid rgba(245,166,35,0.35)",
+        borderRadius: "6px",
+        color: "var(--amber)",
+        fontSize: "12px",
+        fontFamily: "DM Sans, sans-serif",
+        fontWeight: 500,
+        cursor: billingPortal.isPending ? "not-allowed" : "pointer",
+        opacity: billingPortal.isPending ? 0.6 : 1,
+        width: "100%",
+        justifyContent: "center",
+      }}
+    >
+      <CreditCard size={13} />
+      {billingPortal.isPending ? "Opening…" : "Manage Subscription"}
+    </button>
   );
 }
 
@@ -323,6 +358,8 @@ export default function Settings() {
               Terms of Service
             </a>
           </div>
+          {/* Manage Subscription */}
+          <ManageSubscriptionButton />
           {/* Replay Intro */}
           <ReplayIntroButton />
         </div>
