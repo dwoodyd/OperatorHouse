@@ -1,8 +1,8 @@
 /* Operator House — Service Worker v1.0.0
    Cache-first for static assets, network-first for API calls */
 
-const CACHE_NAME = "oh-v1";
-const STATIC_ASSETS = ["/", "/about", "/privacy", "/terms"];
+const CACHE_NAME = "oh-v2";
+const STATIC_ASSETS = ["/", "/offline.html", "/about", "/privacy", "/terms"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -56,6 +56,6 @@ self.addEventListener("fetch", (event) => {
 
   // Network-first for HTML navigation
   event.respondWith(
-    fetch(request).catch(() => caches.match(request) || caches.match("/"))
+    fetch(request).catch(() => caches.match(request) || caches.match("/offline.html") || caches.match("/"))
   );
 });

@@ -14,16 +14,18 @@ import React, { useEffect, useState } from "react";
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
-function getGreeting() {
+function getGreeting(name?: string | null) {
+  const who = name ? name.split(" ")[0] : "Operator";
   const h = new Date().getHours();
-  if (h >= 5 && h < 12) return "Good morning, Operator.";
-  if (h >= 12 && h < 17) return "Good afternoon, Operator.";
-  if (h >= 17 && h < 21) return "Good evening, Operator.";
-  return "The House is ready.";
+  if (h >= 5 && h < 12) return `Good morning, ${who}.`;
+  if (h >= 12 && h < 17) return `Good afternoon, ${who}.`;
+  if (h >= 17 && h < 21) return `Good evening, ${who}.`;
+  return `The House is ready, ${who}.`;
 }
 
 interface OHSplashProps {
   onComplete: () => void;
+  userName?: string | null;
 }
 
 
@@ -59,9 +61,9 @@ function SplashParticles() {
   return <canvas ref={ref} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5 }} />;
 }
 
-export default function OHSplash({ onComplete }: OHSplashProps) {
+export default function OHSplash({ onComplete, userName }: OHSplashProps) {
   const [phase, setPhase] = useState<"idle" | "open" | "shine" | "exit" | "welcome" | "welcomeExit">("idle");
-  const greeting = getGreeting();
+  const greeting = getGreeting(userName);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("open"),        800);

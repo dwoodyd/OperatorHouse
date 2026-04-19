@@ -1,10 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OHSplash from "./components/OHSplash";
+import { useAuth } from "./_core/hooks/useAuth";
 import OnboardingFlow from "./components/OnboardingFlow";
 import OfflineBanner from "./components/OfflineBanner";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -49,8 +50,71 @@ function Router() {
  * Handles both the first-run gate AND the replay overlay.
  * Must be rendered inside IntroReplayProvider.
  */
+
+// ── PWA Install Banner ────────────────────────────────────────────────────────
+function PWAInstallBanner() {
+  const [prompt, setPrompt] = useState<any>(null);
+  const [dismissed, setDismissed] = useState(() => {
+    try { return localStorage.getItem("oh_pwa_dismissed") === "1"; } catch { return false; }
+  });
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler as EventListener);
+    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
+  }, []);
+
+  if (!prompt || dismissed) return null;
+
+  const install = async () => {
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === "accepted" || outcome === "dismissed") {
+      setPrompt(null);
+      if (outcome === "dismissed") {
+        try { localStorage.setItem("oh_pwa_dismissed", "1"); } catch {}
+        setDismissed(true);
+      }
+    }
+  };
+
+  const dismiss = () => {
+    try { localStorage.setItem("oh_pwa_dismissed", "1"); } catch {}
+    setDismissed(true);
+    setPrompt(null);
+  };
+
+  return (
+    <div style={{
+      position: "fixed", bottom: "1.2rem", left: "50%", transform: "translateX(-50%)",
+      zIndex: 500, display: "flex", alignItems: "center", gap: "0.8rem",
+      background: "rgba(14,12,9,0.95)", border: "1px solid rgba(216,168,90,0.35)",
+      borderRadius: "100px", padding: "0.55rem 0.8rem 0.55rem 1.1rem",
+      boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(216,168,90,0.08)",
+      backdropFilter: "blur(20px)",
+      fontFamily: "'JetBrains Mono','Fira Code',monospace",
+    }}>
+      <span style={{ fontSize: "0.72rem", color: "rgba(240,234,216,0.75)", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>
+        Install Operator House
+      </span>
+      <button onClick={install} style={{
+        background: "rgba(216,168,90,0.9)", color: "#0e0c09", border: "none",
+        borderRadius: "100px", padding: "0.3rem 0.85rem",
+        fontSize: "0.7rem", fontWeight: 700, cursor: "pointer",
+        fontFamily: "inherit", letterSpacing: "0.06em",
+        transition: "background 200ms",
+      }}>Add to Home</button>
+      <button onClick={dismiss} style={{
+        background: "transparent", border: "none", color: "rgba(255,255,255,0.3)",
+        cursor: "pointer", fontSize: "0.9rem", lineHeight: 1, padding: "0 0.2rem",
+      }}>×</button>
+    </div>
+  );
+}
+
 function IntroLayer() {
   const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
+  const { user } = useAuth();
 
   const [splashDone, setSplashDone] = useState(() =>
     sessionStorage.getItem("oh_splash_shown") === "true"
@@ -70,14 +134,14 @@ function IntroLayer() {
 
   // Replay takes priority over the first-run gate
   if (_replayPhase === "splash") {
-    return <OHSplash onComplete={_onSplashComplete} />;
+    return <OHSplash onComplete={_onSplashComplete} userName={user?.name} />;
   }
   if (_replayPhase === "onboarding") {
     return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
   }
 
   // Normal first-run flow
-  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} />;
+  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} userName={user?.name} />;
   if (!onboardingDone) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
 
   return null;
@@ -102,6 +166,7 @@ function App() {
               }}
             />
             <IntroLayer />
+            <PWAInstallBanner />
             <Router />
           </TooltipProvider>
         </IntroReplayProvider>
