@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
+import { SpectreWidget } from "@/components/SpectreWidget";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -439,6 +440,9 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
         {lines.map((line, i) => (
           <div key={i} style={{ color: colorMap[line.type], whiteSpace: "nowrap" as const, minHeight: "1.5em" }}>{displayed[i]}</div>
         ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "1.6rem" }}>
+        <SpectreWidget size="corner" message={"I ran 12 audits\nwhile you slept."} showMessage={active} />
       </div>
       <button className="oh-cta" onClick={onNext}>Meet The Operator →</button>
     </div>

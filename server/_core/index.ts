@@ -3,6 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { registerStorageProxy } from "./storageProxy";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -60,6 +61,7 @@ async function startServer() {
   app.use("/api/oauth/callback", authRateLimiter);
 
   // OAuth callback under /api/oauth/callback
+  registerStorageProxy(app);
   registerOAuthRoutes(app);
 
   // Rate limiting for expensive AI endpoints (strategy generation, lead audit)

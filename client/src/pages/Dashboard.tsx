@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import FirstMission from "@/components/FirstMission";
+import { SpectreCornerWidget } from "@/components/SpectreWidget";
 import {
   TrendingUp, Clock, ArrowRight, Zap, Target, Brain,
   ChevronRight, AlertTriangle, Sparkles, RefreshCw,
@@ -449,6 +450,7 @@ export default function Dashboard() {
 
       </>)}
       </div>
+      <SpectreCornerWidget message={"Your Ghost is ready.\nAsk anything about your pipeline, leads, or strategy."} />
     </AppLayout>
   );
 }

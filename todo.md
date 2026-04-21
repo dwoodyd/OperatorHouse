@@ -211,3 +211,9 @@
 - [x] Onboarding pagination dots unresponsive
 - [x] Lead analyzer: validation error on first attempt + silent failure on second
 - [x] Missing sign-out button in sidebar/profile
+
+## The Specter Mascot
+- [ ] Generate character sheet: full body, idle pose, small icon (transparent PNG)
+- [ ] Build SpectreWidget React component with CSS idle/breathe/eye-glow animations
+- [ ] Wire Specter into onboarding slides (appears slide 3+)
+- [ ] Wire Specter corner widget into dashboard with speech bubble
