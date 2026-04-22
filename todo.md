@@ -235,3 +235,7 @@
 - [x] Specter on Pricing/paywall page with persuasive line
 - [x] Ghost terminal widget on Dashboard (live pipeline one-liner)
 - [ ] Publish to operatorhouse.click
+
+## Onboarding Flow Fix (2026-04-22)
+- [x] Reorder: onboarding slides shown once BEFORE welcome/sign-in page (localStorage gate)
+- [x] Returning users skip slides entirely and go straight to app

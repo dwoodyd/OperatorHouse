@@ -176,20 +176,22 @@ function IntroLayer() {
   const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
   const { user } = useAuth();
 
+  // Onboarding slides: shown ONCE ever, gated by localStorage (persists across sessions)
+  const [onboardingDone, setOnboardingDone] = useState(() =>
+    localStorage.getItem("oh_onboarding_complete") === "true"
+  );
+  // Splash: shown once per session (brief brand moment, only after onboarding is permanently done)
   const [splashDone, setSplashDone] = useState(() =>
     sessionStorage.getItem("oh_splash_shown") === "true"
   );
-  const [onboardingDone, setOnboardingDone] = useState(() =>
-    sessionStorage.getItem("oh_onboarding_shown") === "true"
-  );
 
+  const handleOnboardingComplete = () => {
+    localStorage.setItem("oh_onboarding_complete", "true");
+    setOnboardingDone(true);
+  };
   const handleSplashComplete = () => {
     sessionStorage.setItem("oh_splash_shown", "true");
     setSplashDone(true);
-  };
-  const handleOnboardingComplete = () => {
-    sessionStorage.setItem("oh_onboarding_shown", "true");
-    setOnboardingDone(true);
   };
 
   // Replay takes priority over the first-run gate
@@ -200,10 +202,11 @@ function IntroLayer() {
     return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
   }
 
-  // Normal first-run flow
-  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} userName={user?.name} />;
+  // Step 1: New visitor — show onboarding slides FIRST (before welcome/sign-in page)
   if (!onboardingDone) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
-
+  // Step 2: Each new session — brief splash after onboarding is permanently done
+  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} userName={user?.name} />;
+  // Step 3: Returning user — nothing to show, Router renders Home or app normally
   return null;
 }
 
