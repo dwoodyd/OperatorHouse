@@ -5,7 +5,7 @@
 
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { PageLoader, EmptyState } from "@/components/StateUI";
+import { PageLoader, SpectreEmptyState } from "@/components/StateUI";
 import React from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -108,9 +108,9 @@ export default function Analytics() {
         </div>
 
         {!hasData ? (
-          <EmptyState
-            icon={BarChart3}
-            title="No activity data yet"
+          <SpectreEmptyState
+            title="No activity data yet."
+            spectreQuote="The numbers don't lie. There just aren't any yet. Start moving deals."
             body="Add leads, close deals, and generate strategies — your charts will populate automatically."
           />
         ) : (

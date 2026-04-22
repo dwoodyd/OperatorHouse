@@ -10,7 +10,7 @@ import {
   Target, Loader2, Trash2, ChevronDown, ChevronUp,
   Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2
 } from "lucide-react";
-import { SkeletonRows, EmptyState } from "@/components/StateUI";
+import { SkeletonRows, SpectreEmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 
 const SCORE_COLOR = (score: number) => {
@@ -192,9 +192,9 @@ export default function LeadIntel() {
         {isLoading ? (
           <SkeletonRows rows={3} />
         ) : !leads?.length ? (
-          <EmptyState
-            icon={Target}
+          <SpectreEmptyState
             title="No leads analyzed yet."
+            spectreQuote="I've been watching the market. Feed me a lead and I'll tell you everything."
             body="Paste a lead URL or description above to run the first Operator Audit."
           />
         ) : (

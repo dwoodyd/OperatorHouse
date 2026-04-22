@@ -8,7 +8,7 @@ import { createVaultItemSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Plus, Search, Archive, Loader2, X, Trash2, FileText, BookOpen, Mic, Layout, FlaskConical, StickyNote } from "lucide-react";
-import { SkeletonCards, EmptyState } from "@/components/StateUI";
+import { SkeletonCards, SpectreEmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 
 type VaultType = "framework" | "case_study" | "voice_note" | "template" | "research" | "note";
@@ -129,9 +129,9 @@ export default function Vault() {
         {isLoading ? (
           <SkeletonCards count={6} />
         ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={Archive}
+          <SpectreEmptyState
             title={search || filterType !== "all" ? "No items match your filter." : "Your Vault is empty."}
+            spectreQuote={search || filterType !== "all" ? "Nothing here matches that. Try broadening the search." : "An empty vault is a missed opportunity. What do you know that others don't?"}
             body={!search && filterType === "all" ? "Start adding frameworks, case studies, and templates." : undefined}
           />
         ) : (

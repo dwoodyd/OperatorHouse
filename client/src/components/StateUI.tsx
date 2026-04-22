@@ -4,6 +4,7 @@
    ============================================================================= */
 import type { LucideIcon } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { SpectreWidget } from "@/components/SpectreWidget";
 
 /* ── Shimmer skeleton row ───────────────────────────────────────────────── */
 interface SkeletonRowsProps {
@@ -141,6 +142,81 @@ export function EmptyState({ icon: Icon, title, body, action }: EmptyStateProps)
         <p style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{title}</p>
         {body && <p style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6, maxWidth: 340 }}>{body}</p>}
       </div>
+      {action && <div>{action}</div>}
+    </div>
+  );
+}
+
+/* ── Specter Empty State — branded mascot variant ───────────────────────── */
+interface SpectreEmptyStateProps {
+  /** Short headline, e.g. "No leads yet." */
+  title: string;
+  /** Specter's spoken one-liner — shows in speech bubble */
+  spectreQuote: string;
+  /** Optional body copy below the title */
+  body?: string;
+  /** Optional CTA button / link */
+  action?: React.ReactNode;
+  /** Extra vertical padding override (defaults to py-16) */
+  compact?: boolean;
+}
+
+/**
+ * SpectreEmptyState — replaces generic empty states with The Specter mascot.
+ * The mascot floats with an idle animation and shows a contextual speech bubble.
+ */
+export function SpectreEmptyState({
+  title,
+  spectreQuote,
+  body,
+  action,
+  compact = false,
+}: SpectreEmptyStateProps) {
+  return (
+    <div
+      className={`flex flex-col items-center justify-center gap-5 text-center ${
+        compact ? "py-10" : "py-16"
+      }`}
+      style={{
+        animation: "oh-fade-up 400ms ease both",
+        willChange: "transform, opacity",
+      }}
+    >
+      {/* Specter figure with speech bubble */}
+      <div style={{ position: "relative", display: "inline-flex", justifyContent: "center" }}>
+        <SpectreWidget
+          size="corner"
+          message={spectreQuote}
+          showMessage={true}
+        />
+      </div>
+
+      {/* Text block */}
+      <div style={{ maxWidth: 360 }}>
+        <p
+          style={{
+            fontFamily: "Playfair Display, serif",
+            fontSize: 16,
+            fontWeight: 600,
+            color: "var(--text-primary)",
+            marginBottom: 6,
+          }}
+        >
+          {title}
+        </p>
+        {body && (
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: 13,
+              lineHeight: 1.65,
+            }}
+          >
+            {body}
+          </p>
+        )}
+      </div>
+
       {action && <div>{action}</div>}
     </div>
   );

@@ -11,7 +11,7 @@ import {
   CheckCircle2, Circle, Plus, Trash2, Loader2,
   AlertTriangle, Clock, Zap, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { SkeletonRows, EmptyState } from "@/components/StateUI";
+import { SkeletonRows, SpectreEmptyState } from "@/components/StateUI";
 
 const PRIORITY_CONFIG = {
   urgent: { label: "URGENT", color: "#F87171", bg: "rgba(248,113,113,0.08)" },
@@ -184,10 +184,11 @@ export default function Tasks() {
           {isLoading ? (
             <SkeletonRows rows={4} />
           ) : filtered.length === 0 ? (
-            <EmptyState
-              icon={CheckCircle2}
+            <SpectreEmptyState
               title={filter === "done" ? "No completed tasks yet." : "No tasks yet."}
+              spectreQuote={filter === "done" ? "Nothing marked done yet. I respect the grind." : "Your task list is empty. I'll hold the silence — for now."}
               body={filter !== "done" ? "Add one above or let the Ghost suggest actions from your leads." : undefined}
+              compact
             />
           ) : (
             filtered.map((task) => {

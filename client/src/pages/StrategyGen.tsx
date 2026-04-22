@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { SpectreEmptyState } from "@/components/StateUI";
 
 const TEMPLATES = [
   { id: "full" as const, label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
@@ -278,12 +279,13 @@ export default function StrategyGen() {
             {/* Right: Output Panel */}
             <div className="lg:col-span-3">
               {!result && !generateStrategy.isPending && (
-                <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4 glass-panel">
-                  <FileText size={40} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
-                  <div className="text-center">
-                    <p style={{ color: 'var(--text-primary)', fontSize: '15px', fontFamily: 'Playfair Display, serif' }}>No strategy generated yet</p>
-                    <p className="data-label mt-1">Fill in client details and click Generate Strategy</p>
-                  </div>
+                <div className="glass-panel" style={{ minHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <SpectreEmptyState
+                    title="No strategy generated yet."
+                    spectreQuote="Give me a client, a deal, and a goal. I'll build the playbook."
+                    body="Fill in the client details on the left and click Generate Strategy."
+                    compact
+                  />
                 </div>
               )}
 
@@ -365,10 +367,11 @@ export default function StrategyGen() {
                 <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--amber)', borderTopColor: 'transparent' }} />
               </div>
             ) : !strategies?.length ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <FileText size={32} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No strategies generated yet.</p>
-              </div>
+              <SpectreEmptyState
+                title="No strategies generated yet."
+                spectreQuote="Every operator needs a playbook. Let's build yours."
+                body="Generate your first strategy from the Build tab."
+              />
             ) : (
               <div className="space-y-3">
                 {strategies.map((s) => {

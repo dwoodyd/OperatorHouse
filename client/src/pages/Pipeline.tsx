@@ -245,8 +245,22 @@ export default function Pipeline() {
                 {/* Deal Cards */}
                 <div className="flex-1 p-2 space-y-2 overflow-y-auto">
                   {dealsByStage(stage).length === 0 && (
-                    <div className="py-6 text-center" style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-                      Drop deals here
+                    <div className="py-8 flex flex-col items-center gap-3" style={{ opacity: 0.7 }}>
+                      <img
+                        src="/manus-storage/specter_icon_ce569ea5.png"
+                        alt="The Specter"
+                        style={{
+                          height: 36,
+                          width: 'auto',
+                          filter: 'drop-shadow(0 0 6px rgba(212,175,55,0.25))',
+                          animation: 'specter-idle 4s ease-in-out infinite',
+                        }}
+                      />
+                      <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'Fira Code, monospace' }}>
+                        {stage === 'Discovery' ? 'Waiting for leads' :
+                         stage === 'Closed' ? 'Nothing closed yet' :
+                         'Drop deals here'}
+                      </span>
                     </div>
                   )}
                   {dealsByStage(stage).map((deal) => (

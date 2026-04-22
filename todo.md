@@ -213,10 +213,17 @@
 - [x] Missing sign-out button in sidebar/profile
 
 ## The Specter Mascot
-- [ ] Generate character sheet: full body, idle pose, small icon (transparent PNG)
-- [ ] Build SpectreWidget React component with CSS idle/breathe/eye-glow animations
-- [ ] Wire Specter into onboarding slides (appears slide 3+)
-- [ ] Wire Specter corner widget into dashboard with speech bubble
+- [x] Generate character sheet: full body, idle pose, small icon (transparent PNG)
+- [x] Build SpectreWidget React component with CSS idle/breathe/eye-glow animations
+- [x] Wire Specter into onboarding slides (appears slide 3+)
+- [x] Wire Specter corner widget into dashboard with speech bubble
+- [x] SpectreEmptyState component added to StateUI.tsx (mascot + speech bubble + title + body + action)
+- [x] Wire SpectreEmptyState into Lead Intelligence (no leads)
+- [x] Wire SpectreEmptyState into Tasks (no tasks / no completed tasks)
+- [x] Wire SpectreEmptyState into Vault (empty / no filter match)
+- [x] Wire SpectreEmptyState into Strategy Generator (output panel + history tab)
+- [x] Wire SpectreEmptyState into Analytics (no activity data)
+- [x] Wire Specter icon into Pipeline kanban columns (empty column per stage)
 
 ## Security Hardening (Audit 2026-04-22)
 - [x] Install helmet, cors, rate-limit-redis, ioredis packages
