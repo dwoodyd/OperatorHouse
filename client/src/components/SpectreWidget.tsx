@@ -12,6 +12,8 @@ interface SpectreWidgetProps {
   message?: string;
   /** If true, shows the speech bubble immediately */
   showMessage?: boolean;
+  /** If true, shows the speech bubble on hover (overrides showMessage while hovered) */
+  showOnHover?: boolean;
   /** Called when the user dismisses the widget */
   onDismiss?: () => void;
   className?: string;
@@ -29,6 +31,7 @@ export function SpectreWidget({
   size = "corner",
   message,
   showMessage = false,
+  showOnHover = false,
   onDismiss,
   className = "",
 }: SpectreWidgetProps) {
@@ -134,10 +137,16 @@ export function SpectreWidget({
       {/* Character image */}
       <div
         className="specter-figure"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => {
+          setHovered(true);
+          if (showOnHover && message) setBubbleVisible(true);
+        }}
+        onMouseLeave={() => {
+          setHovered(false);
+          if (showOnHover) setBubbleVisible(false);
+        }}
         onClick={() => {
-          if (message) setBubbleVisible((v) => !v);
+          if (message && !showOnHover) setBubbleVisible((v) => !v);
         }}
         style={{
           cursor: message ? "pointer" : "default",
@@ -256,7 +265,8 @@ export function SpectreCornerWidget({
       <SpectreWidget
         size="corner"
         message={message}
-        showMessage={autoShow && !!message}
+        showMessage={false}
+        showOnHover={!!message}
         onDismiss={() => {
           setDismissed(true);
           try {

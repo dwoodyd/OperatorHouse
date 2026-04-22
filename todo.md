@@ -246,3 +246,6 @@
 
 ## 404 Recovery Page (2026-04-22)
 - [x] Replace generic 404 with branded Specter recovery page (no dead ends, clear path back to app)
+
+## Specter Hover Speech Bubble (2026-04-22)
+- [x] Specter corner widget on Dashboard shows speech bubble on hover with live context

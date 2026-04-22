@@ -305,6 +305,13 @@ export default function Dashboard() {
   }, []);
 
   const totalDeals = pipelineDeals?.length ?? 0;
+  const staleCount = staleDeals?.length ?? 0;
+  const hoverMessage =
+    staleCount > 0
+      ? `${staleCount} deal${staleCount !== 1 ? 's' : ''} going cold.\nMove on ${staleCount === 1 ? 'it' : 'them'} today.`
+      : totalDeals === 0
+        ? "No active deals yet.\nThe pipeline is quiet."
+        : `${totalDeals} deal${totalDeals !== 1 ? 's' : ''} in motion.\nI'm watching everything.`;
   const pipelineStageCounts = ["Discovery", "Analysis", "Strategy", "Proposal", "Closed"].map((stage) => ({
     stage, count: pipelineDeals?.filter((d) => d.stage === stage).length ?? 0, color: STAGE_COLORS[stage],
   }));
@@ -512,7 +519,7 @@ export default function Dashboard() {
 
       </>)}
       </div>
-      <SpectreCornerWidget message={"Your Ghost is ready.\nAsk anything about your pipeline, leads, or strategy."} />
+      <SpectreCornerWidget message={hoverMessage} />
     </AppLayout>
   );
 }
