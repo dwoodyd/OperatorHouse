@@ -249,3 +249,6 @@
 
 ## Specter Hover Speech Bubble (2026-04-22)
 - [x] Specter corner widget on Dashboard shows speech bubble on hover with live context
+
+## Specter Idle Drift Animation (2026-04-22)
+- [x] Specter intensifies float animation when user is idle (60s), auto-whispers, resets on activity

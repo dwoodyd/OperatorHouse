@@ -14,6 +14,8 @@ interface SpectreWidgetProps {
   showMessage?: boolean;
   /** If true, shows the speech bubble on hover (overrides showMessage while hovered) */
   showOnHover?: boolean;
+  /** If true, switches to the deeper idle-drift animation (user is inactive) */
+  idle?: boolean;
   /** Called when the user dismisses the widget */
   onDismiss?: () => void;
   className?: string;
@@ -32,6 +34,7 @@ export function SpectreWidget({
   message,
   showMessage = false,
   showOnHover = false,
+  idle = false,
   onDismiss,
   className = "",
 }: SpectreWidgetProps) {
@@ -150,11 +153,15 @@ export function SpectreWidget({
         }}
         style={{
           cursor: message ? "pointer" : "default",
-          animation: "specter-idle 4s ease-in-out infinite",
+          animation: idle
+            ? "specter-drift 6s ease-in-out infinite"
+            : "specter-idle 4s ease-in-out infinite",
           filter: hovered
-            ? "drop-shadow(0 0 18px rgba(212,175,55,0.55)) brightness(1.08)"
-            : "drop-shadow(0 0 10px rgba(212,175,55,0.25))",
-          transition: "filter 0.4s ease",
+            ? "drop-shadow(0 0 22px rgba(212,175,55,0.7)) brightness(1.12)"
+            : idle
+              ? "drop-shadow(0 0 16px rgba(212,175,55,0.45)) brightness(1.04)"
+              : "drop-shadow(0 0 10px rgba(212,175,55,0.25))",
+          transition: "filter 0.6s ease, animation-duration 1s ease",
         }}
       >
         <img
@@ -170,7 +177,7 @@ export function SpectreWidget({
             position: "absolute",
             inset: 0,
             pointerEvents: "none",
-            animation: "specter-eye-pulse 3s ease-in-out infinite",
+            animation: idle ? "specter-eye-pulse 1.8s ease-in-out infinite" : "specter-eye-pulse 3s ease-in-out infinite",
             background:
               "radial-gradient(ellipse 20px 10px at 50% 18%, rgba(212,175,55,0.18) 0%, transparent 70%)",
           }}
@@ -208,8 +215,15 @@ export function SpectreWidget({
 
       <style>{`
         @keyframes specter-idle {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-6px); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50%       { transform: translateY(-6px) rotate(0.5deg); }
+        }
+        @keyframes specter-drift {
+          0%   { transform: translateY(0px) rotate(0deg) translateX(0px); }
+          20%  { transform: translateY(-10px) rotate(1.2deg) translateX(3px); }
+          45%  { transform: translateY(-14px) rotate(-0.8deg) translateX(-2px); }
+          70%  { transform: translateY(-8px) rotate(1deg) translateX(4px); }
+          100% { transform: translateY(0px) rotate(0deg) translateX(0px); }
         }
         @keyframes specter-eye-pulse {
           0%, 100% { opacity: 0.4; }
@@ -228,11 +242,16 @@ export function SpectreWidget({
 export function SpectreCornerWidget({
   message,
   autoShow = true,
+  idleAfterMs = 60000,
 }: {
   message?: string;
   autoShow?: boolean;
+  /** Milliseconds of inactivity before switching to idle-drift mode. Default 60s. */
+  idleAfterMs?: number;
 }) {
   const [visible, setVisible] = useState(false);
+  const [isIdle, setIsIdle] = useState(false);
+  const [idleWhispered, setIdleWhispered] = useState(false);
   const [dismissed, setDismissed] = useState(() => {
     try {
       return localStorage.getItem("oh_specter_dismissed") === "1";
@@ -240,12 +259,43 @@ export function SpectreCornerWidget({
       return false;
     }
   });
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const whisperTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Fade in after mount
   useEffect(() => {
     if (dismissed) return;
     const t = setTimeout(() => setVisible(true), 2200);
     return () => clearTimeout(t);
   }, [dismissed]);
+
+  // Idle detection — listen for any user activity to reset the timer
+  useEffect(() => {
+    if (dismissed) return;
+    const resetIdle = () => {
+      setIsIdle(false);
+      setIdleWhispered(false);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      if (whisperTimerRef.current) clearTimeout(whisperTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        setIsIdle(true);
+        // Auto-whisper 4s after entering idle drift
+        whisperTimerRef.current = setTimeout(() => {
+          setIdleWhispered(true);
+          // Auto-dismiss whisper after 8s
+          setTimeout(() => setIdleWhispered(false), 8000);
+        }, 4000);
+      }, idleAfterMs);
+    };
+    const events = ["mousemove", "keydown", "mousedown", "touchstart", "scroll"];
+    events.forEach((e) => window.addEventListener(e, resetIdle, { passive: true }));
+    resetIdle(); // start the timer immediately
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetIdle));
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      if (whisperTimerRef.current) clearTimeout(whisperTimerRef.current);
+    };
+  }, [dismissed, idleAfterMs]);
 
   if (dismissed) return null;
 
@@ -265,8 +315,9 @@ export function SpectreCornerWidget({
       <SpectreWidget
         size="corner"
         message={message}
-        showMessage={false}
-        showOnHover={!!message}
+        showMessage={idleWhispered}
+        showOnHover={!!message && !idleWhispered}
+        idle={isIdle}
         onDismiss={() => {
           setDismissed(true);
           try {
