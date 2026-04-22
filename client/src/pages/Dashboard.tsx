@@ -289,6 +289,7 @@ export default function Dashboard() {
   const { data: metrics, isLoading: metricsLoading } = trpc.dashboard.metrics.useQuery();
   const { data: pipelineDeals } = trpc.pipeline.list.useQuery();
   const { data: clients } = trpc.clients.list.useQuery();
+  const { data: staleDeals } = trpc.briefings.staleDeals.useQuery();
 
   // Show First Mission when user has no data at all
   const isNewUser =
@@ -411,7 +412,7 @@ export default function Dashboard() {
         <GhostTerminalWidget
           deals={totalDeals}
           leads={metrics?.totalLeads ?? 0}
-          staleCount={0}
+          staleCount={staleDeals?.length ?? 0}
         />
         {/* Three-column middle row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

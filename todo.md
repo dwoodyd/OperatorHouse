@@ -239,3 +239,7 @@
 ## Onboarding Flow Fix (2026-04-22)
 - [x] Reorder: onboarding slides shown once BEFORE welcome/sign-in page (localStorage gate)
 - [x] Returning users skip slides entirely and go straight to app
+
+## Ghost Terminal + Replay Button (2026-04-22)
+- [x] Wire real staleCount from trpc.briefings.staleDeals into GhostTerminalWidget
+- [x] Add persistent "Replay Intro" button accessible from inside the app (sidebar + Settings page)

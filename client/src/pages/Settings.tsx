@@ -421,8 +421,6 @@ export default function Settings() {
           </div>
           {/* Notification Preferences */}
           <NotificationPrefsSection />
-          {/* Notification Preferences */}
-          <NotificationPrefsSection />
           {/* Manage Subscription */}
           <ManageSubscriptionButton />
           {/* Replay Intro */}
