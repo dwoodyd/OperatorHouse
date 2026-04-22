@@ -230,3 +230,8 @@
 - [x] Apply Helmet HTTP security headers (CSP disabled in dev, enabled in production)
 - [x] Apply CORS policy whitelisting operatorhouse.click + manus.space + manus.computer domains
 - [x] Upgrade all three rate limiters to use Redis distributed store when REDIS_URL env is present
+
+## Specter + Dashboard Ghost Terminal (2026-04-22)
+- [x] Specter on Pricing/paywall page with persuasive line
+- [x] Ghost terminal widget on Dashboard (live pipeline one-liner)
+- [ ] Publish to operatorhouse.click

@@ -9,7 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import FirstMission from "@/components/FirstMission";
-import { SpectreCornerWidget } from "@/components/SpectreWidget";
+import { SpectreCornerWidget, SpectreWidget } from "@/components/SpectreWidget";
 import {
   TrendingUp, Clock, ArrowRight, Zap, Target, Brain,
   ChevronRight, AlertTriangle, Sparkles, RefreshCw,
@@ -71,6 +71,61 @@ function MetricCard({ label, value, suffix, icon: Icon, trend, color = "var(--am
 }
 
 /* ── Operator Briefing Panel ─────────────────────────────────────────────────── */
+/* ── Ghost Terminal Widget ─────────────────────────────────────────────────── */
+function GhostTerminalWidget({ deals, leads, staleCount }: {
+  deals: number; leads: number; staleCount: number;
+}) {
+  const lines = [
+    { label: "PIPELINE", value: `${deals} active deal${deals !== 1 ? 's' : ''}`, color: 'var(--amber)' },
+    { label: "LEADS",    value: `${leads} audited`,                              color: 'var(--text-secondary)' },
+    { label: "ALERTS",   value: staleCount > 0 ? `${staleCount} stale deal${staleCount !== 1 ? 's' : ''}` : 'All deals active', color: staleCount > 0 ? '#F59E0B' : '#4ADE80' },
+  ];
+  const line =
+    staleCount > 0
+      ? `${staleCount} deal${staleCount !== 1 ? 's' : ''} going cold. I'd move on ${staleCount === 1 ? 'it' : 'them'} today.`
+      : deals === 0
+        ? "No active deals yet. The pipeline is quiet — too quiet."
+        : leads === 0
+          ? "Pipeline is live. Feed me some leads and I'll find the angles."
+          : `${deals} deal${deals !== 1 ? 's' : ''} in motion. ${leads} lead${leads !== 1 ? 's' : ''} on file. You're running clean.`;
+  return (
+    <div
+      className="glass-panel p-5 fade-in-up"
+      style={{
+        borderLeft: '2px solid rgba(212,175,55,0.4)',
+        background: 'linear-gradient(135deg, rgba(212,175,55,0.04) 0%, rgba(14,14,22,0.85) 60%)',
+        animationDelay: '0.3s', opacity: 0,
+      }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <Ghost size={13} style={{ color: 'var(--amber)' }} />
+        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Terminal</span>
+      </div>
+      <div className="space-y-2 mb-4">
+        {lines.map(({ label, value, color }) => (
+          <div key={label} className="flex items-center justify-between">
+            <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 10, letterSpacing: '0.15em', color: 'var(--text-muted)' }}>{label}</span>
+            <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 12, color, fontWeight: 500 }}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 12px',
+          background: 'rgba(212,175,55,0.04)',
+          border: '1px solid rgba(212,175,55,0.12)',
+          borderRadius: 8,
+        }}
+      >
+        <SpectreWidget size="icon" message={line} showMessage={false} />
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, fontStyle: 'italic', flex: 1 }}>
+          &ldquo;{line}&rdquo;
+        </p>
+      </div>
+    </div>
+  );
+}
 function GhostBriefingPanel() {
   const utils = trpc.useUtils();
   const { data: latest } = trpc.briefings.latest.useQuery();
@@ -352,6 +407,12 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Ghost Terminal row */}
+        <GhostTerminalWidget
+          deals={totalDeals}
+          leads={metrics?.totalLeads ?? 0}
+          staleCount={0}
+        />
         {/* Three-column middle row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <GhostBriefingPanel />

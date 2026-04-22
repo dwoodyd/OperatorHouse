@@ -10,6 +10,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2 } from "lucide-react";
+import { SpectreWidget } from "@/components/SpectreWidget";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -331,6 +332,15 @@ export default function Pricing() {
         }}>
           Secure checkout via Stripe · Cancel anytime · No setup fees
         </p>
+
+        {/* Specter conversion nudge */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
+          <SpectreWidget
+            size="corner"
+            message={"The operators who move fastest win.\nClaim your seat before the window closes."}
+            showMessage={true}
+          />
+        </div>
       </div>
 
       <style>{`
