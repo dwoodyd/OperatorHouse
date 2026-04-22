@@ -243,3 +243,6 @@
 ## Ghost Terminal + Replay Button (2026-04-22)
 - [x] Wire real staleCount from trpc.briefings.staleDeals into GhostTerminalWidget
 - [x] Add persistent "Replay Intro" button accessible from inside the app (sidebar + Settings page)
+
+## 404 Recovery Page (2026-04-22)
+- [x] Replace generic 404 with branded Specter recovery page (no dead ends, clear path back to app)
