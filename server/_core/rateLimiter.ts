@@ -3,10 +3,35 @@
  * Prevents API budget exhaustion from rapid-fire requests.
  *
  * Uses IP-based rate limiting (simple and reliable).
- * In production, this is sufficient since each user session maps to a consistent IP.
+ * In production with REDIS_URL set, all limiters share a distributed Redis store
+ * so limits are enforced consistently across multiple server replicas.
  */
-import { rateLimit } from "express-rate-limit";
+import { rateLimit, Options } from "express-rate-limit";
 import { ENV } from "./env";
+
+// Build a Redis store if REDIS_URL is available, otherwise fall back to in-memory.
+function buildStore(): Partial<Options> {
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) return {};
+
+  try {
+    // Dynamic require so the server still starts without ioredis in dev
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { RedisStore } = require("rate-limit-redis");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Redis = require("ioredis");
+    const client = new Redis(redisUrl);
+    client.on("error", (err: Error) =>
+      console.error("[RateLimiter] Redis error:", err.message)
+    );
+    return { store: new RedisStore({ sendCommand: (...args: string[]) => client.call(...args) }) };
+  } catch (e) {
+    console.warn("[RateLimiter] Redis store unavailable, using in-memory:", (e as Error).message);
+    return {};
+  }
+}
+
+const redisStore = buildStore();
 
 /**
  * Auth rate limiter — 5 attempts per 15 minutes per IP.
@@ -23,6 +48,7 @@ export const authRateLimiter = rateLimit({
       code: "AUTH_RATE_LIMITED",
     },
   },
+  ...redisStore,
 });
 
 /**
@@ -43,6 +69,7 @@ export const aiRateLimiter = rateLimit({
       },
     });
   },
+  ...redisStore,
 });
 
 /**
@@ -63,4 +90,5 @@ export const strictAiRateLimiter = rateLimit({
       },
     });
   },
+  ...redisStore,
 });

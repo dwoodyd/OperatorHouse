@@ -217,3 +217,9 @@
 - [ ] Build SpectreWidget React component with CSS idle/breathe/eye-glow animations
 - [ ] Wire Specter into onboarding slides (appears slide 3+)
 - [ ] Wire Specter corner widget into dashboard with speech bubble
+
+## Security Hardening (Audit 2026-04-22)
+- [x] Install helmet, cors, rate-limit-redis, ioredis packages
+- [x] Apply Helmet HTTP security headers (CSP disabled in dev, enabled in production)
+- [x] Apply CORS policy whitelisting operatorhouse.click + manus.space + manus.computer domains
+- [x] Upgrade all three rate limiters to use Redis distributed store when REDIS_URL env is present
