@@ -36,6 +36,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const lastSentRef = useRef<string>("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,8 +55,22 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
     },
     onError: (err) => {
       setIsStreaming(false);
-      toast.error("The Operator is unavailable. Try again.");
-      setMessages((prev) => prev.filter((m) => m.id !== "streaming-placeholder"));
+      const errMsg = err.message?.includes('timed out')
+        ? 'Request timed out — The Operator is thinking hard. Try again.'
+        : err.message || 'The Operator is temporarily unavailable.';
+      // Show error inline in the chat thread so it is always visible
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== 'streaming-placeholder'),
+        {
+          id: `error-${Date.now()}`,
+          role: 'assistant' as const,
+          content: `**Signal interrupted.** ${errMsg}\n\nYour last message has been restored in the input — just hit send again.`,
+          timestamp: new Date(),
+        },
+      ]);
+      // Restore last message so user can retry without retyping
+      setInput(lastSentRef.current);
+      toast.error(errMsg, { duration: 5000 });
     },
   });
 
@@ -80,6 +95,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMsg]);
+    lastSentRef.current = text;
     setInput("");
     setIsStreaming(true);
 

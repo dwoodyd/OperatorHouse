@@ -484,6 +484,7 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
+  const seedSampleData = trpc.onboarding.seedSampleData.useMutation();
   const { data: topLead, refetch: refetchTopLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
   const [slide, setSlide] = useState(() => {
     try { const s = parseInt(sessionStorage.getItem("oh_slide_progress") ?? "1", 10); return isNaN(s) ? 1 : Math.max(1, Math.min(s, TOTAL)); } catch { return 1; }
@@ -772,6 +773,16 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                 {welcomed ? "Welcome home…" : "Enter the House →"}
               </button>
               <button className="oh-ghost-btn" onClick={() => goTo(1)}>Walk it again</button>
+              {!isReplay && (
+                <button
+                  className="oh-ghost-btn"
+                  style={{ opacity: seedSampleData.isSuccess ? 0.5 : 1 }}
+                  onClick={() => { if (!seedSampleData.isSuccess && !seedSampleData.isPending) seedSampleData.mutate(); }}
+                  disabled={seedSampleData.isPending || seedSampleData.isSuccess}
+                >
+                  {seedSampleData.isPending ? 'Loading sample data...' : seedSampleData.isSuccess ? '✓ Sample data loaded' : 'Load sample data'}
+                </button>
+              )}
             </div>
           </div>
         </div>

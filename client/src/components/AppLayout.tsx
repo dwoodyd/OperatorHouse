@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
-  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut,
+  BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut, CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { icon: BarChart3,       label: "Analytics",         path: "/analytics" },
   { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
   { icon: Info,            label: "About & Features",   path: "/about" },
+  { icon: CreditCard,      label: "Pricing",            path: "/pricing" },
 ];
 
 interface AppLayoutProps {
@@ -528,6 +529,18 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 }}
               >
                 CMD
+              </span>
+              <span
+                className="hidden md:inline"
+                style={{
+                  fontFamily: "Fira Code, monospace",
+                  fontSize: "9px",
+                  letterSpacing: "0.04em",
+                  opacity: 0.5,
+                  marginLeft: "2px",
+                }}
+              >
+                ⌘K
               </span>
             </button>
 

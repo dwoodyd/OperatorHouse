@@ -137,6 +137,11 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Increase timeouts so long AI calls (15-30s) don't get killed by Node.js defaults
+  server.keepAliveTimeout = 65_000; // slightly above typical load-balancer 60s
+  server.headersTimeout = 70_000;   // must be > keepAliveTimeout
+  server.requestTimeout = 90_000;   // 90s max per request (covers worst-case AI calls)
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
   });

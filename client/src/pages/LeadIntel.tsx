@@ -32,14 +32,20 @@ export default function LeadIntel() {
   const { data: leads, isLoading } = trpc.leads.list.useQuery();
 
   const analyzeLead = trpc.leads.analyze.useMutation({
-    onSuccess: () => {
-      utils.leads.list.invalidate();
+    onSuccess: (data) => {
+      utils.leads.list.invalidate().then(() => {
+        // Auto-expand the newest lead so the result is immediately visible
+        const cached = utils.leads.list.getData();
+        if (cached?.length) setExpanded(cached[0].id);
+      });
       utils.dashboard.metrics.invalidate();
-      toast.success("Operator Audit complete");
+      toast.success("Operator Audit complete — result expanded below");
       setInput("");
     },
     onError: (err) => {
-      const msg = err.message || "Analysis failed";
+      const msg = err.message?.includes('timed out')
+        ? 'Audit timed out — The Operator is thinking hard. Try again.'
+        : err.message || 'Analysis failed';
       toast.error(msg, {
         action: {
           label: "Retry",
@@ -48,7 +54,7 @@ export default function LeadIntel() {
             if (trimmed) analyzeLead.mutate({ input: trimmed });
           },
         },
-        duration: 6000,
+        duration: 8000,
       });
     },
   });

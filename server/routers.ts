@@ -548,6 +548,42 @@ ${contextBlock}`;
       }).catch(() => {});
       return { success: true };
     }),
+    seedSampleData: protectedProcedure.mutation(async ({ ctx }) => {
+      const uid = ctx.user.id;
+      // Only seed if the account is truly empty
+      const [existingLeads, existingDeals, existingVault] = await Promise.all([
+        getLeads(uid), getPipelineDeals(uid), getVaultItems(uid),
+      ]);
+      if (existingLeads.length || existingDeals.length || existingVault.length) {
+        return { seeded: false, reason: 'Account already has data' };
+      }
+      // Vault: 5 starter items
+      await Promise.all([
+        createVaultItem({ userId: uid, type: 'framework', title: 'The 3-Layer Discovery Framework', textContent: 'Layer 1 - Surface: What does the client say they need?\nLayer 2 - Structural: What does their business model actually require?\nLayer 3 - Legacy: What do they want to be known for in 5 years?\n\nUse this in every first call. The gap between Layer 1 and Layer 3 is your engagement scope.' }),
+        createVaultItem({ userId: uid, type: 'template', title: 'Proposal Email - Fractional Engagement', textContent: 'Subject: Proposal - [Client Name] x [Your Name]\n\nHi [First Name],\n\nBased on our conversation, here is how I would structure our engagement:\n\nScope: [3-line summary]\nDeliverables: [bullet list]\nInvestment: $[X]/month, 3-month minimum\nStart date: [Date]\n\nLet me know if you want to adjust scope before I send the agreement.' }),
+        createVaultItem({ userId: uid, type: 'case_study', title: 'Case Study: 40% Pipeline Velocity Increase', textContent: 'Client: Mid-market B2B SaaS (ARR $2M)\nChallenge: Deals stalling at Proposal stage for 60+ days\nIntervention: Rebuilt proposal process with decision-maker mapping and objection pre-emption\nResult: Average deal cycle dropped from 74 days to 44 days over one quarter\nKey insight: The bottleneck was not pricing - it was internal champion enablement.' }),
+        createVaultItem({ userId: uid, type: 'research', title: 'Fractional Market Sizing 2025', textContent: 'The fractional executive market is estimated at $25B+ globally as of 2025, growing at 18% YoY. Key drivers: post-2023 hiring freezes, AI-augmented productivity making solo operators viable at enterprise scope, and the shift from project-based consulting to embedded fractional roles.' }),
+        createVaultItem({ userId: uid, type: 'note', title: 'My Positioning Statement (Edit This)', textContent: 'I help [target client type] who are struggling with [core problem] to [achieve outcome] - without [common alternative they hate].\n\nExample: I help Series A SaaS founders who are struggling with inconsistent revenue to build a repeatable sales motion - without hiring a full-time VP of Sales before they are ready.' }),
+      ]);
+      // Leads: 3 seeded audits
+      await Promise.all([
+        createLead({ userId: uid, sourceType: 'manual', rawInput: 'Marcus Chen - CEO, TechFlow Solutions', status: 'analysis', intentScore: 8.5, analysisJson: { name: 'Marcus Chen', company: 'TechFlow Solutions', intentScore: 8.5, vibeCheck: 'High-energy founder, recently raised Series A. Actively looking to scale GTM without adding headcount.', painPoints: 'No repeatable sales process. Founder-led sales hitting a ceiling at $1.8M ARR.', engineeringMap: 'Build a fractional GTM system: ICP definition, outbound sequence, pipeline cadence, and weekly deal reviews.', legacyPlay: 'Position TechFlow as the category leader in workflow automation for mid-market ops teams.', nextBeat: 'Send a 3-slide diagnostic deck showing the gap between current ARR velocity and Series B readiness.', sourcesUsed: ['The 3-Layer Discovery Framework'], missingContext: null } }),
+        createLead({ userId: uid, sourceType: 'linkedin', rawInput: 'Sarah Okafor - Founder, Meridian Brand Studio', status: 'review', intentScore: 6.2, analysisJson: { name: 'Sarah Okafor', company: 'Meridian Brand Studio', intentScore: 6.2, vibeCheck: 'Thoughtful creative operator. Growing steadily but feeling the ceiling of her current client roster.', painPoints: 'Project-based revenue is unpredictable. No retainer structure. Undercharging for strategic work.', engineeringMap: 'Introduce a productized retainer offer. Reposition from execution to brand strategy.', legacyPlay: 'Become the go-to brand strategist for purpose-driven consumer brands in the $5M-$50M range.', nextBeat: 'Book a 30-min positioning audit call. Come with three examples of her best work.', sourcesUsed: ['My Positioning Statement (Edit This)'], missingContext: 'Current average project value and client count' } }),
+        createLead({ userId: uid, sourceType: 'email', rawInput: 'David Park - COO, Nexus Logistics', status: 'ready', intentScore: 9.1, analysisJson: { name: 'David Park', company: 'Nexus Logistics', intentScore: 9.1, vibeCheck: 'Operational thinker under pressure. Company is growing fast but processes are breaking. High urgency.', painPoints: 'Manual ops processes causing errors at scale. Team is reactive, not systematic.', engineeringMap: 'Ops audit -> SOPs -> automation layer. 90-day engagement to systematize the top 5 bottlenecks.', legacyPlay: 'Build Nexus into a logistics operator that can scale to 10x without proportional headcount growth.', nextBeat: 'Send proposal within 48 hours. He is talking to two other consultants.', sourcesUsed: ['The 3-Layer Discovery Framework', 'Case Study: 40% Pipeline Velocity Increase'], missingContext: null } }),
+      ]);
+      // Pipeline: one deal per stage
+      await Promise.all([
+        createDeal({ userId: uid, title: 'Marcus Chen - TechFlow GTM System', stage: 'Discovery', value: 8500, intentScore: 8.5, notes: 'From Lead Intel. Next Beat: Send diagnostic deck.' }),
+        createDeal({ userId: uid, title: 'Sarah Okafor - Brand Strategy Retainer', stage: 'Analysis', value: 4200, intentScore: 6.2, notes: 'Positioning audit call scheduled.' }),
+        createDeal({ userId: uid, title: 'Nexus Logistics - Ops Systematization', stage: 'Strategy', value: 18000, intentScore: 9.1, notes: 'High urgency. Competing with 2 others. Send proposal ASAP.' }),
+        createDeal({ userId: uid, title: 'Pinnacle Ventures - Fractional CMO', stage: 'Proposal', value: 12000, notes: 'Proposal sent. Following up Friday.' }),
+        createDeal({ userId: uid, title: 'Clearwater Health - Q1 Engagement', stage: 'Closed', value: 22000, notes: 'Closed. Kick-off scheduled.' }),
+      ]);
+      // Strategy: one example
+      await createStrategy({ userId: uid, outputType: 'full', status: 'complete', promptVersion: 'v1', inputContext: { clientName: 'TechFlow Solutions', goal: 'Build repeatable GTM motion', context: 'Series A SaaS, $1.8M ARR, founder-led sales' }, content: '# GTM Strategy: TechFlow Solutions\n\n## Situation\nTechFlow is at the classic Series A inflection point: product-market fit confirmed, but growth is founder-dependent.\n\n## Strategic Objective\nBuild a GTM system that generates and closes $500K in new ARR over the next 6 months without Marcus being in every deal.\n\n## The Play\n**Phase 1 (Weeks 1-3): ICP Sharpening** - Narrow the target to Series A SaaS companies with 20-80 employees in workflow automation.\n\n**Phase 2 (Weeks 4-8): Outbound Engine** - Build a 3-touch outbound sequence targeting VP Ops and COO personas. 50 outbound touches per week.\n\n**Phase 3 (Weeks 9-12): Pipeline Cadence** - Weekly deal review with Marcus. Every deal gets a next action and a close date.\n\n## Expected Outcome\n$500K new ARR in 6 months. Marcus spending < 30% of his time on sales by month 3.', citations: ['The 3-Layer Discovery Framework', 'Case Study: 40% Pipeline Velocity Increase'] });
+      await logActivity({ userId: uid, activityType: 'sample_data_loaded', summary: 'Sample Operator data loaded - explore the House' });
+      return { seeded: true };
+    }),
   }),
 
   stripe: router({

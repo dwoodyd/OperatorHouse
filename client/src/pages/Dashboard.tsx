@@ -100,6 +100,21 @@ function GhostTerminalWidget({ deals, leads, staleCount }: {
       <div className="flex items-center gap-2 mb-4">
         <Ghost size={13} style={{ color: 'var(--amber)' }} />
         <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Terminal</span>
+        <span
+          title="Ghost Efficiency: the % of your operator workflow handled by the Ghost AI — lead audits, strategy docs, briefings, and follow-up prep. Target is 90%."
+          style={{
+            marginLeft: 'auto',
+            fontFamily: 'Fira Code, monospace',
+            fontSize: 9,
+            letterSpacing: '0.12em',
+            color: 'var(--amber)',
+            opacity: 0.7,
+            cursor: 'help',
+            borderBottom: '1px dashed rgba(212,175,55,0.4)',
+          }}
+        >
+          GHOST EFF: 90%
+        </span>
       </div>
       <div className="space-y-2 mb-4">
         {lines.map(({ label, value, color }) => (

@@ -252,3 +252,19 @@
 
 ## Specter Idle Drift Animation (2026-04-22)
 - [x] Specter intensifies float animation when user is idle (60s), auto-whispers, resets on activity
+
+## Review-Driven Fixes — B → A (2026-04-22)
+### P0 — Reliability (AI calls silent)
+- [x] Fix The Operator chat: server keepAliveTimeout raised to 120s, inline error in chat thread, last message restored on error
+- [x] Fix Lead Intelligence Analyze button: auto-expand result on success, improved error message
+
+### P1 — First-session content
+- [x] Ship Sample Operator fixture: 3 seeded leads, 5 pipeline deals (one per stage), 5 Vault items, 1 strategy — "Load sample data" button on final onboarding slide
+
+### P2 — Pricing + Polish
+- [x] Publish Pricing page (Solo free / Operator $49 / Ghost $129) with in-app nav item (Pricing added to sidebar nav)
+- [x] Fix OPERATOR HQ header — it is a non-clickable status label in the sidebar logo area (no change needed)
+- [x] Add Ghost Efficiency tooltip explaining the 90% target metric (hover GHOST EFF: 90% in Ghost Terminal)
+- [x] Add ⌘K keyboard shortcut hint to CMD button in header (visible on md+ screens)
+- [ ] Analytics time-series chart (pipeline velocity / deal trend)
+- [ ] Accessibility contrast pass on secondary stat-card labels
