@@ -284,11 +284,11 @@
 - [ ] Dashboard integration: client health summary card
 
 ## Outreach Suite — Phase 3: Email Sequences
-- [ ] Email Sequences page at /sequences (sequence builder + step editor + enrollees panel)
-- [ ] 5 pre-built sequence templates with realistic content
-- [ ] Automation trigger rules (pipeline stage change → auto-enroll)
-- [ ] Resend API integration for email delivery + webhook tracking
-- [ ] RESEND_API_KEY secret
+- [x] Email Sequences page at /email-sequences (sequence builder + step editor + enrollees panel)
+- [x] 5 pre-built sequence templates with realistic content (cold outreach, follow-up, re-engagement, discovery, win-back)
+- [x] Automation trigger rules (pipeline stage change → auto-enroll)
+- [x] Resend API integration for email delivery + webhook tracking
+- [x] RESEND_API_KEY secret validated and injected
 
 ## Outreach Suite — Phase 4: Call Center
 - [ ] Call Center page at /calls (Queue / Log / Scripts tabs)
