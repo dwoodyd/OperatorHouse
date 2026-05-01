@@ -320,3 +320,17 @@
 - [x] Sidebar OUTREACH section links to /pulse (Client Pulse)
 - [x] Sidebar GROWTH/OPERATIONS/ENTERPRISE sections added with tier gating
 - [x] Resend API key validated and injected
+
+## Outreach Suite — Phase 5: SMS Outreach
+- [x] SMS page at /sms (iMessage-style conversation UI, contact list sidebar)
+- [x] 6 pre-built SMS templates (intro, follow-up, appointment, check-in, re-engage, close)
+- [x] Twilio send/receive integration + webhook handler at /api/twilio/sms (queued when unconfigured)
+- [x] Conversation threading per contact, opt-in status badge, timestamp display
+- [x] Template quick-insert in compose bar
+
+## Outreach Suite — Phase 6: AI Voice Agents
+- [x] Voice Agents page at /voice-agents (agent cards + config form)
+- [x] 4 pre-built agent templates (Discovery, Follow-Up, Appointment, Re-Engagement) auto-seeded
+- [x] Vault knowledge base linking per agent (link/unlink dialog)
+- [x] Vapi.ai integration stubs (deploy, activate/deactivate, update greeting)
+- [x] Call transcript viewer with sentiment tags and outcome badges

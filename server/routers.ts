@@ -7,6 +7,8 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { pulseRouter } from "./routers/pulse";
 import { emailSequencesRouter } from "./routers/emailSequences";
 import { callCenterRouter } from "./routers/callCenter";
+import { smsRouter } from "./routers/sms";
+import { voiceAgentsRouter } from "./routers/voiceAgents";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -673,6 +675,8 @@ ${contextBlock}`;
       return { success: true };
     }),
   }),
+  sms: smsRouter,
+  voiceAgents: voiceAgentsRouter,
 });
 
 export type AppRouter = typeof appRouter;
