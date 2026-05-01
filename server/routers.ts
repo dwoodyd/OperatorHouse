@@ -14,6 +14,7 @@ import { invoicingRouter } from "./routers/invoicing";
 import { bookingRouter } from "./routers/booking";
 import { funnelsRouter } from "./routers/funnels";
 import { socialRouter } from "./routers/social";
+import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
@@ -689,6 +690,7 @@ ${contextBlock}`;
   funnels: funnelsRouter,
   social: socialRouter,
   automations: automationsRouter,
+  portal: portalRouter,
 });
 
 export type AppRouter = typeof appRouter;

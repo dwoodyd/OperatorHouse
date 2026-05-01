@@ -85,6 +85,13 @@
       "when": 1777661037193,
       "tag": "0011_luxuriant_dreaming_celestial",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1777664482179,
+      "tag": "0012_wooden_shooting_star",
+      "breakpoints": true
     }
   ]
 }

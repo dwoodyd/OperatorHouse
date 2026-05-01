@@ -39,6 +39,8 @@ import FunnelEditor from "./pages/FunnelEditor";
 import Social from "./pages/Social";
 import Automations from "./pages/Automations";
 import WorkflowEditor from "./pages/WorkflowEditor";
+import ClientPortalPage from "./pages/ClientPortal";
+import PublicPortal from "./pages/PublicPortal";
 
 function Router() {
   return (
@@ -69,6 +71,8 @@ function Router() {
       <Route path="/social" component={Social} />
       <Route path="/automations" component={Automations} />
       <Route path="/automations/:id/edit" component={WorkflowEditor} />
+      <Route path="/portal" component={ClientPortalPage} />
+      <Route path="/portal/:token" component={PublicPortal} />
       <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />

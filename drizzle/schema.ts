@@ -933,3 +933,57 @@ export const workflowExecutionLogs = mysqlTable("workflow_execution_logs", {
 });
 export type WorkflowExecutionLog = typeof workflowExecutionLogs.$inferSelect;
 export type InsertWorkflowExecutionLog = typeof workflowExecutionLogs.$inferInsert;
+
+// ─── Phase 13: Client Portal ──────────────────────────────────────────────────
+export const clientPortals = mysqlTable("clientPortals", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId").notNull(),
+  accessToken: varchar("accessToken", { length: 128 }).notNull().unique(),
+  status: mysqlEnum("status", ["active", "revoked"]).default("active").notNull(),
+  allowInvoices: boolean("allowInvoices").default(true).notNull(),
+  allowBooking: boolean("allowBooking").default(true).notNull(),
+  allowMessages: boolean("allowMessages").default(true).notNull(),
+  allowContracts: boolean("allowContracts").default(false).notNull(),
+  lastAccessedAt: timestamp("lastAccessedAt"),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ClientPortal = typeof clientPortals.$inferSelect;
+export type InsertClientPortal = typeof clientPortals.$inferInsert;
+
+export const portalMessages = mysqlTable("portalMessages", {
+  id: int("id").autoincrement().primaryKey(),
+  portalId: int("portalId").notNull(),
+  senderType: mysqlEnum("senderType", ["operator", "client"]).notNull(),
+  content: text("content").notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PortalMessage = typeof portalMessages.$inferSelect;
+export type InsertPortalMessage = typeof portalMessages.$inferInsert;
+
+export const portalDocuments = mysqlTable("portalDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  portalId: int("portalId").notNull(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["invoice", "contract", "proposal", "report", "other"]).default("other").notNull(),
+  fileUrl: text("fileUrl"),
+  status: mysqlEnum("status", ["pending", "viewed", "signed", "approved"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PortalDocument = typeof portalDocuments.$inferSelect;
+export type InsertPortalDocument = typeof portalDocuments.$inferInsert;
+
+// ─── Booking Email Logs ───────────────────────────────────────────────────────
+export const bookingEmailLogs = mysqlTable("bookingEmailLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  bookingId: int("bookingId").notNull(),
+  type: mysqlEnum("type", ["confirmation", "reminder_24h", "reminder_1h", "cancellation", "reschedule"]).notNull(),
+  sentTo: varchar("sentTo", { length: 255 }).notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  status: mysqlEnum("status", ["sent", "failed"]).default("sent").notNull(),
+  errorMessage: text("errorMessage"),
+});
+export type BookingEmailLog = typeof bookingEmailLogs.$inferSelect;
