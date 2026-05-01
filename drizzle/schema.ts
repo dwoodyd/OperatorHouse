@@ -8,6 +8,7 @@ import {
   varchar,
   float,
   boolean,
+  tinyint,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -1057,3 +1058,46 @@ export const teamInvites = mysqlTable("teamInvites", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 export type TeamInvite = typeof teamInvites.$inferInsert;
+
+// ── Phase 18: Integrations Hub ────────────────────────────────────────────────
+export const apiKeys = mysqlTable("api_keys", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  keyHash: varchar("keyHash", { length: 255 }).notNull(),
+  keyPrefix: varchar("keyPrefix", { length: 16 }).notNull(),
+  scopes: text("scopes").notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+  expiresAt: timestamp("expiresAt"),
+  isActive: tinyint("isActive").notNull().default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+
+export const integrationConfigs = mysqlTable("integration_configs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  provider: varchar("provider", { length: 64 }).notNull(),
+  config: text("config").notNull(),
+  isEnabled: tinyint("isEnabled").notNull().default(0),
+  lastTestedAt: timestamp("lastTestedAt"),
+  lastTestStatus: varchar("lastTestStatus", { length: 32 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type IntegrationConfig = typeof integrationConfigs.$inferSelect;
+export type InsertIntegrationConfig = typeof integrationConfigs.$inferInsert;
+
+export const integrationLogs = mysqlTable("integration_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  provider: varchar("provider", { length: 64 }).notNull(),
+  event: varchar("event", { length: 128 }).notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("success"),
+  payload: text("payload"),
+  error: text("error"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type IntegrationLog = typeof integrationLogs.$inferSelect;
+export type InsertIntegrationLog = typeof integrationLogs.$inferInsert;

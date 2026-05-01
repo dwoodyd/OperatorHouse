@@ -20,6 +20,7 @@ import { reviewsRouter } from './routers/reviews';
 import { contractsRouter } from './routers/contracts';
 import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
+import { integrationsRouter } from "./routers/integrations";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -706,6 +707,7 @@ ${contextBlock}`;
   contracts: contractsRouter,
   reviews: reviewsRouter,
   team: teamRouter,
+  integrations: integrationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

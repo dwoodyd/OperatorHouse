@@ -47,6 +47,7 @@ import Reputation from "./pages/Reputation";
 import ReviewForm from "./pages/ReviewForm";
 import Team from "./pages/Team";
 import JoinTeam from "./pages/JoinTeam";
+import Integrations from "./pages/Integrations";
 
 function Router() {
   return (
@@ -84,6 +85,7 @@ function Router() {
       <Route path="/reputation" component={Reputation} />
       <Route path="/review/:token" component={ReviewForm} />
       <Route path="/team" component={Team} />
+        <Route path="/integrations" component={Integrations} />
       <Route path="/join-team/:token" component={JoinTeam} />
       <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
       <Route path="/privacy" component={Privacy} />

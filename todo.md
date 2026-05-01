@@ -411,3 +411,18 @@
 - [x] JoinTeam public page for accepting invites
 - [x] Team & Permissions sidebar nav item (business tier)
 - [x] Routes: /team, /join-team/:token
+
+## Phase 18 — Integrations Hub (Enterprise)
+- [ ] Schema: api_keys, integration_configs, integration_logs tables
+- [ ] tRPC: API key CRUD, integration config save/test, Slack webhook, Google Calendar stub, QuickBooks CSV export
+- [ ] Frontend: Integrations Hub page (API Keys panel, Connected Apps, Webhook config)
+- [ ] Wire routes and sidebar nav
+
+## Phase 18 — Integrations Hub (Enterprise)
+- [x] api_keys table migrated
+- [x] integration_configs table migrated
+- [x] integration_logs table migrated
+- [x] integrations tRPC router: API key CRUD, integration config, Slack webhook, Google Calendar stub, QuickBooks CSV export
+- [x] Integrations Hub frontend page (API Keys panel, Connected Apps, Webhook config, QuickBooks export)
+- [x] Route /integrations wired in App.tsx
+- [x] Sidebar nav item wired (business tier)
