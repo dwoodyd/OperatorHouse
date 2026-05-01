@@ -4,14 +4,16 @@
    ============================================================================= */
 
 import AppLayout from "@/components/AppLayout";
+import BusinessOverview from "./BusinessOverview";
 import { trpc } from "@/lib/trpc";
 import { PageLoader, SpectreEmptyState } from "@/components/StateUI";
 import React from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, Calendar, Users, Filter, Star, FileText, Mail, Phone, MessageSquare, Share2, Activity, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { format, parseISO } from "date-fns";
 
 const ANALYTICS_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/ghostdesk-analytics-bg-gRpLSLXsoPxKqvVS4kVEgu.webp";
 const SOURCE_COLORS = ["#60A5FA", "#F5A623", "#4ADE80", "#A78BFA", "#F472B6"];
@@ -25,9 +27,34 @@ const CUSTOM_TOOLTIP_STYLE = {
   color: '#E8E6E0',
 };
 
+function fmt$(n: number) {
+  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`;
+  return `$${n.toFixed(0)}`;
+}
+
+function ChangeChip({ change }: { change: number }) {
+  if (Math.abs(change) < 0.5) return <span className="flex items-center gap-0.5 text-xs opacity-40"><Minus className="w-3 h-3" /> 0%</span>;
+  const up = change > 0;
+  return (
+    <span className={`flex items-center gap-0.5 text-xs ${up ? "text-green-400" : "text-red-400"}`}>
+      {up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+      {Math.abs(change).toFixed(1)}%
+    </span>
+  );
+}
+
 export default function Analytics() {
   const { data: analyticsData, isLoading } = trpc.analytics.data.useQuery();
   const { data: metrics } = trpc.dashboard.metrics.useQuery();
+  const { data: overview } = trpc.analytics.overview.useQuery();
+  const { data: revenueTrend } = trpc.analytics.revenueTrend.useQuery();
+  const { data: bookingTrend } = trpc.analytics.bookingTrend.useQuery();
+  const { data: funnelConversions } = trpc.analytics.funnelConversions.useQuery();
+  const { data: crmPipeline } = trpc.analytics.crmPipeline.useQuery();
+  const { data: outreach } = trpc.analytics.outreachActivity.useQuery();
+  const { data: healthDist } = trpc.analytics.healthDistribution.useQuery();
+  const { data: recentActivity } = trpc.analytics.recentActivity.useQuery();
 
   // Dynamic current month label
   const currentMonthLabel = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
@@ -243,7 +270,7 @@ export default function Analytics() {
             </div>
           </>
         )}
-
+        <BusinessOverview />
       </div>
     </AppLayout>
   );

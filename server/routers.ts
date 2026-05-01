@@ -14,6 +14,7 @@ import { invoicingRouter } from "./routers/invoicing";
 import { bookingRouter } from "./routers/booking";
 import { funnelsRouter } from "./routers/funnels";
 import { socialRouter } from "./routers/social";
+import { analyticsRouter } from './routers/analytics';
 import { teamRouter } from './routers/team';
 import { reviewsRouter } from './routers/reviews';
 import { contractsRouter } from './routers/contracts';
@@ -417,6 +418,14 @@ export const appRouter = router({
 
   analytics: router({
     data: protectedProcedure.query(async ({ ctx }) => getAnalyticsData(ctx.user.id)),
+    overview: analyticsRouter.overview,
+    revenueTrend: analyticsRouter.revenueTrend,
+    bookingTrend: analyticsRouter.bookingTrend,
+    funnelConversions: analyticsRouter.funnelConversions,
+    crmPipeline: analyticsRouter.crmPipeline,
+    outreachActivity: analyticsRouter.outreachActivity,
+    healthDistribution: analyticsRouter.healthDistribution,
+    recentActivity: analyticsRouter.recentActivity,
   }),
 
   briefings: router({
