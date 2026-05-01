@@ -66,7 +66,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { icon: Shield,        label: "Team & Permissions", path: "/team",         enterprise: true },
       { icon: FileSignature, label: "Contracts",           path: "/contracts",    business: true },
-      { icon: Star,          label: "Reputation",          path: "/reviews",      enterprise: true },
+      { icon: Star,          label: "Reputation",          path: "/reputation",   business: true },
       { icon: Plug,          label: "Integrations Hub",    path: "/integrations", enterprise: true },
     ],
   },

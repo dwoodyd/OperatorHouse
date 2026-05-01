@@ -99,6 +99,13 @@
       "when": 1777665276297,
       "tag": "0013_light_captain_america",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1777666042062,
+      "tag": "0014_gorgeous_nova",
+      "breakpoints": true
     }
   ]
 }

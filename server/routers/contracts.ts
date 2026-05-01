@@ -7,7 +7,7 @@ import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { contracts, crmContacts, portalDocuments } from "../../drizzle/schema";
+import { contracts, crmContacts, portalDocuments, clientPortals } from "../../drizzle/schema";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "Operator House <onboarding@resend.dev>";
@@ -185,12 +185,27 @@ export const contractsRouter = router({
         signedAt: new Date(),
       }).where(eq(contracts.id, c.id));
 
-      // Notify operator via email (best-effort)
+       // Auto-attach to client portal if one exists for this contact
       try {
-        // We don't have operator email here, so just log
+        if (c.contactId) {
+          const [portal] = await db.select({ id: clientPortals.id })
+            .from(clientPortals)
+            .where(eq(clientPortals.contactId, c.contactId))
+            .limit(1);
+          if (portal) {
+            await db.insert(portalDocuments).values({
+              portalId: portal.id,
+              userId: c.userId,
+              title: c.title,
+              type: "contract",
+              status: "signed",
+            });
+          }
+        }
         console.log(`[Contracts] Contract ${c.id} "${c.title}" signed by ${input.signerName}`);
-      } catch {}
-
+      } catch (err) {
+        console.error("[Contracts] Portal doc attach error:", err);
+      }
       return { ok: true };
     }),
 

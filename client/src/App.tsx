@@ -43,6 +43,8 @@ import ClientPortalPage from "./pages/ClientPortal";
 import PublicPortal from "./pages/PublicPortal";
 import ContractsPage from "./pages/Contracts";
 import SignContract from "./pages/SignContract";
+import Reputation from "./pages/Reputation";
+import ReviewForm from "./pages/ReviewForm";
 
 function Router() {
   return (
@@ -77,6 +79,8 @@ function Router() {
       <Route path="/portal/:token" component={PublicPortal} />
       <Route path="/contracts" component={ContractsPage} />
       <Route path="/sign/:token" component={SignContract} />
+      <Route path="/reputation" component={Reputation} />
+      <Route path="/review/:token" component={ReviewForm} />
       <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />

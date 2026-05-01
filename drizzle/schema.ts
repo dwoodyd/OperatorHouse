@@ -1009,3 +1009,25 @@ export const contracts = mysqlTable("contracts", {
 });
 export type Contract = typeof contracts.$inferSelect;
 export type InsertContract = typeof contracts.$inferInsert;
+
+// ─── Phase 15: Reputation & Reviews ──────────────────────────────────────────
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId"),
+  bookingId: int("bookingId"),
+  requestToken: varchar("requestToken", { length: 128 }),
+  status: mysqlEnum("status", ["pending", "submitted", "published", "archived"]).default("pending").notNull(),
+  rating: int("rating"),
+  headline: varchar("headline", { length: 255 }),
+  body: text("body"),
+  reviewerName: varchar("reviewerName", { length: 255 }),
+  reviewerEmail: varchar("reviewerEmail", { length: 320 }),
+  reviewerTitle: varchar("reviewerTitle", { length: 255 }),
+  isPublic: boolean("isPublic").default(false).notNull(),
+  requestedAt: timestamp("requestedAt").defaultNow().notNull(),
+  submittedAt: timestamp("submittedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
