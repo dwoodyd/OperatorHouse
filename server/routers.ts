@@ -13,6 +13,8 @@ import { crmRouter } from "./routers/crm";
 import { invoicingRouter } from "./routers/invoicing";
 import { bookingRouter } from "./routers/booking";
 import { funnelsRouter } from "./routers/funnels";
+import { socialRouter } from "./routers/social";
+import { automationsRouter } from "./routers/automations";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -685,6 +687,8 @@ ${contextBlock}`;
   invoicing: invoicingRouter,
   booking: bookingRouter,
   funnels: funnelsRouter,
+  social: socialRouter,
+  automations: automationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

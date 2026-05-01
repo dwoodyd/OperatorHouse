@@ -783,3 +783,153 @@ export const funnelSubmissions = mysqlTable("funnel_submissions", {
 });
 export type FunnelSubmission = typeof funnelSubmissions.$inferSelect;
 export type InsertFunnelSubmission = typeof funnelSubmissions.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 11 — SOCIAL MEDIA AGENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Social Accounts ──────────────────────────────────────────────────────────
+export const socialAccounts = mysqlTable("social_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: mysqlEnum("platform", ["linkedin", "twitter", "instagram", "facebook"]).notNull(),
+  accountName: varchar("accountName", { length: 255 }).notNull(),
+  accountHandle: varchar("accountHandle", { length: 255 }),
+  accountId: varchar("accountId", { length: 255 }),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  followerCount: int("followerCount").default(0),
+  isConnected: boolean("isConnected").default(false).notNull(),
+  connectedAt: timestamp("connectedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SocialAccount = typeof socialAccounts.$inferSelect;
+export type InsertSocialAccount = typeof socialAccounts.$inferInsert;
+
+// ─── Social Posts ─────────────────────────────────────────────────────────────
+export const socialPosts = mysqlTable("social_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  accountId: int("accountId"),
+  platform: mysqlEnum("platform", ["linkedin", "twitter", "instagram", "facebook"]).notNull(),
+  content: text("content").notNull(),
+  mediaUrls: json("mediaUrls").$type<string[]>().default([]),
+  hashtags: json("hashtags").$type<string[]>().default([]),
+  status: mysqlEnum("status", ["draft", "scheduled", "published", "failed", "pending_approval"]).default("draft").notNull(),
+  approvalStatus: mysqlEnum("approvalStatus", ["pending", "approved", "rejected"]).default("approved"),
+  scheduledFor: timestamp("scheduledFor"),
+  publishedAt: timestamp("publishedAt"),
+  platformPostId: varchar("platformPostId", { length: 255 }),
+  aiGenerated: boolean("aiGenerated").default(false).notNull(),
+  aiPrompt: text("aiPrompt"),
+  metrics: json("metrics").$type<{ impressions?: number; engagement?: number; clicks?: number; shares?: number; comments?: number }>(),
+  strategyId: int("strategyId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SocialPost = typeof socialPosts.$inferSelect;
+export type InsertSocialPost = typeof socialPosts.$inferInsert;
+
+// ─── Content Library ──────────────────────────────────────────────────────────
+export const contentLibrary = mysqlTable("content_library", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  category: mysqlEnum("category", ["tips", "case_study", "promotion", "thought_leadership", "custom"]).default("custom").notNull(),
+  mediaUrls: json("mediaUrls").$type<string[]>().default([]),
+  hashtagSets: json("hashtagSets").$type<string[][]>().default([]),
+  platformVariants: json("platformVariants").$type<Record<string, string>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ContentLibraryItem = typeof contentLibrary.$inferSelect;
+export type InsertContentLibraryItem = typeof contentLibrary.$inferInsert;
+
+// ─── Social Strategies ────────────────────────────────────────────────────────
+export const socialStrategies = mysqlTable("social_strategies", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  platforms: json("platforms").$type<string[]>().default([]),
+  topics: json("topics").$type<string[]>().default([]),
+  tone: mysqlEnum("tone", ["professional", "casual", "thought_leader", "educational"]).default("professional").notNull(),
+  postsPerWeek: int("postsPerWeek").default(5).notNull(),
+  preferredTimes: json("preferredTimes").$type<Record<string, string[]>>(),
+  vaultContextIds: json("vaultContextIds").$type<number[]>().default([]),
+  isActive: boolean("isActive").default(false).notNull(),
+  lastGeneratedAt: timestamp("lastGeneratedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SocialStrategy = typeof socialStrategies.$inferSelect;
+export type InsertSocialStrategy = typeof socialStrategies.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 12 — WORKFLOW AUTOMATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Workflows ────────────────────────────────────────────────────────────────
+export const workflows = mysqlTable("workflows", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["active", "paused", "draft"]).default("draft").notNull(),
+  triggerType: varchar("triggerType", { length: 100 }).notNull(),
+  triggerConfig: json("triggerConfig").$type<Record<string, unknown>>(),
+  executionCount: int("executionCount").default(0).notNull(),
+  successCount: int("successCount").default(0).notNull(),
+  failureCount: int("failureCount").default(0).notNull(),
+  lastExecutedAt: timestamp("lastExecutedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Workflow = typeof workflows.$inferSelect;
+export type InsertWorkflow = typeof workflows.$inferInsert;
+
+// ─── Workflow Nodes ───────────────────────────────────────────────────────────
+export const workflowNodes = mysqlTable("workflow_nodes", {
+  id: int("id").autoincrement().primaryKey(),
+  workflowId: int("workflowId").notNull(),
+  nodeType: mysqlEnum("nodeType", ["trigger", "action", "condition", "delay"]).notNull(),
+  actionType: varchar("actionType", { length: 100 }),
+  label: varchar("label", { length: 255 }),
+  config: json("config").$type<Record<string, unknown>>(),
+  positionX: int("positionX").default(0).notNull(),
+  positionY: int("positionY").default(0).notNull(),
+  nextNodeId: int("nextNodeId"),
+  trueBranchNodeId: int("trueBranchNodeId"),
+  falseBranchNodeId: int("falseBranchNodeId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type WorkflowNode = typeof workflowNodes.$inferSelect;
+export type InsertWorkflowNode = typeof workflowNodes.$inferInsert;
+
+// ─── Workflow Executions ──────────────────────────────────────────────────────
+export const workflowExecutions = mysqlTable("workflow_executions", {
+  id: int("id").autoincrement().primaryKey(),
+  workflowId: int("workflowId").notNull(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId"),
+  status: mysqlEnum("status", ["running", "completed", "failed", "paused"]).default("running").notNull(),
+  currentNodeId: int("currentNodeId"),
+  triggerData: json("triggerData").$type<Record<string, unknown>>(),
+  errorMessage: text("errorMessage"),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
+export type InsertWorkflowExecution = typeof workflowExecutions.$inferInsert;
+
+// ─── Workflow Execution Logs ──────────────────────────────────────────────────
+export const workflowExecutionLogs = mysqlTable("workflow_execution_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  executionId: int("executionId").notNull(),
+  nodeId: int("nodeId"),
+  actionType: varchar("actionType", { length: 100 }),
+  result: mysqlEnum("result", ["success", "failed", "skipped", "pending"]).default("pending").notNull(),
+  details: json("details").$type<Record<string, unknown>>(),
+  executedAt: timestamp("executedAt").defaultNow().notNull(),
+});
+export type WorkflowExecutionLog = typeof workflowExecutionLogs.$inferSelect;
+export type InsertWorkflowExecutionLog = typeof workflowExecutionLogs.$inferInsert;

@@ -381,3 +381,24 @@
 - [ ] Funnel page editor at /funnels/:id/edit (section builder + live preview)
 - [ ] Public funnel page renderer at /f/:slug (no auth required)
 - [ ] Wire /funnels, /funnels/:id/edit, /f/:slug routes in App.tsx
+
+## Phase 11 — Social Media Agents (Business Tier)
+- [ ] DB schema: socialAccounts, socialPosts, contentLibrary, socialStrategies tables
+- [ ] tRPC router: connectAccount, listAccounts, createPost, schedulePost, generateWithAI
+- [ ] tRPC router: listPosts, updatePost, deletePost, getCalendar, approvePost
+- [ ] tRPC router: createStrategy, getStrategy, generateWeeklyContent
+- [ ] tRPC router: saveToLibrary, listLibrary
+- [ ] Frontend: Social page (platform cards, content calendar week view, create post modal)
+- [ ] Frontend: AI Ghost generator tab (prompt, repurpose, tone, 3 variations)
+- [ ] Frontend: Strategy page (/social/strategy — autonomous mode config + approval queue)
+- [ ] Sidebar nav: Social Media Agents already in GROWTH section
+
+## Phase 12 — Workflow Automations (Business Tier)
+- [ ] DB schema: workflows, workflowNodes, workflowExecutions, workflowExecutionLogs tables
+- [ ] tRPC router: createWorkflow, updateWorkflow, deleteWorkflow, listWorkflows
+- [ ] tRPC router: saveNodes, getNodes, activateWorkflow, pauseWorkflow
+- [ ] tRPC router: triggerManual, listExecutions, getExecutionDetail
+- [ ] Frontend: Automations page (workflow cards grid, templates modal, status toggle)
+- [ ] Frontend: Workflow editor (/automations/:id/edit — node canvas, toolbox, config panel)
+- [ ] Frontend: Execution history tab (per-workflow run log with step status)
+- [ ] Sidebar nav: Automations already in GROWTH section
