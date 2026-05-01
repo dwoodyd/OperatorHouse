@@ -45,6 +45,8 @@ import ContractsPage from "./pages/Contracts";
 import SignContract from "./pages/SignContract";
 import Reputation from "./pages/Reputation";
 import ReviewForm from "./pages/ReviewForm";
+import Team from "./pages/Team";
+import JoinTeam from "./pages/JoinTeam";
 
 function Router() {
   return (
@@ -81,6 +83,8 @@ function Router() {
       <Route path="/sign/:token" component={SignContract} />
       <Route path="/reputation" component={Reputation} />
       <Route path="/review/:token" component={ReviewForm} />
+      <Route path="/team" component={Team} />
+      <Route path="/join-team/:token" component={JoinTeam} />
       <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />

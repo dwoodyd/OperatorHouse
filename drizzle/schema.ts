@@ -1031,3 +1031,29 @@ export const reviews = mysqlTable("reviews", {
 });
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = typeof reviews.$inferInsert;
+
+// ─── Phase 16: Team & Permissions ────────────────────────────────────────────
+export const teamMembers = mysqlTable("teamMembers", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull(),       // the workspace owner's userId
+  memberId: int("memberId").notNull(),     // the invited user's userId
+  role: mysqlEnum("role", ["admin", "member", "viewer"]).default("member").notNull(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 320 }).notNull(),
+  status: mysqlEnum("status", ["active", "suspended"]).default("active").notNull(),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type TeamMember = typeof teamMembers.$inferSelect;
+
+export const teamInvites = mysqlTable("teamInvites", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  role: mysqlEnum("role", ["admin", "member", "viewer"]).default("member").notNull(),
+  token: varchar("token", { length: 128 }).notNull(),
+  status: mysqlEnum("status", ["pending", "accepted", "expired", "revoked"]).default("pending").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type TeamInvite = typeof teamInvites.$inferInsert;

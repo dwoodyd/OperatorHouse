@@ -402,3 +402,12 @@
 - [ ] Frontend: Workflow editor (/automations/:id/edit — node canvas, toolbox, config panel)
 - [ ] Frontend: Execution history tab (per-workflow run log with step status)
 - [ ] Sidebar nav: Automations already in GROWTH section
+
+## Phase 16 — Team & Permissions
+- [x] teamMembers and teamInvites DB tables migrated
+- [x] Team tRPC router: invite, accept, list, updateRole, updateStatus, remove, revokeInvite, myMembership
+- [x] Team management page with member list, role badges, suspend/remove actions
+- [x] Pending invites section with revoke button
+- [x] JoinTeam public page for accepting invites
+- [x] Team & Permissions sidebar nav item (business tier)
+- [x] Routes: /team, /join-team/:token

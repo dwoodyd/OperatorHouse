@@ -106,6 +106,13 @@
       "when": 1777666042062,
       "tag": "0014_gorgeous_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1777666472992,
+      "tag": "0015_overconfident_proudstar",
+      "breakpoints": true
     }
   ]
 }
