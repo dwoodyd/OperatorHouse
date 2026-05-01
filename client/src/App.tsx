@@ -26,6 +26,7 @@ import Terms from "./pages/Terms";
 import Pricing from "./pages/Pricing";
 import Pulse from "./pages/Pulse";
 import EmailSequences from "./pages/EmailSequences";
+import CallCenter from "./pages/CallCenter";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/pulse" component={Pulse} />
       <Route path="/email-sequences" component={EmailSequences} />
+      <Route path="/call-center" component={CallCenter} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

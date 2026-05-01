@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { pulseRouter } from "./routers/pulse";
 import { emailSequencesRouter } from "./routers/emailSequences";
+import { callCenterRouter } from "./routers/callCenter";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -642,6 +643,7 @@ ${contextBlock}`;
 
   pulse: pulseRouter,
   emailSequences: emailSequencesRouter,
+  callCenter: callCenterRouter,
 
   subscription: router({
     getMyTier: protectedProcedure.query(async ({ ctx }) => {

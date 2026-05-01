@@ -291,11 +291,11 @@
 - [x] RESEND_API_KEY secret validated and injected
 
 ## Outreach Suite — Phase 4: Call Center
-- [ ] Call Center page at /calls (Queue / Log / Scripts tabs)
-- [ ] Call queue with priority sorting, disposition quick-log form
-- [ ] Call script builder with Ghost AI generation
-- [ ] 3 pre-built scripts (Discovery, Follow-Up, Win-Back)
-- [ ] tel: link fallback for mobile calling
+- [x] Call Center page at /call-center (Queue / Log / Scripts tabs)
+- [x] Call queue with priority sorting (high/medium/low), disposition quick-log form (6 dispositions)
+- [x] Call script builder with Ghost AI generation (structured JSON schema, objection handlers)
+- [x] 3 pre-built scripts auto-seeded (Discovery, Follow-Up, Win-Back)
+- [x] Email link fallback for mobile (tel: ready when phone field added to clients)
 
 ## Outreach Suite — Phase 5: SMS Outreach
 - [ ] SMS Outreach page at /sms (iMessage-style conversation UI)
