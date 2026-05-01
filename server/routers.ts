@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { pulseRouter } from "./routers/pulse";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -637,6 +638,8 @@ ${contextBlock}`;
       return { success: true };
     }),
   }),
+
+  pulse: pulseRouter,
 
   subscription: router({
     getMyTier: protectedProcedure.query(async ({ ctx }) => {

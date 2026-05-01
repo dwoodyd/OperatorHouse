@@ -10,6 +10,7 @@ import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
   BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut, CreditCard,
   MessageSquare, Phone, Mic, Mail, Activity, Lock,
+  Users, Share2, Workflow, Telescope, Receipt, CalendarDays, Globe, Shield, FileSignature, Star, Plug,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
@@ -17,7 +18,7 @@ import NotificationBell from "./NotificationBell";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 import { trpc } from "@/lib/trpc";
 
-interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; }
+interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; business?: boolean; enterprise?: boolean; }
 interface NavSection { title: string; items: NavItem[]; }
 
 const NAV_SECTIONS: NavSection[] = [
@@ -40,6 +41,32 @@ const NAV_SECTIONS: NavSection[] = [
       { icon: Phone,         label: "Call Center",      path: "/calls",        pro: true },
       { icon: Mail,          label: "Email Sequences",  path: "/sequences",    pro: true },
       { icon: Mic,           label: "Voice Agents",     path: "/voice-agents", pro: true },
+    ],
+  },
+  {
+    title: "GROWTH",
+    items: [
+      { icon: Users,        label: "CRM Suite",           path: "/crm",         business: true },
+      { icon: Share2,       label: "Social Media Agents",  path: "/social",      business: true },
+      { icon: Workflow,     label: "Automations",          path: "/automations", business: true },
+      { icon: Telescope,    label: "Prospecting Engine",   path: "/prospecting", business: true },
+    ],
+  },
+  {
+    title: "OPERATIONS",
+    items: [
+      { icon: Receipt,      label: "Invoicing",      path: "/invoicing",   business: true },
+      { icon: CalendarDays, label: "Booking",         path: "/booking",     business: true },
+      { icon: Globe,        label: "Client Portal",  path: "/portal",      business: true },
+    ],
+  },
+  {
+    title: "ENTERPRISE",
+    items: [
+      { icon: Shield,        label: "Team & Permissions", path: "/team",         enterprise: true },
+      { icon: FileSignature, label: "Contracts",           path: "/contracts",    enterprise: true },
+      { icon: Star,          label: "Reputation",          path: "/reviews",      enterprise: true },
+      { icon: Plug,          label: "Integrations Hub",    path: "/integrations", enterprise: true },
     ],
   },
   {
@@ -233,7 +260,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
               const isActive =
                 location === item.path ||
                 (item.path === "/dashboard" && location === "/");
-              const isLocked = item.pro && !isPro;
+              const isLocked = (item.pro && !isPro) || item.business || item.enterprise;
               if (isLocked) {
                 return (
                   <button

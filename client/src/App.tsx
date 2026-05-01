@@ -24,6 +24,7 @@ import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Pricing from "./pages/Pricing";
+import Pulse from "./pages/Pulse";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/tasks" component={Tasks} />
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/pulse" component={Pulse} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

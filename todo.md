@@ -311,3 +311,12 @@
 - [ ] Vault knowledge base linking per agent
 - [ ] Vapi.ai integration + call transcript storage
 - [ ] VAPI_API_KEY secret
+
+## Outreach Suite — Phase 2: Client Pulse (2026-04-30)
+- [x] pulseRouter: calculateScores, getClientScores, getClientTimeline, addTimelineEvent, getAtRiskClients, getSummary
+- [x] Health score formula: recency 40% + deal velocity 20% + responsiveness 30% + sentiment 10%
+- [x] Pulse.tsx: health score rings, trend icons, at-risk alert strip, unified timeline, log interaction dialog
+- [x] /pulse route registered in App.tsx
+- [x] Sidebar OUTREACH section links to /pulse (Client Pulse)
+- [x] Sidebar GROWTH/OPERATIONS/ENTERPRISE sections added with tier gating
+- [x] Resend API key validated and injected
