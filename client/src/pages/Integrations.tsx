@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { GuidedTour, TourTriggerButton, type TourStep } from "@/components/GuidedTour";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -407,25 +408,88 @@ function ActivityLog() {
   );
 }
 
+const TOUR_KEY = "oh_integrations_tour_v1";
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    target: "#tour-integrations-header",
+    title: "Integrations Hub",
+    description: "This is your command center for connecting Operator House to every tool in your stack — Slack, Google Calendar, QuickBooks, Zapier, Stripe, and more.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-tab-apps",
+    title: "Connected Apps",
+    description: "Browse and configure your connected apps here. Each card shows the live/test status and lets you enter API credentials or webhook URLs.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-tab-api",
+    title: "API Keys",
+    description: "Generate API keys scoped to read, write, or admin permissions. Share these with your developers or third-party tools to access Operator House data programmatically.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-tab-export",
+    title: "QuickBooks Export",
+    description: "Export your invoices as a QuickBooks-compatible CSV. Filter by date range and status, then download in one click for your accountant.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-tab-logs",
+    title: "Activity Log",
+    description: "Every integration event — webhook deliveries, API calls, sync attempts — is logged here with success/failure status so you can debug issues instantly.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-tour-btn",
+    title: "Replay Anytime",
+    description: 'You can replay this tour at any time by clicking the "Take a Tour" button in the page header. It will always be right here when you need a refresher.',
+    placement: "left",
+  },
+];
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Integrations() {
   const { data: integrations = [], isLoading } = trpc.integrations.listIntegrations.useQuery();
   const [configuring, setConfiguring] = useState<Integration | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  // Auto-start tour on first visit
+  useEffect(() => {
+    const seen = localStorage.getItem(TOUR_KEY);
+    if (!seen) {
+      const t = setTimeout(() => setTourOpen(true), 800);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
 
   return (
     <AppLayout>
+      <GuidedTour
+        steps={TOUR_STEPS}
+        isOpen={tourOpen}
+        onClose={() => setTourOpen(false)}
+        storageKey={TOUR_KEY}
+      />
       <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Integrations Hub</h1>
-          <p className="text-muted-foreground mt-1">Connect Operator House to your existing tools and workflows.</p>
+        <div id="tour-integrations-header" className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Integrations Hub</h1>
+            <p className="text-muted-foreground mt-1">Connect Operator House to your existing tools and workflows.</p>
+          </div>
+          <div id="tour-tour-btn">
+            <TourTriggerButton onClick={() => setTourOpen(true)} />
+          </div>
         </div>
 
         <Tabs defaultValue="apps">
           <TabsList>
-            <TabsTrigger value="apps">Connected Apps</TabsTrigger>
-            <TabsTrigger value="api">API Keys</TabsTrigger>
-            <TabsTrigger value="export">Export</TabsTrigger>
-            <TabsTrigger value="logs">Activity Log</TabsTrigger>
+            <TabsTrigger id="tour-tab-apps" value="apps">Connected Apps</TabsTrigger>
+            <TabsTrigger id="tour-tab-api" value="api">API Keys</TabsTrigger>
+            <TabsTrigger id="tour-tab-export" value="export">Export</TabsTrigger>
+            <TabsTrigger id="tour-tab-logs" value="logs">Activity Log</TabsTrigger>
           </TabsList>
 
           <TabsContent value="apps" className="mt-6">

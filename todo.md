@@ -426,3 +426,11 @@
 - [x] Integrations Hub frontend page (API Keys panel, Connected Apps, Webhook config, QuickBooks export)
 - [x] Route /integrations wired in App.tsx
 - [x] Sidebar nav item wired (business tier)
+
+## Integrations Hub Guided Tour
+- [x] GuidedTour reusable component (spotlight, tooltip, progress, skip/next/back)
+- [x] Tour integrated into Integrations Hub with 6 steps
+- [x] Tour auto-starts on first visit, replayable via "Take a Tour" button
+
+## Bug Fix — Onboarding Sample Data
+- [ ] Fix "Load Sample Data" button in onboarding — currently does nothing
