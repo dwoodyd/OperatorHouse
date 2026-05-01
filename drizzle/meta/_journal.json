@@ -71,6 +71,13 @@
       "when": 1777645160118,
       "tag": "0009_sour_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1777655097038,
+      "tag": "0010_jazzy_captain_marvel",
+      "breakpoints": true
     }
   ]
 }

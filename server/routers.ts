@@ -11,6 +11,8 @@ import { smsRouter } from "./routers/sms";
 import { voiceAgentsRouter } from "./routers/voiceAgents";
 import { crmRouter } from "./routers/crm";
 import { invoicingRouter } from "./routers/invoicing";
+import { bookingRouter } from "./routers/booking";
+import { funnelsRouter } from "./routers/funnels";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -681,6 +683,8 @@ ${contextBlock}`;
   voiceAgents: voiceAgentsRouter,
   crm: crmRouter,
   invoicing: invoicingRouter,
+  booking: bookingRouter,
+  funnels: funnelsRouter,
 });
 
 export type AppRouter = typeof appRouter;

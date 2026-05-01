@@ -651,3 +651,135 @@ export const paymentRecords = mysqlTable("payment_records", {
 });
 export type PaymentRecord = typeof paymentRecords.$inferSelect;
 export type InsertPaymentRecord = typeof paymentRecords.$inferInsert;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 9 — BOOKING & SCHEDULING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Meeting Types ────────────────────────────────────────────────────────────
+export const meetingTypes = mysqlTable("meeting_types", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull(),
+  description: text("description"),
+  durationMinutes: int("durationMinutes").default(30).notNull(),
+  color: varchar("color", { length: 20 }).default("#f5c842").notNull(),
+  bufferBeforeMinutes: int("bufferBeforeMinutes").default(0).notNull(),
+  bufferAfterMinutes: int("bufferAfterMinutes").default(0).notNull(),
+  intakeQuestions: json("intakeQuestions"),
+  isActive: boolean("isActive").default(true).notNull(),
+  maxBookingsPerDay: int("maxBookingsPerDay"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type MeetingType = typeof meetingTypes.$inferSelect;
+export type InsertMeetingType = typeof meetingTypes.$inferInsert;
+
+// ─── Availability (weekly schedule) ──────────────────────────────────────────
+export const availability = mysqlTable("availability", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  dayOfWeek: int("dayOfWeek").notNull(),
+  startTime: varchar("startTime", { length: 5 }).notNull(),
+  endTime: varchar("endTime", { length: 5 }).notNull(),
+  isAvailable: boolean("isAvailable").default(true).notNull(),
+});
+export type Availability = typeof availability.$inferSelect;
+export type InsertAvailability = typeof availability.$inferInsert;
+
+// ─── Blocked Dates ────────────────────────────────────────────────────────────
+export const blockedDates = mysqlTable("blocked_dates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  date: varchar("date", { length: 10 }).notNull(),
+  reason: varchar("reason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type BlockedDate = typeof blockedDates.$inferSelect;
+export type InsertBlockedDate = typeof blockedDates.$inferInsert;
+
+// ─── Bookings ─────────────────────────────────────────────────────────────────
+export const bookings = mysqlTable("bookings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  meetingTypeId: int("meetingTypeId").notNull(),
+  contactId: int("contactId"),
+  bookedByName: varchar("bookedByName", { length: 255 }).notNull(),
+  bookedByEmail: varchar("bookedByEmail", { length: 320 }).notNull(),
+  bookedByPhone: varchar("bookedByPhone", { length: 50 }),
+  startTime: timestamp("startTime").notNull(),
+  endTime: timestamp("endTime").notNull(),
+  status: mysqlEnum("status", ["confirmed", "cancelled", "completed", "no_show"]).default("confirmed").notNull(),
+  intakeResponses: json("intakeResponses"),
+  calendarEventId: varchar("calendarEventId", { length: 255 }),
+  confirmationSent: boolean("confirmationSent").default(false).notNull(),
+  reminderSent: boolean("reminderSent").default(false).notNull(),
+  notes: text("notes"),
+  cancelReason: varchar("cancelReason", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Booking = typeof bookings.$inferSelect;
+export type InsertBooking = typeof bookings.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 10 — FUNNEL BUILDER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Funnels ──────────────────────────────────────────────────────────────────
+export const funnels = mysqlTable("funnels", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  slug: varchar("slug", { length: 100 }).notNull(),
+  templateType: varchar("templateType", { length: 50 }),
+  totalViews: int("totalViews").default(0).notNull(),
+  totalSubmissions: int("totalSubmissions").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Funnel = typeof funnels.$inferSelect;
+export type InsertFunnel = typeof funnels.$inferInsert;
+
+// ─── Funnel Pages ─────────────────────────────────────────────────────────────
+export const funnelPages = mysqlTable("funnel_pages", {
+  id: int("id").autoincrement().primaryKey(),
+  funnelId: int("funnelId").notNull(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull(),
+  pageOrder: int("pageOrder").default(0).notNull(),
+  sections: json("sections").notNull(),
+  formConfig: json("formConfig"),
+  seoTitle: varchar("seoTitle", { length: 255 }),
+  seoDescription: text("seoDescription"),
+  isPublished: boolean("isPublished").default(false).notNull(),
+  views: int("views").default(0).notNull(),
+  submissions: int("submissions").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type FunnelPage = typeof funnelPages.$inferSelect;
+export type InsertFunnelPage = typeof funnelPages.$inferInsert;
+
+// ─── Funnel Submissions ───────────────────────────────────────────────────────
+export const funnelSubmissions = mysqlTable("funnel_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  funnelPageId: int("funnelPageId").notNull(),
+  funnelId: int("funnelId").notNull(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId"),
+  formData: json("formData").notNull(),
+  sourceUrl: varchar("sourceUrl", { length: 1000 }),
+  utmSource: varchar("utmSource", { length: 255 }),
+  utmMedium: varchar("utmMedium", { length: 255 }),
+  utmCampaign: varchar("utmCampaign", { length: 255 }),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+});
+export type FunnelSubmission = typeof funnelSubmissions.$inferSelect;
+export type InsertFunnelSubmission = typeof funnelSubmissions.$inferInsert;

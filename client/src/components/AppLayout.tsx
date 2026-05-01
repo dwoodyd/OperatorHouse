@@ -10,7 +10,7 @@ import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
   BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut, CreditCard,
   MessageSquare, Phone, Mic, Mail, Activity, Lock,
-  Users, Share2, Workflow, Telescope, Receipt, CalendarDays, Globe, Shield, FileSignature, Star, Plug,
+  Users, Share2, Workflow, Telescope, Receipt, CalendarDays, Globe, Shield, FileSignature, Star, Plug, Layers,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
@@ -47,6 +47,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "GROWTH",
     items: [
       { icon: Users,        label: "CRM Suite",           path: "/crm",         business: true },
+      { icon: Layers,       label: "Funnel Builder",        path: "/funnels",     business: true },
       { icon: Share2,       label: "Social Media Agents",  path: "/social",      business: true },
       { icon: Workflow,     label: "Automations",          path: "/automations", business: true },
       { icon: Telescope,    label: "Prospecting Engine",   path: "/prospecting", business: true },

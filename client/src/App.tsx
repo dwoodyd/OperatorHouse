@@ -32,6 +32,10 @@ import VoiceAgents from "./pages/VoiceAgents";
 import CRM from "./pages/CRM";
 import ContactProfile from "./pages/ContactProfile";
 import Invoicing from "./pages/Invoicing";
+import BookingPage from "./pages/Booking";
+import PublicBooking from "./pages/PublicBooking";
+import FunnelsPage from "./pages/Funnels";
+import FunnelEditor from "./pages/FunnelEditor";
 
 function Router() {
   return (
@@ -55,6 +59,11 @@ function Router() {
       <Route path="/crm" component={CRM} />
       <Route path="/crm/:id" component={ContactProfile} />
       <Route path="/invoicing" component={Invoicing} />
+      <Route path="/booking" component={BookingPage} />
+      <Route path="/book/:slug" component={PublicBooking} />
+      <Route path="/funnels" component={FunnelsPage} />
+      <Route path="/funnels/:id/edit" component={FunnelEditor} />
+      <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

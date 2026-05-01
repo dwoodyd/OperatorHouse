@@ -358,3 +358,26 @@
 - [ ] Stripe Checkout integration for online payment links
 - [ ] Revenue dashboard (MRR, outstanding, revenue by client, monthly chart)
 - [ ] Wire Invoicing to sidebar OPERATIONS section
+
+## Phase 9 — Booking & Scheduling (Business Tier)
+
+- [ ] meetingTypes, availability, bookings, blockedDates tables in schema.ts
+- [ ] Run pnpm db:push for Phase 9 tables
+- [ ] booking tRPC router: listMeetingTypes, createMeetingType, updateMeetingType, deleteMeetingType
+- [ ] booking router: getAvailability, setAvailability, blockDate, unblockDate
+- [ ] booking router: createBooking (public), listBookings, updateBookingStatus, getPublicSlots
+- [ ] Booking main page at /booking (meeting types + upcoming bookings + availability)
+- [ ] Public booking page at /book/:slug (no auth required)
+- [ ] Wire /booking and /book/:slug routes in App.tsx
+
+## Phase 10 — Funnel Builder (Business Tier)
+
+- [ ] funnels, funnelPages, funnelSubmissions, funnelAnalytics tables in schema.ts
+- [ ] Run pnpm db:push for Phase 10 tables
+- [ ] funnels tRPC router: listFunnels, createFunnel, updateFunnel, deleteFunnel
+- [ ] funnels router: listPages, createPage, updatePage, deletePage, reorderPages
+- [ ] funnels router: submitForm (public), getSubmissions, getAnalytics
+- [ ] Funnels main page at /funnels (funnel cards grid + create modal with 5 templates)
+- [ ] Funnel page editor at /funnels/:id/edit (section builder + live preview)
+- [ ] Public funnel page renderer at /f/:slug (no auth required)
+- [ ] Wire /funnels, /funnels/:id/edit, /f/:slug routes in App.tsx
