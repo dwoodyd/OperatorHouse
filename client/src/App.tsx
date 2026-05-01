@@ -29,6 +29,9 @@ import EmailSequences from "./pages/EmailSequences";
 import CallCenter from "./pages/CallCenter";
 import SMS from "./pages/SMS";
 import VoiceAgents from "./pages/VoiceAgents";
+import CRM from "./pages/CRM";
+import ContactProfile from "./pages/ContactProfile";
+import Invoicing from "./pages/Invoicing";
 
 function Router() {
   return (
@@ -49,6 +52,9 @@ function Router() {
       <Route path="/call-center" component={CallCenter} />
       <Route path="/sms" component={SMS} />
       <Route path="/voice-agents" component={VoiceAgents} />
+      <Route path="/crm" component={CRM} />
+      <Route path="/crm/:id" component={ContactProfile} />
+      <Route path="/invoicing" component={Invoicing} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

@@ -334,3 +334,27 @@
 - [x] Vault knowledge base linking per agent (link/unlink dialog)
 - [x] Vapi.ai integration stubs (deploy, activate/deactivate, update greeting)
 - [x] Call transcript viewer with sentiment tags and outcome badges
+
+## Phase 7 — CRM Suite (Business Tier)
+- [ ] DB schema: contacts, companies, contact_tags, segments, custom_field_defs tables
+- [ ] Push DB migration
+- [ ] tRPC crmRouter: contacts CRUD, companies CRUD, segments, custom fields, import/export
+- [ ] CRM page at /crm (contacts table with search/filter, lifecycle stage badges)
+- [ ] Contact profile page at /crm/:id (editable fields + activity timeline)
+- [ ] Companies tab at /crm/companies (table + company profile at /crm/companies/:id)
+- [ ] Segments tab at /crm/segments (rule builder, live count preview, bulk actions)
+- [ ] Custom Fields in Settings at /settings/custom-fields
+- [ ] CSV import with column mapping + duplicate handling
+- [ ] CSV export of filtered contacts view
+- [ ] Wire CRM to sidebar GROWTH section
+
+## Phase 8 — Invoicing & Payments (Business Tier)
+- [ ] DB schema: invoices, invoice_line_items, payment_records tables
+- [ ] Push DB migration
+- [ ] tRPC invoicingRouter: invoice CRUD, Stripe checkout, status tracking, revenue stats
+- [ ] Invoicing page at /invoicing (invoice table, status badges, revenue summary cards)
+- [ ] Invoice builder (create/edit: client picker, line items, tax, discounts, payment terms)
+- [ ] Invoice detail view with send, mark paid, download actions
+- [ ] Stripe Checkout integration for online payment links
+- [ ] Revenue dashboard (MRR, outstanding, revenue by client, monthly chart)
+- [ ] Wire Invoicing to sidebar OPERATIONS section

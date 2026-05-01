@@ -260,7 +260,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
               const isActive =
                 location === item.path ||
                 (item.path === "/dashboard" && location === "/");
-              const isLocked = (item.pro && !isPro) || item.business || item.enterprise;
+              const isLocked = (item.pro && !isPro) || (item.business && !isPro) || item.enterprise;
               if (isLocked) {
                 return (
                   <button

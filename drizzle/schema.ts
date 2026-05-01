@@ -484,3 +484,170 @@ export const voiceAgentKnowledge = mysqlTable("voice_agent_knowledge", {
 });
 export type VoiceAgentKnowledge = typeof voiceAgentKnowledge.$inferSelect;
 export type InsertVoiceAgentKnowledge = typeof voiceAgentKnowledge.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 7 — CRM SUITE (Business Tier)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── CRM Contacts ─────────────────────────────────────────────────────────────
+export const crmContacts = mysqlTable("crm_contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  firstName: varchar("firstName", { length: 255 }).notNull(),
+  lastName: varchar("lastName", { length: 255 }).default("").notNull(),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 30 }),
+  secondaryEmail: varchar("secondaryEmail", { length: 320 }),
+  companyId: int("companyId"),
+  title: varchar("title", { length: 255 }),
+  lifecycleStage: mysqlEnum("lifecycleStage", ["lead", "prospect", "client", "past_client", "partner"]).default("lead").notNull(),
+  source: mysqlEnum("source", ["manual", "funnel", "import", "prospecting", "referral", "social"]).default("manual").notNull(),
+  tags: json("tags").$type<string[]>(),
+  customFields: json("customFields").$type<Record<string, unknown>>(),
+  avatarUrl: varchar("avatarUrl", { length: 1000 }),
+  timezone: varchar("timezone", { length: 64 }),
+  optedInSms: boolean("optedInSms").default(false).notNull(),
+  optedInEmail: boolean("optedInEmail").default(true).notNull(),
+  healthScore: int("healthScore").default(50),
+  lastContactedAt: timestamp("lastContactedAt"),
+  linkedClientId: int("linkedClientId"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CrmContact = typeof crmContacts.$inferSelect;
+export type InsertCrmContact = typeof crmContacts.$inferInsert;
+
+// ─── CRM Companies ────────────────────────────────────────────────────────────
+export const crmCompanies = mysqlTable("crm_companies", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  industry: varchar("industry", { length: 100 }),
+  size: mysqlEnum("size", ["solo", "small", "medium", "large", "enterprise"]).default("small").notNull(),
+  website: varchar("website", { length: 500 }),
+  description: text("description"),
+  tags: json("tags").$type<string[]>(),
+  customFields: json("customFields").$type<Record<string, unknown>>(),
+  totalPipelineValue: float("totalPipelineValue").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CrmCompany = typeof crmCompanies.$inferSelect;
+export type InsertCrmCompany = typeof crmCompanies.$inferInsert;
+
+// ─── CRM Contact Tags ─────────────────────────────────────────────────────────
+export const crmContactTags = mysqlTable("crm_contact_tags", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  color: varchar("color", { length: 20 }).default("#6366f1").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CrmContactTag = typeof crmContactTags.$inferSelect;
+export type InsertCrmContactTag = typeof crmContactTags.$inferInsert;
+
+// ─── CRM Segments ─────────────────────────────────────────────────────────────
+export const crmSegments = mysqlTable("crm_segments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  filterRules: json("filterRules").notNull(),
+  contactCount: int("contactCount").default(0),
+  isDynamic: boolean("isDynamic").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CrmSegment = typeof crmSegments.$inferSelect;
+export type InsertCrmSegment = typeof crmSegments.$inferInsert;
+
+// ─── CRM Custom Field Definitions ─────────────────────────────────────────────
+export const crmCustomFieldDefs = mysqlTable("crm_custom_field_defs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  entityType: mysqlEnum("entityType", ["contact", "company"]).notNull(),
+  fieldName: varchar("fieldName", { length: 100 }).notNull(),
+  label: varchar("label", { length: 255 }).notNull(),
+  fieldType: mysqlEnum("fieldType", ["text", "number", "date", "dropdown", "checkbox", "url", "long_text"]).notNull(),
+  options: json("options").$type<string[]>(),
+  isRequired: boolean("isRequired").default(false).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CrmCustomFieldDef = typeof crmCustomFieldDefs.$inferSelect;
+export type InsertCrmCustomFieldDef = typeof crmCustomFieldDefs.$inferInsert;
+
+// ─── CRM Activity Notes ───────────────────────────────────────────────────────
+export const crmActivityNotes = mysqlTable("crm_activity_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId").notNull(),
+  note: text("note").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CrmActivityNote = typeof crmActivityNotes.$inferSelect;
+export type InsertCrmActivityNote = typeof crmActivityNotes.$inferInsert;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 8 — INVOICING & PAYMENTS (Business Tier)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+export const invoices = mysqlTable("invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
+  contactId: int("contactId"),
+  companyId: int("companyId"),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientEmail: varchar("clientEmail", { length: 320 }),
+  status: mysqlEnum("status", ["draft", "sent", "viewed", "paid", "overdue", "cancelled"]).default("draft").notNull(),
+  lineItems: json("lineItems").notNull(),
+  subtotal: float("subtotal").default(0).notNull(),
+  taxRate: float("taxRate").default(0).notNull(),
+  taxAmount: float("taxAmount").default(0).notNull(),
+  discountAmount: float("discountAmount").default(0).notNull(),
+  total: float("total").default(0).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  paymentTerms: mysqlEnum("paymentTerms", ["due_on_receipt", "net_15", "net_30", "net_60"]).default("net_30").notNull(),
+  dueDate: timestamp("dueDate"),
+  paidAt: timestamp("paidAt"),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }),
+  stripePaymentLinkId: varchar("stripePaymentLinkId", { length: 255 }),
+  notes: text("notes"),
+  isRecurring: boolean("isRecurring").default(false).notNull(),
+  recurringInterval: mysqlEnum("recurringInterval", ["weekly", "monthly", "quarterly", "yearly"]),
+  recurringNextDate: timestamp("recurringNextDate"),
+  sentAt: timestamp("sentAt"),
+  viewedAt: timestamp("viewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+// ─── Invoice Counter (auto-increment number per user) ─────────────────────────
+export const invoiceCounters = mysqlTable("invoice_counters", {
+  userId: int("userId").primaryKey(),
+  lastNumber: int("lastNumber").default(0).notNull(),
+});
+export type InvoiceCounter = typeof invoiceCounters.$inferSelect;
+
+// ─── Payment Records ──────────────────────────────────────────────────────────
+export const paymentRecords = mysqlTable("payment_records", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  invoiceId: int("invoiceId").notNull(),
+  amount: float("amount").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  method: mysqlEnum("method", ["stripe", "bank_transfer", "cash", "check", "other"]).default("stripe").notNull(),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  notes: text("notes"),
+  paidAt: timestamp("paidAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PaymentRecord = typeof paymentRecords.$inferSelect;
+export type InsertPaymentRecord = typeof paymentRecords.$inferInsert;

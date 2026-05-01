@@ -9,6 +9,8 @@ import { emailSequencesRouter } from "./routers/emailSequences";
 import { callCenterRouter } from "./routers/callCenter";
 import { smsRouter } from "./routers/sms";
 import { voiceAgentsRouter } from "./routers/voiceAgents";
+import { crmRouter } from "./routers/crm";
+import { invoicingRouter } from "./routers/invoicing";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -677,6 +679,8 @@ ${contextBlock}`;
   }),
   sms: smsRouter,
   voiceAgents: voiceAgentsRouter,
+  crm: crmRouter,
+  invoicing: invoicingRouter,
 });
 
 export type AppRouter = typeof appRouter;
