@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Calendar, Clock, Link2, Plus, Settings, Trash2, Edit2,
-  CheckCircle2, XCircle, AlertCircle, User, Copy, ExternalLink,
+  CheckCircle2, XCircle, AlertCircle, User, Copy, ExternalLink, Mail, Loader2,
 } from "lucide-react";
 import { SkeletonRows } from "@/components/StateUI";
 import { format } from "date-fns";
@@ -566,6 +566,10 @@ function BookingRow({
 }) {
   const cfg = STATUS_CONFIG[booking.status];
   const StatusIcon = cfg.icon;
+  const sendConfirmation = trpc.portal.sendBookingConfirmation.useMutation({
+    onSuccess: () => toast.success("Confirmation email sent"),
+    onError: (e) => toast.error(e.message),
+  });
 
   return (
     <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
@@ -595,6 +599,18 @@ function BookingRow({
           <StatusIcon className="w-3 h-3" />
           {cfg.label}
         </Badge>
+        {booking.status === "confirmed" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => sendConfirmation.mutate({ bookingId: booking.id })}
+            disabled={sendConfirmation.isPending}
+            className="h-7 px-2 text-xs text-zinc-400 hover:text-amber-400 hover:bg-amber-500/10"
+            title="Send confirmation email"
+          >
+            {sendConfirmation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+          </Button>
+        )}
         {booking.status === "confirmed" && (
           <Select onValueChange={(v) => onStatusChange(booking.id, v as any)}>
             <SelectTrigger className="bg-white/5 border-white/10 text-ivory/60 h-7 w-28 text-xs">

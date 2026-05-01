@@ -987,3 +987,25 @@ export const bookingEmailLogs = mysqlTable("bookingEmailLogs", {
   errorMessage: text("errorMessage"),
 });
 export type BookingEmailLog = typeof bookingEmailLogs.$inferSelect;
+
+// ─── Phase 14: Contracts & E-Sign ─────────────────────────────────────────────
+export const contracts = mysqlTable("contracts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contactId: int("contactId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  status: mysqlEnum("status", ["draft", "sent", "viewed", "signed", "voided"]).default("draft").notNull(),
+  signToken: varchar("signToken", { length: 128 }),
+  signerName: varchar("signerName", { length: 255 }),
+  signerEmail: varchar("signerEmail", { length: 320 }),
+  signedAt: timestamp("signedAt"),
+  signatureData: text("signatureData"),
+  sentAt: timestamp("sentAt"),
+  viewedAt: timestamp("viewedAt"),
+  portalDocumentId: int("portalDocumentId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Contract = typeof contracts.$inferSelect;
+export type InsertContract = typeof contracts.$inferInsert;

@@ -14,6 +14,7 @@ import { invoicingRouter } from "./routers/invoicing";
 import { bookingRouter } from "./routers/booking";
 import { funnelsRouter } from "./routers/funnels";
 import { socialRouter } from "./routers/social";
+import { contractsRouter } from './routers/contracts';
 import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import {
@@ -691,6 +692,7 @@ ${contextBlock}`;
   social: socialRouter,
   automations: automationsRouter,
   portal: portalRouter,
+  contracts: contractsRouter,
 });
 
 export type AppRouter = typeof appRouter;
