@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
 import { SpectreWidget } from "@/components/SpectreWidget";
@@ -484,7 +485,18 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
   const completeOnboarding = trpc.onboarding.complete.useMutation();
-  const seedSampleData = trpc.onboarding.seedSampleData.useMutation();
+  const seedSampleData = trpc.onboarding.seedSampleData.useMutation({
+    onSuccess: (data) => {
+      if (data.seeded) {
+        toast.success("Sample data loaded! Explore the House to see it.");
+      } else {
+        toast.info("Your account already has data — sample data was not loaded to avoid overwriting your work.");
+      }
+    },
+    onError: (err) => {
+      toast.error("Could not load sample data: " + err.message);
+    },
+  });
   const { data: topLead, refetch: refetchTopLead } = trpc.onboarding.topLead.useQuery(undefined, { retry: false });
   const [slide, setSlide] = useState(() => {
     try { const s = parseInt(sessionStorage.getItem("oh_slide_progress") ?? "1", 10); return isNaN(s) ? 1 : Math.max(1, Math.min(s, TOTAL)); } catch { return 1; }
@@ -780,7 +792,11 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                   onClick={() => { if (!seedSampleData.isSuccess && !seedSampleData.isPending) seedSampleData.mutate(); }}
                   disabled={seedSampleData.isPending || seedSampleData.isSuccess}
                 >
-                  {seedSampleData.isPending ? 'Loading sample data...' : seedSampleData.isSuccess ? '✓ Sample data loaded' : 'Load sample data'}
+                  {seedSampleData.isPending
+                    ? 'Loading sample data...'
+                    : seedSampleData.isSuccess
+                      ? (seedSampleData.data?.seeded ? '✓ Sample data loaded' : '✓ Account already has data')
+                      : 'Load sample data'}
                 </button>
               )}
             </div>
