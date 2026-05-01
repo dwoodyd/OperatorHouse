@@ -12,7 +12,7 @@ import {
   getStrategies, getTasks, getUserNotifications, getUserProfile, getVaultItems,
   getUnreadNotificationCount, logActivity, markAllNotificationsRead, markNotificationRead,
   updateClient, updateDeal, updateLead, updateStrategy, updateTask,
-  updateVaultItem, upsertUserProfile,
+  updateVaultItem, upsertUserProfile, getDb,
 } from "./db";
 import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
 import { notifyOwner } from "./_core/notification";
@@ -634,6 +634,35 @@ ${contextBlock}`;
       }),
     markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
       await markAllNotificationsRead(ctx.user.id);
+      return { success: true };
+    }),
+  }),
+
+  subscription: router({
+    getMyTier: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) return { tier: "operator" as const };
+      const { userSubscriptions } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const rows = await db.select().from(userSubscriptions)
+        .where(eq(userSubscriptions.userId, ctx.user.id))
+        .limit(1);
+      return { tier: (rows[0]?.tier ?? "operator") as "operator" | "operator_pro" };
+    }),
+    upgradeToPro: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const { userSubscriptions } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const existing = await db.select().from(userSubscriptions)
+        .where(eq(userSubscriptions.userId, ctx.user.id)).limit(1);
+      if (existing.length > 0) {
+        await db.update(userSubscriptions)
+          .set({ tier: "operator_pro", updatedAt: new Date() })
+          .where(eq(userSubscriptions.userId, ctx.user.id));
+      } else {
+        await db.insert(userSubscriptions).values({ userId: ctx.user.id, tier: "operator_pro" });
+      }
       return { success: true };
     }),
   }),

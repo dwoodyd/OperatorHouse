@@ -9,22 +9,47 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
   BarChart3, Settings, ChevronLeft, ChevronRight, Zap, CheckSquare, Terminal, Menu, X, Info, PlayCircle, LogOut, CreditCard,
+  MessageSquare, Phone, Mic, Mail, Activity, Lock,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
 import NotificationBell from "./NotificationBell";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
+import { trpc } from "@/lib/trpc";
 
-const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Command Center",    path: "/dashboard" },
-  { icon: Search,          label: "Lead Intelligence", path: "/leads" },
-  { icon: GitBranch,       label: "Client Pipeline",   path: "/pipeline" },
-  { icon: FileText,        label: "Strategy Generator",path: "/strategy" },
-  { icon: Archive,         label: "The Vault",         path: "/vault" },
-  { icon: BarChart3,       label: "Analytics",         path: "/analytics" },
-  { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
-  { icon: Info,            label: "About & Features",   path: "/about" },
-  { icon: CreditCard,      label: "Pricing",            path: "/pricing" },
+interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; }
+interface NavSection { title: string; items: NavItem[]; }
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "COMMAND",
+    items: [
+      { icon: LayoutDashboard, label: "Command Center",     path: "/dashboard" },
+      { icon: Search,          label: "Lead Intelligence",  path: "/leads" },
+      { icon: GitBranch,       label: "Client Pipeline",    path: "/pipeline" },
+      { icon: FileText,        label: "Strategy Generator", path: "/strategy" },
+      { icon: Archive,         label: "The Vault",          path: "/vault" },
+      { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
+    ],
+  },
+  {
+    title: "OUTREACH",
+    items: [
+      { icon: Activity,      label: "Client Pulse",     path: "/pulse",        pro: true },
+      { icon: MessageSquare, label: "SMS Outreach",     path: "/sms",          pro: true },
+      { icon: Phone,         label: "Call Center",      path: "/calls",        pro: true },
+      { icon: Mail,          label: "Email Sequences",  path: "/sequences",    pro: true },
+      { icon: Mic,           label: "Voice Agents",     path: "/voice-agents", pro: true },
+    ],
+  },
+  {
+    title: "INTEL",
+    items: [
+      { icon: BarChart3, label: "Analytics",       path: "/analytics" },
+      { icon: Info,      label: "About & Features", path: "/about" },
+      { icon: CreditCard,label: "Pricing",          path: "/pricing" },
+    ],
+  },
 ];
 
 interface AppLayoutProps {
@@ -63,6 +88,14 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   // bellOpen state is now managed inside NotificationBell component
   const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Fetch subscription tier for Pro gating
+  const { data: subData } = trpc.subscription.getMyTier.useQuery(undefined, {
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isPro = subData?.tier === "operator_pro";
 
   // Cmd+K / Ctrl+K shortcut for Command Line
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -174,60 +207,97 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         )}
       </div>
 
-      {/* Nav — anchor-based for right-click, screen readers, deep links */}
+      {/* Nav — sectioned: COMMAND / OUTREACH / INTEL */}
       <nav
         role="navigation"
         aria-label="Main navigation"
         className="flex-1 px-2 py-3 overflow-y-auto"
         style={{ display: "flex", flexDirection: "column", gap: "2px" }}
       >
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            location === item.path ||
-            (item.path === "/dashboard" && location === "/");
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              aria-label={item.label}
-              aria-current={isActive ? "page" : undefined}
-              className={`sidebar-item w-full text-left ${isActive ? "active" : ""}`}
-              style={{
-                justifyContent: !isMobile && collapsed ? "center" : "flex-start",
-                padding: !isMobile && collapsed ? "10px" : "9px 12px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                textDecoration: "none",
-              }}
-              title={!isMobile && collapsed ? item.label : undefined}
-            >
-              <item.icon
-                size={15}
-                style={{
-                  flexShrink: 0,
-                  color: isActive ? "var(--amber)" : "var(--text-secondary)",
-                  filter: isActive
-                    ? "drop-shadow(0 0 5px rgba(245,166,35,0.55))"
-                    : "none",
-                  transition: "color 180ms ease, filter 180ms ease",
-                }}
-              />
-              {(!collapsed || isMobile) && (
-                <span
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.title} style={{ marginBottom: 6 }}>
+            {(!collapsed || isMobile) && (
+              <p style={{
+                fontFamily: "Fira Code, monospace",
+                fontSize: 8,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "rgba(212,168,83,0.35)",
+                padding: "6px 12px 3px",
+                marginBottom: 1,
+              }}>
+                {section.title}
+              </p>
+            )}
+            {section.items.map((item) => {
+              const isActive =
+                location === item.path ||
+                (item.path === "/dashboard" && location === "/");
+              const isLocked = item.pro && !isPro;
+              if (isLocked) {
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => setLocation("/pricing")}
+                    title={!isMobile && collapsed ? `${item.label} — Operator Pro` : undefined}
+                    className="sidebar-item w-full text-left"
+                    style={{
+                      justifyContent: !isMobile && collapsed ? "center" : "flex-start",
+                      padding: !isMobile && collapsed ? "10px" : "9px 12px",
+                      display: "flex", alignItems: "center", gap: "10px",
+                      opacity: 0.45, cursor: "pointer", background: "none", border: "none", width: "100%",
+                    }}
+                  >
+                    <item.icon size={15} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
+                    {(!collapsed || isMobile) && (
+                      <>
+                        <span style={{ fontSize: "13px", color: "var(--text-muted)", flex: 1, textAlign: "left" }}>
+                          {item.label}
+                        </span>
+                        <Lock size={10} style={{ color: "rgba(212,168,83,0.5)", flexShrink: 0 }} />
+                      </>
+                    )}
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`sidebar-item w-full text-left ${isActive ? "active" : ""}`}
                   style={{
-                    fontSize: "13px",
-                    fontWeight: isActive ? 500 : 400,
-                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
-                    transition: "color 180ms ease",
+                    justifyContent: !isMobile && collapsed ? "center" : "flex-start",
+                    padding: !isMobile && collapsed ? "10px" : "9px 12px",
+                    display: "flex", alignItems: "center", gap: "10px", textDecoration: "none",
                   }}
+                  title={!isMobile && collapsed ? item.label : undefined}
                 >
-                  {item.label}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+                  <item.icon
+                    size={15}
+                    style={{
+                      flexShrink: 0,
+                      color: isActive ? "var(--amber)" : "var(--text-secondary)",
+                      filter: isActive ? "drop-shadow(0 0 5px rgba(245,166,35,0.55))" : "none",
+                      transition: "color 180ms ease, filter 180ms ease",
+                    }}
+                  />
+                  {(!collapsed || isMobile) && (
+                    <span style={{
+                      fontSize: "13px",
+                      fontWeight: isActive ? 500 : 400,
+                      color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                      transition: "color 180ms ease",
+                    }}>
+                      {item.label}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Bottom */}

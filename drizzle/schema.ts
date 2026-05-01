@@ -216,3 +216,271 @@ export const pushSubscriptions = mysqlTable('push_subscriptions', {
   auth: text('auth').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OUTREACH SUITE — Phase 1 Schema
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── User Subscriptions (tier tracking) ───────────────────────────────────────
+export const userSubscriptions = mysqlTable("user_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  tier: mysqlEnum("tier", ["operator", "operator_pro"]).default("operator").notNull(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  currentPeriodEnd: timestamp("currentPeriodEnd"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type InsertUserSubscription = typeof userSubscriptions.$inferInsert;
+
+// ─── Client Outreach Profiles ─────────────────────────────────────────────────
+export const clientOutreachProfiles = mysqlTable("client_outreach_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull().unique(),
+  userId: int("userId").notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 30 }),
+  outreachStatus: mysqlEnum("outreachStatus", ["not_started", "active", "paused", "completed"]).default("not_started").notNull(),
+  healthScore: int("healthScore").default(50),
+  lastContactedAt: timestamp("lastContactedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ClientOutreachProfile = typeof clientOutreachProfiles.$inferSelect;
+export type InsertClientOutreachProfile = typeof clientOutreachProfiles.$inferInsert;
+
+// ─── Client Health Scores ─────────────────────────────────────────────────────
+export const clientHealthScores = mysqlTable("client_health_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  score: int("score").default(50).notNull(),
+  factors: json("factors"),
+  trend: mysqlEnum("trend", ["improving", "stable", "declining"]).default("stable").notNull(),
+  calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+});
+export type ClientHealthScore = typeof clientHealthScores.$inferSelect;
+export type InsertClientHealthScore = typeof clientHealthScores.$inferInsert;
+
+// ─── Client Timeline Events ───────────────────────────────────────────────────
+export const clientTimelineEvents = mysqlTable("client_timeline_events", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  eventType: mysqlEnum("eventType", ["sms", "call", "email", "voice_agent", "pipeline_change", "strategy_delivered", "note"]).notNull(),
+  eventId: int("eventId"),
+  summary: varchar("summary", { length: 1000 }),
+  sentiment: mysqlEnum("sentiment", ["positive", "neutral", "negative"]),
+  occurredAt: timestamp("occurredAt").defaultNow().notNull(),
+});
+export type ClientTimelineEvent = typeof clientTimelineEvents.$inferSelect;
+export type InsertClientTimelineEvent = typeof clientTimelineEvents.$inferInsert;
+
+// ─── SMS Conversations ────────────────────────────────────────────────────────
+export const smsConversations = mysqlTable("sms_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 30 }).notNull(),
+  optInStatus: mysqlEnum("optInStatus", ["opted_in", "opted_out", "pending"]).default("pending").notNull(),
+  optInDate: timestamp("optInDate"),
+  lastMessageAt: timestamp("lastMessageAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SmsConversation = typeof smsConversations.$inferSelect;
+export type InsertSmsConversation = typeof smsConversations.$inferInsert;
+
+// ─── SMS Messages ─────────────────────────────────────────────────────────────
+export const smsMessages = mysqlTable("sms_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(),
+  userId: int("userId").notNull(),
+  direction: mysqlEnum("direction", ["inbound", "outbound"]).notNull(),
+  body: text("body").notNull(),
+  status: mysqlEnum("status", ["queued", "sent", "delivered", "failed", "read"]).default("queued").notNull(),
+  twilioSid: varchar("twilioSid", { length: 64 }),
+  templateId: int("templateId"),
+  scheduledFor: timestamp("scheduledFor"),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SmsMessage = typeof smsMessages.$inferSelect;
+export type InsertSmsMessage = typeof smsMessages.$inferInsert;
+
+// ─── SMS Templates ────────────────────────────────────────────────────────────
+export const smsTemplates = mysqlTable("sms_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  category: mysqlEnum("category", ["follow_up", "reminder", "check_in", "celebration", "re_engagement", "referral", "custom"]).default("custom").notNull(),
+  isBuiltIn: boolean("isBuiltIn").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SmsTemplate = typeof smsTemplates.$inferSelect;
+export type InsertSmsTemplate = typeof smsTemplates.$inferInsert;
+
+// ─── Calls ────────────────────────────────────────────────────────────────────
+export const calls = mysqlTable("calls", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 30 }),
+  direction: mysqlEnum("direction", ["outbound", "inbound"]).default("outbound").notNull(),
+  disposition: mysqlEnum("disposition", ["connected", "voicemail", "no_answer", "wrong_number", "busy"]),
+  durationSeconds: int("durationSeconds"),
+  notes: text("notes"),
+  scriptId: int("scriptId"),
+  followUpDate: timestamp("followUpDate"),
+  recorded: boolean("recorded").default(false).notNull(),
+  recordingUrl: varchar("recordingUrl", { length: 1000 }),
+  calledAt: timestamp("calledAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Call = typeof calls.$inferSelect;
+export type InsertCall = typeof calls.$inferInsert;
+
+// ─── Call Scripts ─────────────────────────────────────────────────────────────
+export const callScripts = mysqlTable("call_scripts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  pipelineStage: mysqlEnum("pipelineStage", ["Discovery", "Analysis", "Strategy", "Proposal", "Closed", "nurture"]).notNull(),
+  openingLines: text("openingLines"),
+  talkingPoints: json("talkingPoints"),
+  objectionHandlers: json("objectionHandlers"),
+  closingLines: text("closingLines"),
+  isAiGenerated: boolean("isAiGenerated").default(false).notNull(),
+  isBuiltIn: boolean("isBuiltIn").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CallScript = typeof callScripts.$inferSelect;
+export type InsertCallScript = typeof callScripts.$inferInsert;
+
+// ─── Call Queue ───────────────────────────────────────────────────────────────
+export const callQueue = mysqlTable("call_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  priority: mysqlEnum("priority", ["high", "medium", "low"]).default("medium").notNull(),
+  reason: mysqlEnum("reason", ["new_lead", "follow_up", "stale_deal", "scheduled"]).default("follow_up").notNull(),
+  scheduledFor: timestamp("scheduledFor"),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CallQueueItem = typeof callQueue.$inferSelect;
+export type InsertCallQueueItem = typeof callQueue.$inferInsert;
+
+// ─── Email Sequences ──────────────────────────────────────────────────────────
+export const emailSequences = mysqlTable("email_sequences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  triggerType: mysqlEnum("triggerType", ["manual", "pipeline_stage_change", "deal_closed", "deal_stale", "scheduled"]).default("manual").notNull(),
+  triggerConfig: json("triggerConfig"),
+  status: mysqlEnum("status", ["active", "paused", "draft"]).default("draft").notNull(),
+  isBuiltIn: boolean("isBuiltIn").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type EmailSequence = typeof emailSequences.$inferSelect;
+export type InsertEmailSequence = typeof emailSequences.$inferInsert;
+
+// ─── Email Sequence Steps ─────────────────────────────────────────────────────
+export const emailSequenceSteps = mysqlTable("email_sequence_steps", {
+  id: int("id").autoincrement().primaryKey(),
+  sequenceId: int("sequenceId").notNull(),
+  stepOrder: int("stepOrder").notNull(),
+  delayDays: int("delayDays").default(0).notNull(),
+  subjectTemplate: varchar("subjectTemplate", { length: 500 }).notNull(),
+  bodyTemplate: text("bodyTemplate").notNull(),
+  sendTimePreference: mysqlEnum("sendTimePreference", ["morning", "afternoon", "best_time"]).default("morning").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type EmailSequenceStep = typeof emailSequenceSteps.$inferSelect;
+export type InsertEmailSequenceStep = typeof emailSequenceSteps.$inferInsert;
+
+// ─── Email Sequence Enrollments ───────────────────────────────────────────────
+export const emailSequenceEnrollments = mysqlTable("email_sequence_enrollments", {
+  id: int("id").autoincrement().primaryKey(),
+  sequenceId: int("sequenceId").notNull(),
+  clientId: int("clientId").notNull(),
+  userId: int("userId").notNull(),
+  currentStep: int("currentStep").default(0).notNull(),
+  status: mysqlEnum("status", ["active", "completed", "paused", "unsubscribed"]).default("active").notNull(),
+  enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
+  lastEmailSentAt: timestamp("lastEmailSentAt"),
+});
+export type EmailSequenceEnrollment = typeof emailSequenceEnrollments.$inferSelect;
+export type InsertEmailSequenceEnrollment = typeof emailSequenceEnrollments.$inferInsert;
+
+// ─── Email Sends ──────────────────────────────────────────────────────────────
+export const emailSends = mysqlTable("email_sends", {
+  id: int("id").autoincrement().primaryKey(),
+  enrollmentId: int("enrollmentId").notNull(),
+  stepId: int("stepId").notNull(),
+  userId: int("userId").notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  body: text("body").notNull(),
+  toEmail: varchar("toEmail", { length: 320 }).notNull(),
+  resendId: varchar("resendId", { length: 255 }),
+  status: mysqlEnum("status", ["queued", "sent", "delivered", "opened", "clicked", "replied", "bounced", "failed"]).default("queued").notNull(),
+  sentAt: timestamp("sentAt"),
+  openedAt: timestamp("openedAt"),
+  clickedAt: timestamp("clickedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type EmailSend = typeof emailSends.$inferSelect;
+export type InsertEmailSend = typeof emailSends.$inferInsert;
+
+// ─── Voice Agents ─────────────────────────────────────────────────────────────
+export const voiceAgents = mysqlTable("voice_agents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  voiceId: varchar("voiceId", { length: 255 }),
+  personality: mysqlEnum("personality", ["professional", "warm", "concise", "custom"]).default("professional").notNull(),
+  greetingScript: text("greetingScript"),
+  fallbackAction: mysqlEnum("fallbackAction", ["voicemail", "transfer", "schedule_callback"]).default("voicemail").notNull(),
+  isActive: boolean("isActive").default(false).notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 30 }),
+  vapiAgentId: varchar("vapiAgentId", { length: 255 }),
+  isBuiltIn: boolean("isBuiltIn").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type VoiceAgent = typeof voiceAgents.$inferSelect;
+export type InsertVoiceAgent = typeof voiceAgents.$inferInsert;
+
+// ─── Voice Agent Calls ────────────────────────────────────────────────────────
+export const voiceAgentCalls = mysqlTable("voice_agent_calls", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: int("agentId").notNull(),
+  userId: int("userId").notNull(),
+  clientId: int("clientId"),
+  callerPhone: varchar("callerPhone", { length: 30 }),
+  durationSeconds: int("durationSeconds"),
+  transcript: text("transcript"),
+  summary: text("summary"),
+  sentiment: mysqlEnum("sentiment", ["positive", "neutral", "negative"]),
+  outcome: mysqlEnum("outcome", ["resolved", "transferred", "callback_scheduled", "voicemail"]),
+  vapiCallId: varchar("vapiCallId", { length: 255 }),
+  handledAt: timestamp("handledAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type VoiceAgentCall = typeof voiceAgentCalls.$inferSelect;
+export type InsertVoiceAgentCall = typeof voiceAgentCalls.$inferInsert;
+
+// ─── Voice Agent Knowledge (Vault links) ─────────────────────────────────────
+export const voiceAgentKnowledge = mysqlTable("voice_agent_knowledge", {
+  id: int("id").autoincrement().primaryKey(),
+  agentId: int("agentId").notNull(),
+  vaultItemId: int("vaultItemId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type VoiceAgentKnowledge = typeof voiceAgentKnowledge.$inferSelect;
+export type InsertVoiceAgentKnowledge = typeof voiceAgentKnowledge.$inferInsert;

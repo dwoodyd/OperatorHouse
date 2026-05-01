@@ -229,6 +229,66 @@ export default function Pricing() {
         </div>
 
         {/* Plan cards */}
+        {/* Operator Pro — full-width featured card */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{
+            position: "relative",
+            background: "rgba(212,168,83,0.06)",
+            border: "1px solid rgba(212,168,83,0.5)",
+            borderRadius: 10,
+            padding: "28px 28px",
+            boxShadow: "0 0 40px rgba(212,168,83,0.08)",
+          }}>
+            <div style={{
+              position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)",
+              background: "#d4a853", color: "#0e0e0e",
+              fontFamily: "Fira Code, monospace", fontSize: 9,
+              letterSpacing: "0.12em", textTransform: "uppercase",
+              padding: "3px 10px", borderRadius: 10, fontWeight: 700,
+              whiteSpace: "nowrap",
+            }}>Operator Pro — Full Outreach Suite</div>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Operator Pro</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$197</span>
+                  <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
+                </div>
+                <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 16 }}>Everything in Operator + full outreach suite</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px" }}>
+                  {["Client Pulse & Health Scores", "SMS Outreach", "Call Center + AI Scripts", "Email Sequences", "AI Voice Agents", "Priority support"].map(f => (
+                    <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#d4a853", flexShrink: 0 }} />
+                      <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 12, color: "rgba(245,240,232,0.6)" }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) { window.location.href = getLoginUrl(); return; }
+                  toast.info("Operator Pro launching soon — you\'ll be first to know.");
+                }}
+                style={{
+                  padding: "12px 28px",
+                  background: "#d4a853",
+                  border: "none", borderRadius: 6,
+                  color: "#0e0e0e",
+                  fontFamily: "DM Sans, sans-serif",
+                  fontSize: 13, fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 0 20px rgba(212,168,83,0.3)",
+                  whiteSpace: "nowrap",
+                  alignSelf: "center",
+                }}
+              >
+                Join the Waitlist
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Operator base tier — monthly / annual */}
+        <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(212,168,83,0.3)", textAlign: "center", marginBottom: 12 }}>Operator — Core Intelligence Suite</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
           {/* Monthly */}
           <div

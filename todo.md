@@ -268,3 +268,46 @@
 - [x] Add ⌘K keyboard shortcut hint to CMD button in header (visible on md+ screens)
 - [ ] Analytics time-series chart (pipeline velocity / deal trend)
 - [ ] Accessibility contrast pass on secondary stat-card labels
+
+## Outreach Suite — Phase 1: Foundation (2026-04-30)
+- [ ] Update Pricing page: add Operator Pro tier at $197/mo / $1,997/yr
+- [ ] Add OUTREACH sidebar section with 5 new nav items (SMS, Calls, Voice Agents, Email Sequences, Client Pulse)
+- [ ] Tier gating: Operator users see greyed-out Pro items with lock + upgrade prompt
+- [ ] Add subscription_tier field to users table (operator | operator_pro)
+- [ ] Push full Outreach Suite data model (12 new tables)
+- [ ] Add phone_number, email, outreach_status, health_score, last_contacted_at to pipeline clients
+
+## Outreach Suite — Phase 2: Client Pulse
+- [ ] Client Pulse page at /pulse (health score dashboard + unified timeline)
+- [ ] Health score calculator (recency 40%, responsiveness 30%, sentiment 15%, velocity 15%)
+- [ ] At-risk alerts feeding into Command Center Next Best Action
+- [ ] Dashboard integration: client health summary card
+
+## Outreach Suite — Phase 3: Email Sequences
+- [ ] Email Sequences page at /sequences (sequence builder + step editor + enrollees panel)
+- [ ] 5 pre-built sequence templates with realistic content
+- [ ] Automation trigger rules (pipeline stage change → auto-enroll)
+- [ ] Resend API integration for email delivery + webhook tracking
+- [ ] RESEND_API_KEY secret
+
+## Outreach Suite — Phase 4: Call Center
+- [ ] Call Center page at /calls (Queue / Log / Scripts tabs)
+- [ ] Call queue with priority sorting, disposition quick-log form
+- [ ] Call script builder with Ghost AI generation
+- [ ] 3 pre-built scripts (Discovery, Follow-Up, Win-Back)
+- [ ] tel: link fallback for mobile calling
+
+## Outreach Suite — Phase 5: SMS Outreach
+- [ ] SMS Outreach page at /sms (iMessage-style conversation UI)
+- [ ] Template library with 6 pre-built templates + custom template creator
+- [ ] Scheduled send + best-time logic
+- [ ] Twilio SMS send/receive integration + webhook handler
+- [ ] TCPA opt-out (STOP keyword) handling
+- [ ] TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER secrets
+
+## Outreach Suite — Phase 6: AI Voice Agents
+- [ ] Voice Agents page at /voice-agents (agent cards + create flow)
+- [ ] 4 pre-built agent templates (Office Hours, Lead Intake, FAQ, Appointment Setter)
+- [ ] Vault knowledge base linking per agent
+- [ ] Vapi.ai integration + call transcript storage
+- [ ] VAPI_API_KEY secret
