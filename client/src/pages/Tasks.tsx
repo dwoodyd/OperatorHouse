@@ -198,7 +198,21 @@ export default function Tasks() {
                 <div
                   key={task.id}
                   className="glass-panel p-4 flex items-start gap-3 fade-in-up"
-                  style={{ opacity: 0, transition: 'opacity 150ms ease, transform 150ms ease' }}
+                  tabIndex={0}
+                  role="listitem"
+                  aria-label={`Task: ${task.title}, priority: ${(task.priority as Priority) ?? 'medium'}, status: ${task.status}`}
+                  style={{ opacity: 0, transition: 'opacity 150ms ease, transform 150ms ease', outline: 'none' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      updateTask.mutate({ id: task.id, status: isDone ? 'pending' : 'done' as Status });
+                    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                      e.preventDefault();
+                      deleteTask.mutate({ id: task.id });
+                    }
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.boxShadow = '0 0 0 1px rgba(245,166,35,0.5)')}
+                  onBlur={(e) => (e.currentTarget.style.boxShadow = 'none')}
                 >
                   <button
                     onClick={() => updateTask.mutate({ id: task.id, status: isDone ? "pending" : "done" as Status })}

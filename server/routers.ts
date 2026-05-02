@@ -676,6 +676,58 @@ ${contextBlock}`;
     }),
   }),
 
+  notificationPreferences: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) return { newClient: true, dealMoved: true, payment: true, briefingReady: true };
+      const { userNotificationPreferences } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const rows = await db.select().from(userNotificationPreferences)
+        .where(eq(userNotificationPreferences.userId, ctx.user.id)).limit(1);
+      if (!rows[0]) return { newClient: true, dealMoved: true, payment: true, briefingReady: true };
+      const r = rows[0];
+      return {
+        newClient: r.newClient === 1,
+        dealMoved: r.dealMoved === 1,
+        payment: r.payment === 1,
+        briefingReady: r.briefingReady === 1,
+      };
+    }),
+    update: protectedProcedure
+      .input(z.object({
+        newClient: z.boolean().optional(),
+        dealMoved: z.boolean().optional(),
+        payment: z.boolean().optional(),
+        briefingReady: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        const { userNotificationPreferences } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const patch = {
+          ...(input.newClient !== undefined ? { newClient: input.newClient ? 1 : 0 } : {}),
+          ...(input.dealMoved !== undefined ? { dealMoved: input.dealMoved ? 1 : 0 } : {}),
+          ...(input.payment !== undefined ? { payment: input.payment ? 1 : 0 } : {}),
+          ...(input.briefingReady !== undefined ? { briefingReady: input.briefingReady ? 1 : 0 } : {}),
+        };
+        const existing = await db.select().from(userNotificationPreferences)
+          .where(eq(userNotificationPreferences.userId, ctx.user.id)).limit(1);
+        if (existing.length > 0) {
+          await db.update(userNotificationPreferences).set(patch)
+            .where(eq(userNotificationPreferences.userId, ctx.user.id));
+        } else {
+          await db.insert(userNotificationPreferences).values({
+            userId: ctx.user.id,
+            newClient: input.newClient !== false ? 1 : 0,
+            dealMoved: input.dealMoved !== false ? 1 : 0,
+            payment: input.payment !== false ? 1 : 0,
+            briefingReady: input.briefingReady !== false ? 1 : 0,
+          });
+        }
+        return { success: true };
+      }),
+  }),
   pulse: pulseRouter,
   emailSequences: emailSequencesRouter,
   callCenter: callCenterRouter,
@@ -707,6 +759,16 @@ ${contextBlock}`;
       }
       return { success: true };
     }),
+  }),
+  capabilities: router({
+    check: publicProcedure.query(() => ({
+      twilio: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
+      vapi: !!process.env.VAPI_API_KEY,
+      emailDispatch: !!process.env.RESEND_API_KEY,
+      stripe: !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_MONTHLY_PRICE_ID && process.env.STRIPE_ANNUAL_PRICE_ID),
+      socialLinkedIn: !!(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET),
+      socialTwitter: !!(process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET),
+    })),
   }),
   sms: smsRouter,
   voiceAgents: voiceAgentsRouter,

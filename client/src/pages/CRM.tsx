@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -214,6 +214,7 @@ function ContactsTab() {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [, startSearchTransition] = useTransition();
 
   const { data: contacts = [], isLoading } = trpc.crm.listContacts.useQuery({
     search: search || undefined,
@@ -258,10 +259,10 @@ function ContactsTab() {
             placeholder="Search contacts…"
             className="pl-9 bg-[#111] border-[#2a2a2a] text-[#e5e5e5] placeholder:text-[#555]"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { const v = e.target.value; startSearchTransition(() => setSearch(v)); }}
           />
         </div>
-        <Select value={stageFilter} onValueChange={setStageFilter}>
+        <Select value={stageFilter} onValueChange={(v) => startSearchTransition(() => setStageFilter(v))}>
           <SelectTrigger className="w-36 bg-[#111] border-[#2a2a2a] text-[#e5e5e5]">
             <Filter className="w-3 h-3 mr-1 text-[#555]" />
             <SelectValue placeholder="All stages" />

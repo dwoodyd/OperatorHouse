@@ -479,3 +479,47 @@
 - [ ] Add STRIPE_MONTHLY_PRICE_ID + STRIPE_ANNUAL_PRICE_ID to secrets (user to do when at computer)
 - [x] Add Prospecting Engine stub page at /prospecting (no 404)
 - [x] Clear stale Vite cache (SpectreEmptyState import error resolved)
+
+## PWA Hardening & Reliability Plan
+
+### Phase 1 — Capability Gating
+- [x] Gate SMS Outreach: show "Twilio not connected" banner if TWILIO_ACCOUNT_SID/AUTH_TOKEN/FROM not set
+- [x] Gate Call Center: show "Twilio not connected" banner if credentials missing
+- [x] Gate Voice Agents: show "VAPI not connected" banner if VAPI_API_KEY not set
+- [x] Gate Social Media Agents: show "Not connected" per-platform if OAuth tokens missing
+- [x] Gate Email Sequences: show "Email dispatch not configured" if no send worker/credentials
+
+### Phase 2 — PWA Manifest + Service Worker
+- [x] Harden manifest.json: proper icons, start_url, display:standalone, theme_color (already solid — confirmed)
+- [x] Service worker fetch handler: network-first API, cache-first static, offline fallback (already present — confirmed)
+- [x] /offline.html fallback page (already present — confirmed)
+
+### Phase 3 — Server-Side Preferences + LLM Safety
+- [x] Migrate notification preferences from localStorage to server-side user_notification_preferences table
+- [x] Update Settings.tsx NotificationPrefsSection to use tRPC (getPrefs/updatePrefs)
+- [x] Update NotificationBell to read from server-side preferences
+- [x] briefings.generate JSON.parse already in try/catch (confirmed — no change needed)
+
+### Phase 4 — Observability
+- [ ] Add global React ErrorBoundary with error reporting (log to server via tRPC) — deferred
+- [ ] Add server-side error logging endpoint (trpc.system.logClientError) — deferred
+- [ ] Add API latency/error rate logging middleware on Express — deferred
+
+## Desktop Command Center Hardening
+
+### Power-User Ergonomics
+- [x] Build global command palette (Cmd+K / Ctrl+K) — CommandPalette.tsx with nav, Vault search, Specter shortcut
+- [x] Wire CommandPaletteProvider in main.tsx
+- [x] Update AppLayout: free Cmd+K for palette, add search button to topbar, Specter opens via oh:open-specter event
+- [x] Keyboard navigation for Pipeline kanban (tabIndex, Enter/Space to open deal, focus ring)
+- [x] Keyboard navigation for Tasks (tabIndex, Enter/Space to toggle done, Delete to remove)
+
+### Rendering Performance
+- [x] useTransition for Vault search and filter (opacity fade during transition)
+- [x] useTransition for CRM contacts search and stage filter
+- [x] @tanstack/react-virtual installed (available for future virtualization)
+- [x] CRM uses server-side filtering with limit:100 (correct architecture — no DOM virtualization needed)
+
+### Stale Data Management
+- [x] Configure React Query: refetchOnWindowFocus: true, staleTime: 30s, gcTime: 5min globally
+- [x] Notifications query: refetchInterval: 60000 for live badge updates

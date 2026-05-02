@@ -267,16 +267,28 @@ export default function Pipeline() {
                     <div
                       key={deal.id}
                       draggable
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Deal: ${deal.title}${deal.value != null ? `, $${deal.value.toLocaleString()}` : ''}, stage: ${stage}`}
                       onDragStart={(e) => { e.stopPropagation(); setDragId(deal.id); }}
                       onClick={() => setSelectedDeal(deal)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedDeal(deal);
+                        }
+                      }}
                       className="rounded-lg p-3 cursor-pointer group"
                       style={{
                         background: 'var(--obsidian)',
                         border: '1px solid var(--border-subtle)',
                         transition: 'border-color 0.15s ease',
+                        outline: 'none',
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--amber)')}
                       onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(245,166,35,0.7)')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
                     >
                       <div className="flex items-start justify-between gap-1">
                         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{deal.title}</div>

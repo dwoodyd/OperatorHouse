@@ -50,6 +50,7 @@ import JoinTeam from "./pages/JoinTeam";
 import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
+import { CapabilityGate } from "./components/CapabilityGate";
 
 function Router() {
   return (
@@ -66,10 +67,26 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/pulse" component={Pulse} />
-      <Route path="/email-sequences" component={EmailSequences} />
-      <Route path="/call-center" component={CallCenter} />
-      <Route path="/sms" component={SMS} />
-      <Route path="/voice-agents" component={VoiceAgents} />
+      <Route path="/email-sequences" component={() => (
+        <CapabilityGate capability="emailDispatch" serviceName="Email Dispatch" description="Email Sequences requires a Resend API key to send emails. Add your credentials in Integrations to activate this feature.">
+          <EmailSequences />
+        </CapabilityGate>
+      )} />
+      <Route path="/call-center" component={() => (
+        <CapabilityGate capability="twilio" serviceName="Twilio" description="Call Center requires Twilio credentials (Account SID, Auth Token, and phone number) to make and receive calls.">
+          <CallCenter />
+        </CapabilityGate>
+      )} />
+      <Route path="/sms" component={() => (
+        <CapabilityGate capability="twilio" serviceName="Twilio" description="SMS Outreach requires Twilio credentials (Account SID, Auth Token, and phone number) to send and receive messages.">
+          <SMS />
+        </CapabilityGate>
+      )} />
+      <Route path="/voice-agents" component={() => (
+        <CapabilityGate capability="vapi" serviceName="VAPI" description="Voice Agents requires a VAPI API key to create and deploy AI voice agents.">
+          <VoiceAgents />
+        </CapabilityGate>
+      )} />
       <Route path="/crm" component={CRM} />
       <Route path="/crm/:id" component={ContactProfile} />
       <Route path="/invoicing" component={Invoicing} />
@@ -77,7 +94,11 @@ function Router() {
       <Route path="/book/:slug" component={PublicBooking} />
       <Route path="/funnels" component={FunnelsPage} />
       <Route path="/funnels/:id/edit" component={FunnelEditor} />
-      <Route path="/social" component={Social} />
+      <Route path="/social" component={() => (
+        <CapabilityGate capability="socialLinkedIn" serviceName="Social OAuth" description="Social Media Agents requires LinkedIn and/or Twitter OAuth credentials to publish and schedule content. Connect your accounts in Integrations.">
+          <Social />
+        </CapabilityGate>
+      )} />
       <Route path="/automations" component={Automations} />
       <Route path="/automations/:id/edit" component={WorkflowEditor} />
       <Route path="/portal" component={ClientPortalPage} />

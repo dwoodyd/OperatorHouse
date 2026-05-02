@@ -1101,3 +1101,17 @@ export const integrationLogs = mysqlTable("integration_logs", {
 });
 export type IntegrationLog = typeof integrationLogs.$inferSelect;
 export type InsertIntegrationLog = typeof integrationLogs.$inferInsert;
+
+// ── User Notification Preferences ────────────────────────────────────────────
+export const userNotificationPreferences = mysqlTable("user_notification_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  newClient: tinyint("newClient").notNull().default(1),
+  dealMoved: tinyint("dealMoved").notNull().default(1),
+  payment: tinyint("payment").notNull().default(1),
+  briefingReady: tinyint("briefingReady").notNull().default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type UserNotificationPreferences = typeof userNotificationPreferences.$inferSelect;
+export type InsertUserNotificationPreferences = typeof userNotificationPreferences.$inferInsert;

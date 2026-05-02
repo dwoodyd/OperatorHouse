@@ -26,61 +26,67 @@ const SectionHeader = ({ icon: Icon, label }: { icon: React.ElementType; label: 
   </div>
 );
 
-// --- Notification Preferences ---
+// --- Notification Preferences (server-side, cross-device) ---
 const NOTIF_TYPES = [
-  { key: "new_client", label: "New client added" },
-  { key: "deal_moved", label: "Deal stage changed" },
-  { key: "payment", label: "Payment received" },
-  { key: "briefing_ready", label: "Daily briefing ready" },
-] as const;
-type NotifKey = (typeof NOTIF_TYPES)[number]["key"];
-const NOTIF_STORAGE_KEY = "oh_notif_prefs";
-function loadNotifPrefs(): Record<NotifKey, boolean> {
-  try { return JSON.parse(localStorage.getItem(NOTIF_STORAGE_KEY) ?? "{}"); } catch { return {} as Record<NotifKey, boolean>; }
-}
+  { key: "newClient" as const, label: "New client added" },
+  { key: "dealMoved" as const, label: "Deal stage changed" },
+  { key: "payment" as const, label: "Payment received" },
+  { key: "briefingReady" as const, label: "Daily briefing ready" },
+];
+type NotifKey = "newClient" | "dealMoved" | "payment" | "briefingReady";
 function NotificationPrefsSection() {
-  const [prefs, setPrefs] = useState<Record<NotifKey, boolean>>(() => {
-    const saved = loadNotifPrefs();
-    const defaults = Object.fromEntries(NOTIF_TYPES.map(t => [t.key, true])) as Record<NotifKey, boolean>;
-    return { ...defaults, ...saved };
+  const utils = trpc.useUtils();
+  const { data: serverPrefs, isLoading } = trpc.notificationPreferences.get.useQuery();
+  const updatePrefs = trpc.notificationPreferences.update.useMutation({
+    onSuccess: () => utils.notificationPreferences.get.invalidate(),
+    onError: () => toast.error("Failed to save preference"),
   });
+  const prefs: Record<NotifKey, boolean> = {
+    newClient: serverPrefs?.newClient ?? true,
+    dealMoved: serverPrefs?.dealMoved ?? true,
+    payment: serverPrefs?.payment ?? true,
+    briefingReady: serverPrefs?.briefingReady ?? true,
+  };
   const toggle = (key: NotifKey) => {
-    setPrefs(prev => {
-      const next = { ...prev, [key]: !prev[key] };
-      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(next));
-      toast.success(next[key] ? "Notification enabled" : "Notification muted");
-      return next;
-    });
+    const next = !prefs[key];
+    updatePrefs.mutate({ [key]: next });
+    toast.success(next ? "Notification enabled" : "Notification muted");
   };
   return (
     <div className="p-6" style={{ background: "var(--card-bg)", border: "1px solid var(--border-subtle)", borderRadius: "8px" }}>
       <SectionHeader icon={Bell} label="Notification Preferences" />
       <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "1rem", lineHeight: 1.5 }}>
-        Choose which events trigger a bell notification and toast pop-up.
+        Choose which events trigger a bell notification and toast pop-up. Preferences sync across all your devices.
       </p>
-      <div className="flex flex-col gap-3">
-        {NOTIF_TYPES.map(({ key, label }) => (
-          <div key={key} className="flex items-center justify-between">
-            <span style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "DM Sans, sans-serif" }}>{label}</span>
-            <button
-              onClick={() => toggle(key)}
-              className="relative flex-shrink-0"
-              style={{
-                width: 40, height: 22, borderRadius: 11,
-                background: prefs[key] ? "var(--amber)" : "var(--border-subtle)",
-                border: "none", cursor: "pointer", transition: "background 200ms",
-              }}
-              aria-label={"Toggle " + label}
-            >
-              <span style={{
-                position: "absolute", top: 3, left: prefs[key] ? 21 : 3,
-                width: 16, height: 16, borderRadius: "50%", background: "white",
-                transition: "left 200ms", display: "block",
-              }} />
-            </button>
-          </div>
-        ))}
-      </div>
+      {isLoading ? (
+        <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>Loading preferences…</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {NOTIF_TYPES.map(({ key, label }) => (
+            <div key={key} className="flex items-center justify-between">
+              <span style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "DM Sans, sans-serif" }}>{label}</span>
+              <button
+                onClick={() => toggle(key)}
+                disabled={updatePrefs.isPending}
+                className="relative flex-shrink-0"
+                style={{
+                  width: 40, height: 22, borderRadius: 11,
+                  background: prefs[key] ? "var(--amber)" : "var(--border-subtle)",
+                  border: "none", cursor: "pointer", transition: "background 200ms",
+                  opacity: updatePrefs.isPending ? 0.6 : 1,
+                }}
+                aria-label={"Toggle " + label}
+              >
+                <span style={{
+                  position: "absolute", top: 3, left: prefs[key] ? 21 : 3,
+                  width: 16, height: 16, borderRadius: "50%", background: "white",
+                  transition: "left 200ms", display: "block",
+                }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

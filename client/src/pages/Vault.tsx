@@ -3,7 +3,7 @@
    Obsidian Intelligence: Knowledge archive — real data
    ============================================================================= */
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { createVaultItemSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
@@ -55,6 +55,7 @@ export default function Vault() {
   const [filterType, setFilterType] = useState<VaultType | "all">("all");
   const [form, setForm] = useState({ title: "", type: "note" as VaultType, textContent: "", tags: "" });
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [isFiltering, startFilterTransition] = useTransition();
 
   const filtered = items?.filter((item) => {
     const matchesSearch = !search || item.title.toLowerCase().includes(search.toLowerCase()) || (item.textContent ?? "").toLowerCase().includes(search.toLowerCase());
@@ -69,17 +70,17 @@ export default function Vault() {
           <div className="flex items-center gap-2 flex-1 flex-wrap">
             <div className="relative" style={{ minWidth: "200px" }}>
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
-              <input type="text" placeholder="Search vault..." value={search} onChange={(e) => setSearch(e.target.value)}
+              <input type="text" placeholder="Search vault..." value={search} onChange={(e) => { const v = e.target.value; startFilterTransition(() => setSearch(v)); }}
                 className="w-full pl-8 pr-3 py-2 rounded-lg text-sm outline-none"
                 style={{ background: "var(--surface)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", fontFamily: "DM Sans, sans-serif" }} />
             </div>
             <div className="flex items-center gap-1 flex-wrap">
-              <button onClick={() => setFilterType("all")} className="px-3 py-1.5 rounded text-xs font-medium"
+              <button onClick={() => startFilterTransition(() => setFilterType("all"))} className="px-3 py-1.5 rounded text-xs font-medium"
                 style={{ background: filterType === "all" ? "var(--amber)" : "var(--surface)", color: filterType === "all" ? "#0A0A0F" : "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>All</button>
               {VAULT_TYPES.map((t) => {
                 const meta = TYPE_META[t];
                 return (
-                  <button key={t} onClick={() => setFilterType(filterType === t ? "all" : t)} className="px-3 py-1.5 rounded text-xs font-medium"
+                  <button key={t} onClick={() => startFilterTransition(() => setFilterType(filterType === t ? "all" : t))} className="px-3 py-1.5 rounded text-xs font-medium"
                     style={{ background: filterType === t ? meta.color : "var(--surface)", color: filterType === t ? "#0A0A0F" : "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>
                     {meta.label}
                   </button>
@@ -135,7 +136,7 @@ export default function Vault() {
             body={!search && filterType === "all" ? "Start adding frameworks, case studies, and templates." : undefined}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-150 ${isFiltering ? 'opacity-60' : 'opacity-100'}`}>
             {filtered.map((item) => {
               const meta = TYPE_META[item.type as VaultType] ?? TYPE_META.note;
               const Icon = meta.icon;

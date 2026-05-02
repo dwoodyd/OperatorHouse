@@ -4,7 +4,7 @@
    Mobile: hamburger overlay drawer; Desktop: collapsible sidebar
    Accessibility: ARIA landmarks, anchor-based nav, labeled buttons
    ============================================================================= */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/_core/hooks/useAuth";
 import CommandLine from "./CommandLine";
 import NotificationBell from "./NotificationBell";
+import { useCommandPalette } from "@/components/CommandPalette";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 import { trpc } from "@/lib/trpc";
 
@@ -86,6 +87,45 @@ interface AppLayoutProps {
   subtitle?: string;
 }
 
+function PaletteButton() {
+  const { open } = useCommandPalette();
+  return (
+    <button
+      onClick={open}
+      title="Command Palette (⌘K)"
+      aria-label="Open command palette (Cmd+K)"
+      className="flex items-center gap-1.5"
+      style={{
+        height: "36px",
+        padding: "0 10px",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "6px",
+        color: "var(--text-secondary)",
+        transition: "background 180ms ease, border-color 180ms ease, color 180ms ease",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.08)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.3)";
+        (e.currentTarget as HTMLButtonElement).style.color = "var(--amber)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.08)";
+        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+      }}
+    >
+      <Search size={13} />
+      <span
+        className="hidden sm:inline"
+        style={{ fontFamily: "Fira Code, monospace", fontSize: "10px", letterSpacing: "0.06em", opacity: 0.7 }}
+      >
+        ⌘K
+      </span>
+    </button>
+  );
+}
+
 function ReplayIntroSidebarButton() {
   const { replayIntro } = useIntroReplay();
   return (
@@ -125,18 +165,12 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   });
   const isPro = subData?.tier === "operator_pro";
 
-  // Cmd+K / Ctrl+K shortcut for Command Line
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      setCommandLineOpen(prev => !prev);
-    }
-  }, []);
-
+  // Listen for oh:open-specter custom event dispatched by the Command Palette
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    const handler = () => setCommandLineOpen(true);
+    window.addEventListener('oh:open-specter', handler);
+    return () => window.removeEventListener('oh:open-specter', handler);
+  }, []);
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -656,11 +690,12 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   opacity: 0.5,
                   marginLeft: "2px",
                 }}
-              >
-                ⌘K
+               >
+                AI
               </span>
             </button>
-
+            {/* Global Command Palette trigger */}
+            <PaletteButton />
             {/* Notifications bell */}
             <NotificationBell iconSize={14} />
           </div>

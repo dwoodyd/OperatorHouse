@@ -67,19 +67,24 @@ export default function NotificationBell({
     },
   });
 
-  // ── Toast on new notifications (respects oh_notif_prefs) ───────────────────
+  // ── Server-side notification preferences ────────────────────────────────────
+  const { data: notifPrefs } = trpc.notificationPreferences.get.useQuery();
+  // Map DB notification type keys to preference object keys
+  const typeToPrefsKey: Record<string, keyof NonNullable<typeof notifPrefs>> = {
+    new_client: "newClient",
+    deal_moved: "dealMoved",
+    payment: "payment",
+    briefing_ready: "briefingReady",
+  };
+  // ── Toast on new notifications (respects server-side prefs) ──────────────────
   const prevCountRef = useRef<number>(unreadCount);
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
       utils.notifications.list.fetch({ limit: 1 }).then((items) => {
         const newest = items[0];
         if (newest && !newest.isRead) {
-          // Check user's notification preference for this type
-          let muted = false;
-          try {
-            const prefs = JSON.parse(localStorage.getItem("oh_notif_prefs") ?? "{}");
-            if (newest.type && prefs[newest.type] === false) muted = true;
-          } catch {}
+          const prefKey = newest.type ? typeToPrefsKey[newest.type] : undefined;
+          const muted = prefKey && notifPrefs ? notifPrefs[prefKey] === false : false;
           if (!muted) {
             toast(newest.title, {
               description: newest.body ?? undefined,
@@ -90,7 +95,7 @@ export default function NotificationBell({
       }).catch(() => {});
     }
     prevCountRef.current = unreadCount;
-  }, [unreadCount, utils]);
+  }, [unreadCount, utils, notifPrefs]);
 
   // ── Close on outside click ────────────────────────────────────────────────
   useEffect(() => {
