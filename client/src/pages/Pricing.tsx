@@ -401,6 +401,58 @@ export default function Pricing() {
             showMessage={true}
           />
         </div>
+
+        {/* Audit CTA — soft conversion for fence-sitters */}
+        <div style={{
+          marginTop: 48,
+          paddingTop: 32,
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          textAlign: "center",
+        }}>
+          <p style={{
+            fontFamily: "Fira Code, monospace",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "rgba(245,240,232,0.2)",
+            marginBottom: 10,
+          }}>
+            Not sure which plan fits?
+          </p>
+          <button
+            onClick={() => setLocation("/audit")}
+            style={{
+              background: "none",
+              border: "1px solid rgba(245,166,35,0.2)",
+              borderRadius: 6,
+              padding: "10px 24px",
+              cursor: "pointer",
+              color: "rgba(245,166,35,0.6)",
+              fontFamily: "Fira Code, monospace",
+              fontSize: 12,
+              letterSpacing: "0.06em",
+              transition: "border-color 200ms ease, color 200ms ease",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.5)";
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(245,166,35,0.9)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.2)";
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(245,166,35,0.6)";
+            }}
+          >
+            Book a free 15-min Operator Audit →
+          </button>
+          <p style={{
+            marginTop: 8,
+            fontSize: 11,
+            color: "rgba(245,240,232,0.15)",
+            fontFamily: "DM Sans, sans-serif",
+          }}>
+            We'll map your ops and show you exactly where Operator House fits.
+          </p>
+        </div>
       </div>
 
       <style>{`

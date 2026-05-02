@@ -180,6 +180,24 @@ export default function Home() {
           >
             Pricing
           </button>
+          <button
+            onClick={() => setLocation("/audit")}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              padding: "14px 28px",
+              background: "transparent",
+              border: "1px solid rgba(245,166,35,0.18)",
+              borderRadius: "6px",
+              color: "rgba(245,166,35,0.6)",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "Fira Code, monospace",
+              letterSpacing: "0.02em",
+            }}
+          >
+            Book Free Audit
+          </button>
         </div>
 
         {/* Trust badges */}
@@ -264,6 +282,22 @@ export default function Home() {
           >
             Enter Operator House <ArrowRight size={15} />
           </a>
+          <div style={{ marginTop: "16px" }}>
+            <button
+              onClick={() => setLocation("/audit")}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontSize: "12px",
+                color: "rgba(245,166,35,0.5)",
+                fontFamily: "Fira Code, monospace",
+                letterSpacing: "0.06em",
+                textDecoration: "underline",
+                textUnderlineOffset: "3px",
+              }}
+            >
+              Not ready? Book a free 15-min Operator Audit first →
+            </button>
+          </div>
         </div>
       </section>
 
@@ -284,6 +318,7 @@ export default function Home() {
           <button onClick={() => setLocation("/pricing")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Pricing</button>
           <button onClick={() => setLocation("/privacy")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Privacy</button>
           <button onClick={() => setLocation("/terms")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>Terms</button>
+          <button onClick={() => setLocation("/audit")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(245,166,35,0.35)", fontFamily: "Fira Code, monospace" }}>Book Audit</button>
         </div>
       </footer>
     </div>

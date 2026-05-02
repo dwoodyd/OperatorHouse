@@ -787,6 +787,28 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                 {welcomed ? "Welcome home…" : "Enter the House →"}
               </button>
               <button className="oh-ghost-btn" onClick={() => goTo(1)}>Walk it again</button>
+              <a
+                href="/audit"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  marginTop: "0.2rem",
+                  fontSize: "0.72rem",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: "rgba(216,168,90,0.4)",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "3px",
+                  cursor: "pointer",
+                  position: "relative",
+                  zIndex: 3,
+                  transition: "color 200ms ease",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(216,168,90,0.75)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(216,168,90,0.4)")}
+              >
+                Not ready? Book a free 15-min Operator Audit →
+              </a>
               {!isReplay && (
                 <button
                   className="oh-ghost-btn"

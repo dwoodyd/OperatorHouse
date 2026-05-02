@@ -48,6 +48,7 @@ import ReviewForm from "./pages/ReviewForm";
 import Team from "./pages/Team";
 import JoinTeam from "./pages/JoinTeam";
 import Integrations from "./pages/Integrations";
+import Audit from "./pages/Audit";
 
 function Router() {
   return (
@@ -88,6 +89,7 @@ function Router() {
         <Route path="/integrations" component={Integrations} />
       <Route path="/join-team/:token" component={JoinTeam} />
       <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
+      <Route path="/audit" component={Audit} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />

@@ -461,3 +461,12 @@
 - [x] Add .max(20) to operator.chat history (trimmedHistory.slice(-20))
 - [x] Fix test typecheck (add missing User keys in mocks — stripeCustomerId, subscriptionId, subscriptionStatus)
 - [x] Fix test sameSite assertion to match "lax"
+
+## Operator Audit Booking Flow (Calendly)
+- [x] Build /audit page with Calendly inline embed (dwoodyd/15-min-operator-house-discovery-call)
+- [x] Wire "Book Free Audit" CTA to landing page hero section
+- [x] Add "Not ready? Book a free 15-min Operator Audit first" link to landing page final CTA section
+- [x] Add "Book Audit" link to landing page footer
+- [x] Add secondary "Not ready? Book a free 15-min Operator Audit" link to OnboardingFlow final slide (slide 7)
+- [x] Add "Not sure which plan fits? Book a free 15-min Operator Audit" section to Pricing page
+- [x] Register /audit route in App.tsx
