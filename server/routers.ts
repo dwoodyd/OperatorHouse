@@ -57,7 +57,13 @@ async function withAiTimeout<T>(fn: () => Promise<T>, label: string): Promise<T>
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
+    me: publicProcedure.query((opts) => {
+      const u = opts.ctx.user;
+      if (!u) return null;
+      // Strip payment-sensitive fields before sending to client
+      const { stripeCustomerId: _sc, subscriptionId: _si, ...safe } = u;
+      return safe;
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -450,7 +456,12 @@ export const appRouter = router({
         }),
         'Briefing'
       );
-      const parsed = JSON.parse(response.choices[0].message.content as string) as { situation: string; priority: string; ghostNote: string };
+      let parsed: { situation: string; priority: string; ghostNote: string };
+      try {
+        parsed = JSON.parse(response.choices[0].message.content as string) as { situation: string; priority: string; ghostNote: string };
+      } catch {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Briefing generation failed — AI returned an unexpected format. Please try again.' });
+      }
       await createBriefing({ userId: ctx.user.id, briefingType: 'login', content: JSON.stringify(parsed), payload: parsed });
       createNotification({
         userId: ctx.user.id,
@@ -514,9 +525,11 @@ You have full context on their business. Be direct, strategic, and actionable. N
 ## Live Context
 ${contextBlock}`;
 
+        // Limit history to last 20 messages to prevent unbounded context growth
+        const trimmedHistory = input.history.slice(-20);
         const messages = [
           { role: 'system' as const, content: systemPrompt },
-          ...input.history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+          ...trimmedHistory.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
           { role: 'user' as const, content: input.message },
         ];
 

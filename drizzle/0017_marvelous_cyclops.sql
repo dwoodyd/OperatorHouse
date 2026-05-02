@@ -1,0 +1,2 @@
+ALTER TABLE `push_subscriptions` MODIFY COLUMN `endpoint` varchar(2048) NOT NULL;--> statement-breakpoint
+ALTER TABLE `push_subscriptions` ADD CONSTRAINT `push_subscriptions_endpoint_unique` UNIQUE(`endpoint`);

@@ -434,3 +434,30 @@
 
 ## Bug Fix — Onboarding Sample Data
 - [ ] Fix "Load Sample Data" button in onboarding — currently does nothing
+
+## Bug Audit Fixes
+
+### Critical
+- [x] Remove VAPID private key hardcoded fallback in server/push.ts
+- [x] Add push router (vapidKey, subscribe, unsubscribe) to server/routers.ts
+- [x] Fix applicationServerKey to use Uint8Array (urlBase64 decode)
+- [x] Delete orphan drizzle/0006_stripe_events.sql migration
+- [x] Fix Stripe webhook idempotency: insert after success not before
+- [x] Wire sign-out button in AppLayout (confirmSignOut/logout already declared)
+- [x] Fix sameSite cookie to "lax" in server/_core/cookies.ts
+- [x] Add IDOR ownership checks on leads/pipeline/vault/tasks inserts (already enforced at DB layer)
+- [x] Delete dead server/index.ts entry point
+- [x] Add idempotency key to Stripe checkout session creation
+
+### High
+- [x] Fix window.open popup-block in Pricing.tsx and Settings.tsx
+- [x] Add onError to completeOnboarding mutation (OnboardingFlow.tsx)
+- [x] Gate service worker on import.meta.env.PROD (already gated in index.html)
+- [x] Guard getLoginUrl() against missing window (SSR/test context)
+- [x] Add UNIQUE index on push_subscriptions.endpoint (varchar + unique constraint migrated)
+
+### Medium
+- [x] Add onError to completeOnboarding mutation
+- [x] Add .max(20) to operator.chat history (trimmedHistory.slice(-20))
+- [x] Fix test typecheck (add missing User keys in mocks — stripeCustomerId, subscriptionId, subscriptionStatus)
+- [x] Fix test sameSite assertion to match "lax"

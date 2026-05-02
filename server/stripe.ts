@@ -29,17 +29,21 @@ export async function createCheckoutSession({
 }: {
   userId: number; email: string; name: string; priceId: string; origin: string;
 }) {
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
-    customer_email: email,
-    allow_promotion_codes: true,
-    client_reference_id: userId.toString(),
-    metadata: { user_id: userId.toString(), customer_email: email, customer_name: name },
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/dashboard?subscribed=1`,
-    cancel_url: `${origin}/pricing?cancelled=1`,
-  });
+  const idempotencyKey = `checkout-${userId}-${priceId}-${Math.floor(Date.now() / 3_600_000)}`;
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: "subscription",
+      payment_method_types: ["card"],
+      customer_email: email,
+      allow_promotion_codes: true,
+      client_reference_id: userId.toString(),
+      metadata: { user_id: userId.toString(), customer_email: email, customer_name: name },
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/dashboard?subscribed=1`,
+      cancel_url: `${origin}/pricing?cancelled=1`,
+    },
+    { idempotencyKey }
+  );
   return session;
 }
 

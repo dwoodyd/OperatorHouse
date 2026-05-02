@@ -407,6 +407,25 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           )}
         </Link>
 
+        {/* Sign Out button */}
+        <button
+          onClick={() => setConfirmSignOut(true)}
+          aria-label="Sign out"
+          className="sidebar-item w-full"
+          style={{
+            justifyContent: !isMobile && collapsed ? "center" : "flex-start",
+            gap: "10px",
+            color: "var(--text-muted)",
+            fontSize: "12px",
+            fontFamily: "DM Sans, sans-serif",
+            padding: !isMobile && collapsed ? "10px" : "9px 12px",
+          }}
+          title={!isMobile && collapsed ? "Sign Out" : undefined}
+        >
+          <LogOut size={13} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
+          {(!collapsed || isMobile) && <span>Sign Out</span>}
+        </button>
+
         {/* Replay Intro — hidden when collapsed on desktop */}
         {(!collapsed || isMobile) && (
           <ReplayIntroSidebarButton />
@@ -659,6 +678,63 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
       {/* Command Line AI Chat Sidebar */}
       <CommandLine open={commandLineOpen} onClose={() => setCommandLineOpen(false)} />
+
+      {/* Sign-out confirmation dialog */}
+      {confirmSignOut && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="w-full max-w-sm p-6 space-y-4"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "8px",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <LogOut size={18} style={{ color: "var(--amber)" }} />
+              <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
+                Sign Out
+              </h3>
+            </div>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+              Are you sure you want to sign out of Operator House?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmSignOut(false)}
+                className="flex-1 py-2 text-sm font-medium"
+                style={{
+                  background: "var(--surface-raised)",
+                  color: "var(--text-secondary)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "6px",
+                  fontFamily: "DM Sans, sans-serif",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setConfirmSignOut(false); logout(); }}
+                className="flex-1 py-2 text-sm font-semibold"
+                style={{
+                  background: "rgba(245,166,35,0.12)",
+                  color: "var(--amber)",
+                  border: "1px solid rgba(245,166,35,0.35)",
+                  borderRadius: "6px",
+                  fontFamily: "DM Sans, sans-serif",
+                  cursor: "pointer",
+                }}
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile slide-in animation */}
       <style>{`

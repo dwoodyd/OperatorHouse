@@ -484,7 +484,9 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
-  const completeOnboarding = trpc.onboarding.complete.useMutation();
+  const completeOnboarding = trpc.onboarding.complete.useMutation({
+    onError: (err) => toast.error("Could not complete onboarding: " + err.message),
+  });
   const seedSampleData = trpc.onboarding.seedSampleData.useMutation({
     onSuccess: (data) => {
       if (data.seeded) {

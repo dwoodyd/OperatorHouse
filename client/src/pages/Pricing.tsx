@@ -39,8 +39,8 @@ export default function Pricing() {
     try {
       const result = await createCheckout.mutateAsync({ plan, origin: window.location.origin });
       if (result.url) {
-        toast.success("Redirecting to checkout…", { description: "Opening Stripe in a new tab." });
-        window.open(result.url, "_blank");
+        toast.success("Redirecting to checkout…");
+        window.location.href = result.url;
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Checkout failed");

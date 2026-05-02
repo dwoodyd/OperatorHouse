@@ -8,7 +8,7 @@ import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, 
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 
 const APP_VERSION = "1.0.0";
-const BUILD_DATE = "April 2026";
+const BUILD_DATE = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const TIMEZONES = [
   "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
@@ -207,7 +207,7 @@ function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
 // ─── Manage Subscription Button ──────────────────────────────────────────────
 function ManageSubscriptionButton() {
   const billingPortal = trpc.stripe.billingPortal.useMutation({
-    onSuccess: ({ url }) => { if (url) window.open(url, '_blank'); },
+    onSuccess: ({ url }) => { if (url) window.location.href = url; },
     onError: (e) => toast.error(e.message),
   });
   return (
