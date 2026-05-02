@@ -470,3 +470,12 @@
 - [x] Add secondary "Not ready? Book a free 15-min Operator Audit" link to OnboardingFlow final slide (slide 7)
 - [x] Add "Not sure which plan fits? Book a free 15-min Operator Audit" section to Pricing page
 - [x] Register /audit route in App.tsx
+
+## Blocking Pre-Launch Fixes
+- [x] Fix goTo ReferenceError crash in OnboardingFlow.tsx — confirmed stale Vite cache, cleared; no code change needed
+- [x] Fix sidebar nav path: /sequences → /email-sequences
+- [x] Fix sidebar nav path: /calls → /call-center
+- [x] Create Stripe products + prices in test sandbox (prod_URXYjMMgEPdT10, $97/mo + $788/yr)
+- [ ] Add STRIPE_MONTHLY_PRICE_ID + STRIPE_ANNUAL_PRICE_ID to secrets (user to do when at computer)
+- [x] Add Prospecting Engine stub page at /prospecting (no 404)
+- [x] Clear stale Vite cache (SpectreEmptyState import error resolved)

@@ -38,8 +38,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { icon: Activity,      label: "Client Pulse",     path: "/pulse",        pro: true },
       { icon: MessageSquare, label: "SMS Outreach",     path: "/sms",          pro: true },
-      { icon: Phone,         label: "Call Center",      path: "/calls",        pro: true },
-      { icon: Mail,          label: "Email Sequences",  path: "/sequences",    pro: true },
+      { icon: Phone,         label: "Call Center",      path: "/call-center",     pro: true },
+      { icon: Mail,          label: "Email Sequences",  path: "/email-sequences", pro: true },
       { icon: Mic,           label: "Voice Agents",     path: "/voice-agents", pro: true },
     ],
   },
