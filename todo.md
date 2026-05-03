@@ -548,3 +548,4 @@
 - [x] Add UI context stills as subtle background panels on slides 1, 2, and 7
 - [x] Add "Meet Specter" first-hover tooltip on sidebar idle widget (switches to welcoming on hover)
 - [x] Wire Specter triumph to Pipeline Closed Won column drop (4.5s overlay + Deal Closed label)
+- [x] Wire Specter triumph to Briefings Generate button (4.5s overlay + "Briefing Ready. ✨" label)

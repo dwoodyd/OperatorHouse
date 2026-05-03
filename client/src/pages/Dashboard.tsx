@@ -144,14 +144,55 @@ function GhostTerminalWidget({ deals, leads, staleCount }: {
 function GhostBriefingPanel() {
   const utils = trpc.useUtils();
   const { data: latest } = trpc.briefings.latest.useQuery();
+  const [showTriumph, setShowTriumph] = useState(false);
   const generate = trpc.briefings.generate.useMutation({
-    onSuccess: () => utils.briefings.latest.invalidate(),
+    onSuccess: () => {
+      utils.briefings.latest.invalidate();
+      setShowTriumph(true);
+      setTimeout(() => setShowTriumph(false), 4500);
+    },
     onError: () => toast.error("Briefing generation failed"),
   });
   const briefing = latest?.payload as { situation?: string; priority?: string; ghostNote?: string } | null ?? null;
 
   return (
-    <div className="glass-panel p-5 fade-in-up" style={{ borderLeft: '2px solid var(--amber)', background: 'linear-gradient(135deg, rgba(245,166,35,0.05) 0%, rgba(14,14,22,0.8) 60%)', animationDelay: '0.1s', opacity: 0 }}>
+    <div className="glass-panel p-5 fade-in-up" style={{ borderLeft: '2px solid var(--amber)', background: 'linear-gradient(135deg, rgba(245,166,35,0.05) 0%, rgba(14,14,22,0.8) 60%)', animationDelay: '0.1s', opacity: 0, position: 'relative' }}>
+      {/* Specter triumph overlay — fires when briefing is successfully generated */}
+      {showTriumph && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'fadeIn 300ms ease',
+          }}
+        >
+          <div style={{ position: 'relative' }}>
+            <SpectreVideoPlayer state="triumph" size="2xl" glow />
+            <div
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(10,8,6,0.92)',
+                border: '1px solid rgba(216,168,90,0.6)',
+                borderRadius: 10,
+                padding: '8px 16px',
+                whiteSpace: 'nowrap',
+                fontFamily: "'Playfair Display', serif",
+                fontSize: '0.82rem',
+                color: 'rgba(216,168,90,0.95)',
+                boxShadow: '0 0 20px rgba(216,168,90,0.2)',
+              }}
+            >
+              Briefing Ready. ✨
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Ghost size={13} style={{ color: 'var(--amber)' }} />
