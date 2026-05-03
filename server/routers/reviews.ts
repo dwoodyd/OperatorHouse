@@ -6,6 +6,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
 import { getDb } from "../db";
 import { reviews, bookings, crmContacts } from "../../drizzle/schema";
 
@@ -58,7 +59,7 @@ export const reviewsRouter = router({
         status: "pending",
       });
       const id = (result as any).insertId as number;
-      const reviewUrl = `${process.env.VITE_OAUTH_PORTAL_URL ? "" : ""}/review/${token}`;
+      const reviewUrl = `${ENV.publicUrl}/review/${token}`;
 
       try {
         await resend.emails.send({
@@ -91,7 +92,7 @@ export const reviewsRouter = router({
         reviewerName: booking.bookedByName,
         status: "pending",
       });
-      const reviewUrl = `/review/${token}`;
+      const reviewUrl = `${ENV.publicUrl}/review/${token}`;
       try {
         await resend.emails.send({
           from: FROM,

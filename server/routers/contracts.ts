@@ -6,6 +6,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
 import { getDb } from "../db";
 import { contracts, crmContacts, portalDocuments, clientPortals } from "../../drizzle/schema";
 
@@ -104,7 +105,7 @@ export const contractsRouter = router({
       if (!c.signerEmail) throw new Error("No signer email set");
 
       const token = randomBytes(32).toString("hex");
-      const signUrl = `${process.env.VITE_FRONTEND_FORGE_API_URL ? "" : ""}/sign/${token}`;
+      const signUrl = `${ENV.publicUrl}/sign/${token}`;
 
       await db.update(contracts).set({
         status: "sent",

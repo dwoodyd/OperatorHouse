@@ -12,6 +12,40 @@ import { apiKeys, integrationConfigs, integrationLogs, invoices } from "../../dr
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
+// ─── SSRF protection ─────────────────────────────────────────────────────────
+// Only allow outbound webhook POSTs to known SaaS hosts.
+// This prevents operators from pointing webhookUrl at internal cloud metadata
+// endpoints (e.g. http://169.254.169.254/...) to exfiltrate credentials.
+const ALLOWED_WEBHOOK_HOSTS = new Set([
+  "hooks.slack.com",
+  "hooks.zapier.com",
+  "discord.com",
+  "outlook.office.com",
+  "outlook.office365.com",
+]);
+
+function assertSafeWebhook(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid webhook URL" });
+  }
+  if (parsed.protocol !== "https:") {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Webhook URL must use HTTPS" });
+  }
+  // Reject raw IP literals (covers link-local, loopback, and RFC-1918 ranges)
+  if (/^[\d.:]+$/.test(parsed.hostname)) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "IP address literals are not allowed in webhook URLs" });
+  }
+  if (!ALLOWED_WEBHOOK_HOSTS.has(parsed.hostname)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Webhook host '${parsed.hostname}' is not in the allowlist. Allowed: ${Array.from(ALLOWED_WEBHOOK_HOSTS).join(", ")}`,
+    });
+  }
+}
+
 function generateApiKey(): { raw: string; prefix: string; hash: string } {
   const raw = `ohk_${crypto.randomBytes(32).toString("hex")}`;
   const prefix = raw.slice(0, 12);
@@ -190,6 +224,7 @@ export const integrationsRouter = router({
       try {
         if (input.provider === "slack") {
           if (!config.webhookUrl) throw new Error("Missing webhook URL");
+          assertSafeWebhook(config.webhookUrl);
           const res = await fetch(config.webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -198,6 +233,7 @@ export const integrationsRouter = router({
           if (!res.ok) throw new Error(`Slack returned ${res.status}`);
         } else if (input.provider === "zapier") {
           if (!config.webhookUrl) throw new Error("Missing webhook URL");
+          assertSafeWebhook(config.webhookUrl);
           const res = await fetch(config.webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -308,6 +344,7 @@ export const integrationsRouter = router({
       if (!webhookUrl) return { ok: false, reason: "No webhook URL" };
 
       try {
+        assertSafeWebhook(webhookUrl);
         await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

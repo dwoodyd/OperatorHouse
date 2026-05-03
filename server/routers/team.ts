@@ -6,6 +6,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
 import { getDb } from "../db";
 import { teamMembers, teamInvites, users } from "../../drizzle/schema";
 
@@ -64,7 +65,7 @@ export const teamRouter = router({
         expiresAt,
       });
 
-      const inviteUrl = `${process.env.VITE_OAUTH_PORTAL_URL ? "" : ""}/join-team/${token}`;
+      const inviteUrl = `${ENV.publicUrl}/join-team/${token}`;
 
       try {
         await resend.emails.send({

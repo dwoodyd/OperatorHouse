@@ -578,3 +578,17 @@
 - [x] Server routers.ts: briefing prompt, activity log copy
 - [x] Server portal.ts: code section comments
 - [x] DB enum values kept as-is (operator/operator_pro — internal identifiers only)
+
+## P0 Security & Reliability Fixes (May 3)
+- [ ] TICKET 1: Add PUBLIC_URL env var to env.ts, fix broken email URL ternary in contracts.ts, reviews.ts, team.ts
+- [ ] TICKET 2: Generate new VAPID keypair, remove hardcoded fallback key from push.ts, add boot-time validation
+- [ ] TICKET 3: Add SSRF host allowlist to integrations.ts testIntegration and sendSlackNotification
+- [ ] Write vitest tests for all three fixes
+
+## P0 Security & Reliability Fixes (May 3)
+- [x] Ticket 1: Fix broken email URLs in contracts.ts, reviews.ts, team.ts — replaced empty ternary with ENV.publicUrl
+- [x] Ticket 1: Added PUBLIC_URL to env.ts with boot-time production guard
+- [x] Ticket 2: Generated new VAPID keypair, removed hardcoded fallback keys from push.ts
+- [x] Ticket 2: Added boot-time guard — throws if VAPID keys missing; new keys stored in env secrets
+- [x] Ticket 3: Added SSRF assertSafeWebhook() with HTTPS-only + host allowlist + IP literal rejection
+- [x] Tests: 18 new P0 security tests in server/p0-security.test.ts (38 total passing)

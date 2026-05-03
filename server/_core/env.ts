@@ -7,4 +7,14 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  publicUrl: process.env.PUBLIC_URL ?? "",
 };
+
+// Boot-time guard: PUBLIC_URL is required in production so that outgoing
+// email links (e-sign, review request, team invite) resolve correctly.
+if (ENV.isProduction && !ENV.publicUrl) {
+  throw new Error(
+    "[boot] PUBLIC_URL env var is required in production. " +
+    "Set it to the canonical origin, e.g. https://operatorhouse.click"
+  );
+}
