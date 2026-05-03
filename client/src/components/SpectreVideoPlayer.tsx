@@ -212,7 +212,7 @@ export function SpectreVideoPlayer({
           "w-full h-full object-contain transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
         )}
-        style={{ mixBlendMode: "multiply" }}
+        style={{ mixBlendMode: "screen" }}
       />
     </div>
   );

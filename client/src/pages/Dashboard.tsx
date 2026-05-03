@@ -196,7 +196,7 @@ function GhostBriefingPanel() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Ghost size={13} style={{ color: 'var(--amber)' }} />
-          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Operator Briefing</span>
+          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Briefing</span>
           {latest && (
             <span className="ghost-badge" style={{ fontSize: 9 }}>
               {new Date(latest.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -237,7 +237,7 @@ function GhostBriefingPanel() {
         </div>
       ) : (
         <div className="text-center py-4">
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>No briefing yet. Generate your first Operator Briefing.</p>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>No briefing yet. Generate your first Specter Briefing.</p>
           <button
             onClick={() => generate.mutate()}
             disabled={generate.isPending}

@@ -187,7 +187,7 @@ function SpectreIdleWidget() {
           }}
         >
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.78rem", color: "rgba(216,168,90,0.9)", fontWeight: 600, marginBottom: 4 }}>Meet Specter</div>
-          <div style={{ fontFamily: "DM Sans, sans-serif", fontSize: "0.68rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.45 }}>Your AI operator. Always watching. Always ready.</div>
+          <div style={{ fontFamily: "DM Sans, sans-serif", fontSize: "0.68rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.45 }}>Your Ghost Operator. Always watching. Always ready.</div>
           {/* Tooltip arrow */}
           <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", width: 10, height: 6, overflow: "hidden" }}>
             <div style={{ width: 10, height: 10, background: "rgba(10,8,6,0.95)", border: "1px solid rgba(216,168,90,0.4)", transform: "rotate(45deg)", marginTop: -5 }} />

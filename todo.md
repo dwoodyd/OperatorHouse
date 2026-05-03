@@ -549,3 +549,8 @@
 - [x] Add "Meet Specter" first-hover tooltip on sidebar idle widget (switches to welcoming on hover)
 - [x] Wire Specter triumph to Pipeline Closed Won column drop (4.5s overlay + Deal Closed label)
 - [x] Wire Specter triumph to Briefings Generate button (4.5s overlay + "Briefing Ready. ✨" label)
+
+## Specter Video & Branding Pass (May 3 — Round 2)
+- [x] Switch SpectreVideoPlayer mix-blend-mode from multiply to screen (remove black background)
+- [x] Remove still images from all onboarding slides
+- [x] Rename "Operator" to "Specter" throughout onboarding slides and key UI copy (slides 1, 4, 7; Dashboard Specter Briefing; sidebar tooltip)
