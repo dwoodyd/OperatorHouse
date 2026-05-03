@@ -9,7 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import FirstMission from "@/components/FirstMission";
-import { SpectreCornerWidget, SpectreWidget } from "@/components/SpectreWidget";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import {
   TrendingUp, Clock, ArrowRight, Zap, Target, Brain,
   ChevronRight, AlertTriangle, Sparkles, RefreshCw,
@@ -133,7 +133,7 @@ function GhostTerminalWidget({ deals, leads, staleCount }: {
           borderRadius: 8,
         }}
       >
-        <SpectreWidget size="icon" message={line} showMessage={false} />
+        <SpectreVideoPlayer state="idle" size="sm" />
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, fontStyle: 'italic', flex: 1 }}>
           &ldquo;{line}&rdquo;
         </p>
@@ -534,7 +534,7 @@ export default function Dashboard() {
 
       </>)}
       </div>
-      <SpectreCornerWidget message={hoverMessage} />
+      <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 40, pointerEvents: "none" }}><SpectreVideoPlayer state="idle" size="lg" glow /></div>
     </AppLayout>
   );
 }

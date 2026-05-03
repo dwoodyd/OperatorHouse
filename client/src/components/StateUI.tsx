@@ -4,7 +4,7 @@
    ============================================================================= */
 import type { LucideIcon } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import { SpectreWidget } from "@/components/SpectreWidget";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 /* ── Shimmer skeleton row ───────────────────────────────────────────────── */
 interface SkeletonRowsProps {
@@ -183,12 +183,39 @@ export function SpectreEmptyState({
       }}
     >
       {/* Specter figure with speech bubble */}
-      <div style={{ position: "relative", display: "inline-flex", justifyContent: "center" }}>
-        <SpectreWidget
-          size="corner"
-          message={spectreQuote}
-          showMessage={true}
-        />
+      <div style={{ position: "relative", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        {/* Speech bubble */}
+        <div
+          style={{
+            background: "rgba(18,14,10,0.92)",
+            border: "1px solid rgba(212,175,55,0.3)",
+            borderRadius: 10,
+            padding: "8px 14px",
+            maxWidth: 260,
+            fontSize: 12,
+            color: "rgba(232,228,217,0.85)",
+            fontStyle: "italic",
+            lineHeight: 1.55,
+            textAlign: "center",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+            position: "relative",
+          }}
+        >
+          {spectreQuote}
+          {/* Bubble tail */}
+          <div style={{
+            position: "absolute",
+            bottom: -8,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 0,
+            height: 0,
+            borderLeft: "7px solid transparent",
+            borderRight: "7px solid transparent",
+            borderTop: "8px solid rgba(212,175,55,0.3)",
+          }} />
+        </div>
+        <SpectreVideoPlayer state="thoughtful" size="md" glow />
       </div>
 
       {/* Text block */}

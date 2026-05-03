@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
-import { SpectreWidget } from "@/components/SpectreWidget";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 interface OnboardingFlowProps {
@@ -444,7 +443,7 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1.6rem" }}>
-        <SpectreWidget size="corner" message={"I ran 12 audits\nwhile you slept."} showMessage={active} />
+        <SpectreVideoPlayer state="typing" size="lg" glow />
       </div>
       <button className="oh-cta" onClick={onNext}>Meet The Operator →</button>
     </div>
@@ -473,7 +472,10 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
         saved per month,<br /><em>on average.</em>
       </h2>
       <p className="oh-body">Lead research. Proposal drafts. Strategy docs. Follow-up emails. The Ghost handles the repeatable work so you can focus on the work only you can do.</p>
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.6rem", marginTop: "1.8rem" }}>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "1.4rem", marginBottom: "0.4rem" }}>
+        <SpectreVideoPlayer state="determined" size="lg" glow />
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.6rem", marginTop: "0.8rem" }}>
         {["Lead audits: 12h", "Strategy docs: 8h", "Follow-ups: 9h", "Briefings: 6h", "Reporting: 12h"].map(l => (
           <div key={l} style={{ padding: "0.42rem 0.9rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: 100, color: "var(--muted)", fontFamily: "'JetBrains Mono',monospace", fontSize: "0.72rem" }}>{l}</div>
         ))}

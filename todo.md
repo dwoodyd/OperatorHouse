@@ -529,7 +529,7 @@
 - [ ] Build observability layer: trpc.system.logClientError + wire into ErrorBoundary
 - [ ] Add "Book Audit" link to AppLayout sidebar INTEL section
 
-## Specter Character Video Integration (21 MP4 clips)
+## Specter Character Video Integration (21 MP4 clips) — COMPLETE
 - [x] Upload all 21 Specter MP4 clips to CDN via manus-upload-file --webdev
 - [x] Build SpectreVideoPlayer component with state machine + crossfade transitions
 - [x] Map clips to UI states: idle_breathing, welcoming, processing, thinking, triumph, pointing, bow, hologram, formal_bow

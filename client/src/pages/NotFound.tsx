@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { SpectreWidget } from "@/components/SpectreWidget";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { LayoutDashboard, Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
@@ -23,11 +23,7 @@ export default function NotFound() {
       >
         {/* Specter mascot */}
         <div className="flex justify-center mb-6">
-          <SpectreWidget
-            size="corner"
-            message="This room doesn't exist. Or maybe it does — and I'm just not telling you."
-            showMessage={false}
-          />
+          <SpectreVideoPlayer state="thoughtful" size="lg" glow />
         </div>
 
         {/* Ambient 404 label */}

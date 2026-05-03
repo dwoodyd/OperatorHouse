@@ -10,7 +10,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2 } from "lucide-react";
-import { SpectreWidget } from "@/components/SpectreWidget";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -394,12 +394,25 @@ export default function Pricing() {
         </p>
 
         {/* Specter conversion nudge */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
-          <SpectreWidget
-            size="corner"
-            message={"The operators who move fastest win.\nClaim your seat before the window closes."}
-            showMessage={true}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 40 }}>
+          <div style={{
+            background: "rgba(18,14,10,0.92)",
+            border: "1px solid rgba(212,175,55,0.3)",
+            borderRadius: 10,
+            padding: "10px 16px",
+            maxWidth: 280,
+            fontSize: 12,
+            color: "rgba(232,228,217,0.85)",
+            fontStyle: "italic",
+            lineHeight: 1.6,
+            textAlign: "center",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+            position: "relative",
+          }}>
+            The operators who move fastest win.<br />Claim your seat before the window closes.
+            <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "8px solid rgba(212,175,55,0.3)" }} />
+          </div>
+          <SpectreVideoPlayer state="determined" size="lg" glow />
         </div>
 
         {/* Audit CTA — soft conversion for fence-sitters */}
