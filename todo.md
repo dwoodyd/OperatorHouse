@@ -561,3 +561,20 @@
 - [x] Remove decorative idle Specter from Pipeline empty columns
 - [x] Remove decorative Specter from Pricing page
 - [x] Remove decorative idle Specter from Dashboard GhostTerminalWidget
+
+## Site-Wide Operator → Specter Rename (May 3)
+- [x] Pricing page: tier names, headline, speech bubble, CTA copy
+- [x] AppLayout: "Operator HQ" → "Specter HQ"
+- [x] CommandLine: "The Operator · Active", placeholder, error messages
+- [x] OHSplash: fallback name and HQ tagline
+- [x] OnboardingFlow: card comment, terminal text, CTA button
+- [x] CommandPalette: "Book Operator Audit" label
+- [x] About page: AI engine description, HQ tagline, closing CTA
+- [x] Dashboard: briefing panel, framework pillars, greeting fallback
+- [x] Home page: HQ tagline, hero copy, sign-in prompt, audit CTA
+- [x] Audit page: page title and heading
+- [x] Settings: company placeholder
+- [x] Server ai.ts: AI persona system prompts renamed to Specter
+- [x] Server routers.ts: briefing prompt, activity log copy
+- [x] Server portal.ts: code section comments
+- [x] DB enum values kept as-is (operator/operator_pro — internal identifiers only)

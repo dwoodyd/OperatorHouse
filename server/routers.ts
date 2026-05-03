@@ -448,7 +448,7 @@ export const appRouter = router({
         const daysSince = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
         return daysSince > 7;
       });
-      const prompt = `You are The Operator — an AI strategist for ${ctx.user.name ?? 'the operator'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
+      const prompt = `You are Specter — an AI strategist for ${ctx.user.name ?? 'the user'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
       const response = await withAiTimeout(
         () => invokeLLM({
           messages: [{ role: 'user', content: prompt }],
@@ -509,7 +509,7 @@ export const appRouter = router({
           return days > 7;
         });
         const contextBlock = [
-          `Operator: ${ctx.user.name ?? 'Unknown'}`,
+          `Specter: ${ctx.user.name ?? 'Unknown'}`,
           `Active leads: ${leads.length} (${leads.filter(l => l.intentScore !== null && l.intentScore >= 80).length} high-intent)`,
           `Lead statuses: ${leads.map(l => l.status).filter((v, i, a) => a.indexOf(v) === i).join(', ')}`,
           `Pipeline: ${activeDeals.length} active deals, ${staleDeals.length} stale (>7d no activity)`,
@@ -577,11 +577,11 @@ ${contextBlock}`;
       await logActivity({
         userId: ctx.user.id,
         activityType: 'onboarding_completed',
-        summary: 'Operator completed onboarding walkthrough',
+        summary: 'Specter completed onboarding walkthrough',
       });
       // Fire-and-forget owner notification
       notifyOwner({
-        title: 'New Operator Activated',
+        title: 'New Specter Activated',
         content: `${ctx.user.name ?? 'An operator'} (${ctx.user.email ?? 'unknown'}) completed onboarding and entered the House.`,
       }).catch(() => {});
       return { success: true };
@@ -619,7 +619,7 @@ ${contextBlock}`;
       ]);
       // Strategy: one example
       await createStrategy({ userId: uid, outputType: 'full', status: 'complete', promptVersion: 'v1', inputContext: { clientName: 'TechFlow Solutions', goal: 'Build repeatable GTM motion', context: 'Series A SaaS, $1.8M ARR, founder-led sales' }, content: '# GTM Strategy: TechFlow Solutions\n\n## Situation\nTechFlow is at the classic Series A inflection point: product-market fit confirmed, but growth is founder-dependent.\n\n## Strategic Objective\nBuild a GTM system that generates and closes $500K in new ARR over the next 6 months without Marcus being in every deal.\n\n## The Play\n**Phase 1 (Weeks 1-3): ICP Sharpening** - Narrow the target to Series A SaaS companies with 20-80 employees in workflow automation.\n\n**Phase 2 (Weeks 4-8): Outbound Engine** - Build a 3-touch outbound sequence targeting VP Ops and COO personas. 50 outbound touches per week.\n\n**Phase 3 (Weeks 9-12): Pipeline Cadence** - Weekly deal review with Marcus. Every deal gets a next action and a close date.\n\n## Expected Outcome\n$500K new ARR in 6 months. Marcus spending < 30% of his time on sales by month 3.', citations: ['The 3-Layer Discovery Framework', 'Case Study: 40% Pipeline Velocity Increase'] });
-      await logActivity({ userId: uid, activityType: 'sample_data_loaded', summary: 'Sample Operator data loaded - explore the House' });
+      await logActivity({ userId: uid, activityType: 'sample_data_loaded', summary: 'Sample Specter data loaded - explore the House' });
       return { seeded: true };
     }),
   }),

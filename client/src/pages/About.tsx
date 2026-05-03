@@ -18,7 +18,7 @@ const MODULES = [
     tagline: "AI-powered prospect audits in seconds.",
     color: "#F5A623",
     description:
-      "Paste a prospect's name, company, and URL. The Operator's AI engine runs a full Ghost Consultant audit — scoring intent, surfacing pain points, mapping decision-maker dynamics, and recommending your exact next move. Every analysis is saved to your lead history and can be pushed directly into your pipeline with one click.",
+      "Paste a prospect's name, company, and URL. Specter's AI engine runs a full Ghost Consultant audit — scoring intent, surfacing pain points, mapping decision-maker dynamics, and recommending your exact next move. Every analysis is saved to your lead history and can be pushed directly into your pipeline with one click.",
     capabilities: [
       "Intent scoring (0–100) with reasoning",
       "Pain point extraction from public signals",
@@ -177,7 +177,7 @@ export default function About() {
               position: "relative",
             }}
           >
-            Your Operator HQ
+            Your Specter HQ
           </h1>
           <p style={{
             fontSize: "16px",
@@ -414,7 +414,7 @@ export default function About() {
             fontSize: "22px", fontWeight: 700,
             color: "var(--text-primary)", marginBottom: "10px",
           }}>
-            Ready to run your practice like an Operator?
+            Ready to run your practice like a Specter operator?
           </h3>
           <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
             Start with The Vault — load your best frameworks and the AI does the rest.

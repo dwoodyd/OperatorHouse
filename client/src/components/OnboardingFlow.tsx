@@ -267,7 +267,7 @@ const GLOBAL_CSS = `
   }
   .oh-term-dot { width: 9px; height: 9px; border-radius: 50%; }
 
-  /* Operator card */
+  /* Specter card */
   .oh-operator-card {
     background: var(--card); border: 1px solid var(--card-border);
     border-radius: 14px; padding: 1.4rem 1.6rem;
@@ -396,7 +396,7 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
   const lead = topLeadName ?? "acme-corp";
   const lines = [
     { text: `> analyze lead ${lead}`, type: "user" },
-    { text: "  Running Operator Audit...", type: "muted" },
+    { text: "  Running Specter Audit...", type: "muted" },
     { text: "  Intent score: 87  ·  Stage: Proposal", type: "gold" },
     { text: "> generate strategy Q3-retainer", type: "user" },
     { text: "  Drafting engagement playbook...", type: "muted" },
@@ -445,7 +445,7 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1.6rem" }}>
         <SpectreVideoPlayer state="typing" size="2xl" glow />
       </div>
-      <button className="oh-cta" onClick={onNext}>Meet The Operator →</button>
+      <button className="oh-cta" onClick={onNext}>Meet Specter →</button>
     </div>
   );
 }

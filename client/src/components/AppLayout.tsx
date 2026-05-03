@@ -302,7 +302,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   <button
                     key={item.path}
                     onClick={() => setLocation("/pricing")}
-                    title={!isMobile && collapsed ? `${item.label} — Operator Pro` : undefined}
+                    title={!isMobile && collapsed ? `${item.label} — Specter Pro` : undefined}
                     className="sidebar-item w-full text-left"
                     style={{
                       justifyContent: !isMobile && collapsed ? "center" : "flex-start",
@@ -400,7 +400,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   textOverflow: "ellipsis",
                 }}
               >
-                {user.name ?? "Operator"}
+                {user.name ?? "Specter"}
               </div>
               <div
                 style={{
@@ -643,7 +643,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   color: "var(--amber)",
                 }}
               >
-                Operator HQ
+                Specter HQ
               </span>
             </div>
 

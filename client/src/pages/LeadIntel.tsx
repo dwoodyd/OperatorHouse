@@ -1,6 +1,6 @@
 /* =============================================================================
    Operator House — Lead Intelligence
-   Obsidian Intelligence: AI-powered Operator lead audit — real AI
+   Obsidian Intelligence: AI-powered Specter lead audit — real AI
    ============================================================================= */
 import { useState } from "react";
 import { leadInputSchema } from "@/lib/schemas";
@@ -40,12 +40,12 @@ export default function LeadIntel() {
         if (cached?.length) setExpanded(cached[0].id);
       });
       utils.dashboard.metrics.invalidate();
-      toast.success("Operator Audit complete — result expanded below");
+      toast.success("Specter Audit complete — result expanded below");
       setInput("");
     },
     onError: (err) => {
       const msg = err.message?.includes('timed out')
-        ? 'Audit timed out — The Operator is thinking hard. Try again.'
+        ? 'Audit timed out — Specter is thinking hard. Try again.'
         : err.message || 'Analysis failed';
       toast.error(msg, {
         action: {
@@ -114,7 +114,7 @@ export default function LeadIntel() {
   };
 
   return (
-    <AppLayout title="Lead Intelligence" subtitle="Operator Audit — AI-powered lead analysis">
+    <AppLayout title="Lead Intelligence" subtitle="Specter Audit — AI-powered lead analysis">
       <div className="p-6 space-y-6">
         {/* Input Panel */}
         <div className="glass-panel p-5 fade-in-up">
@@ -197,7 +197,7 @@ export default function LeadIntel() {
                   className="w-1.5 h-1.5 rounded-full animate-pulse"
                   style={{ background: "var(--amber)" }}
                 />
-                Specter is running the Operator Audit...
+                Specter is running the Specter Audit...
               </div>
             </div>
           )}
@@ -210,7 +210,7 @@ export default function LeadIntel() {
           <SpectreEmptyState
             title="No leads analyzed yet."
             spectreQuote="I've been watching the market. Feed me a lead and I'll tell you everything."
-            body="Paste a lead URL or description above to run the first Operator Audit."
+            body="Paste a lead URL or description above to run the first Specter Audit."
           />
         ) : (
           <div className="space-y-3">

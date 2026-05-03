@@ -117,7 +117,7 @@ export default function Home() {
           letterSpacing: "0.3em", textTransform: "uppercase",
           color: "rgba(245,166,35,0.6)", marginBottom: "20px",
         }}>
-          Your Operator HQ
+          Your Specter HQ
         </div>
 
         <h1 style={{
@@ -130,7 +130,7 @@ export default function Home() {
           position: "relative",
         }}>
           Run your practice like{" "}
-          <span style={{ color: "#F5A623" }}>an Operator.</span>
+          <span style={{ color: "#F5A623" }}>a Specter operator.</span>
         </h1>
 
         <p style={{
@@ -279,7 +279,7 @@ export default function Home() {
             Ready to operate at full capacity?
           </h2>
           <p style={{ fontSize: "14px", color: "rgba(232,228,217,0.55)", marginBottom: "28px", lineHeight: 1.65 }}>
-            Sign in to access your Command Center. Your Operator is waiting.
+            Sign in to access your Command Center. Specter is waiting.
           </p>
           <a
             href={getLoginUrl()}
@@ -309,7 +309,7 @@ export default function Home() {
                 textUnderlineOffset: "3px",
               }}
             >
-              Not ready? Book a free 15-min Operator Audit first →
+              Not ready? Book a free 15-min Specter Audit first →
             </button>
           </div>
         </div>

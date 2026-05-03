@@ -15,7 +15,7 @@ const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 function getGreeting(name?: string | null) {
-  const who = name ? name.split(" ")[0] : "Operator";
+  const who = name ? name.split(" ")[0] : "Specter";
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return `Good morning, ${who}.`;
   if (h >= 12 && h < 17) return `Good afternoon, ${who}.`;
@@ -146,7 +146,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
           transform: (phase === "open" || phase === "shine") ? "translateY(0)" : "translateY(6px)",
           transition: "opacity 500ms ease 200ms, transform 500ms ease 200ms",
         }}>
-          Your Operator HQ
+          Your Specter HQ
         </div>
       </div>
 

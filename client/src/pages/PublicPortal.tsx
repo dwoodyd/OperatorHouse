@@ -160,7 +160,7 @@ export default function PublicPortal() {
                         }`}
                       >
                         <p className="text-xs font-medium opacity-60 mb-0.5">
-                          {m.senderType === "client" ? "You" : "Operator"}
+                          {m.senderType === "client" ? "You" : "Specter"}
                         </p>
                         <p>{m.content}</p>
                         <p className="text-xs opacity-40 mt-1">

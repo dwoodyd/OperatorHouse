@@ -53,7 +53,7 @@ function buildNavActions(navigate: (path: string) => void): PaletteAction[] {
     { label: "About & Features",     path: "/about",           icon: Info,             description: "Feature overview" },
     { label: "Pricing",              path: "/pricing",         icon: CreditCard,       description: "Plans and billing" },
     { label: "Settings",             path: "/settings",        icon: Settings,         description: "Account and preferences" },
-    { label: "Book Operator Audit",  path: "/audit",           icon: CalendarDays,     description: "Schedule a free 15-min strategy call" },
+    { label: "Book Specter Audit",  path: "/audit",           icon: CalendarDays,     description: "Schedule a free 15-min strategy call" },
   ];
   return pages.map((p) => ({
     id: `nav:${p.path}`,

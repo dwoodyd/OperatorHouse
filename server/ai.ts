@@ -90,7 +90,7 @@ export async function runLeadAudit(input: LeadAuditInput): Promise<LeadAuditOutp
     ? `\n\nExisting client record: ${input.clientContext.name} at ${input.clientContext.company ?? "unknown company"}, industry: ${input.clientContext.industry ?? "unknown"}, notes: ${input.clientContext.summary ?? "none"}`
     : "";
 
-  const systemPrompt = `You are the The Operator, an elite AI strategist operating through the Operator framework.
+  const systemPrompt = `You are Specter, an elite AI strategist operating through the Specter framework.
 Your job: analyze leads and produce structured, consultant-grade intelligence.
 Rules:
 - Never invent facts. If context is missing, note it in missingContext.
@@ -98,7 +98,7 @@ Rules:
 - Be specific, direct, and actionable. No generic filler.
 - Return ONLY valid JSON matching the exact schema provided.`;
 
-  const userPrompt = `Analyze this lead and return a structured Operator Audit.
+  const userPrompt = `Analyze this lead and return a structured Specter Audit.
 
 Lead Input: ${input.rawInput}${clientSnippet}${vaultSnippet}
 
@@ -181,7 +181,7 @@ export async function runStrategyGeneration(input: StrategyGenInput): Promise<St
   if (input.clientRecord) citations.push({ type: "client", id: input.clientRecord.id, title: input.clientName });
   if (input.dealRecord) citations.push({ type: "deal", id: input.dealRecord.id, title: input.dealRecord.title });
 
-  const systemPrompt = `You are the The Operator, operating through the Operator framework.
+  const systemPrompt = `You are Specter, operating through the Specter framework.
 Generate consultant-grade strategy documents. Be specific, grounded, and actionable.
 Never invent client facts. Use only the provided context.
 Return ONLY valid JSON.`;
@@ -198,7 +198,7 @@ Return ONLY valid JSON.`;
   "nextBeat": "specific next action and proposed offer",
   "missingContext": "what would improve this strategy, or null"
 }`;
-    userPrompt = `Generate a full Operator Strategy Document for:
+    userPrompt = `Generate a full Specter Strategy Document for:
 Client: ${input.clientName} at ${input.company} (${input.industry ?? "industry unknown"})
 Context: ${input.context}${clientSnippet}${dealSnippet}${vaultSnippet}
 
@@ -211,7 +211,7 @@ Return JSON matching: ${schema}`;
   "nextBeat": "immediate next step",
   "missingContext": "what would improve this, or null"
 }`;
-    userPrompt = `Generate a Quick Operator Audit for:
+    userPrompt = `Generate a Quick Specter Audit for:
 Client: ${input.clientName} at ${input.company}
 Context: ${input.context}${clientSnippet}${vaultSnippet}
 
@@ -272,7 +272,7 @@ Return JSON matching: ${schema}`;
   const title = String(parsed.title ?? `${input.outputType} — ${input.clientName}`);
 
   if (input.outputType === "full") {
-    content = `# ${title}\n\n**Client:** ${input.clientName} — ${input.company}\n**Framework:** Operator v2.0\n\n---\n\n## 01 — The Vibe Check\n\n${parsed.vibeCheck ?? ""}\n\n---\n\n## 02 — The Engineering Map\n\n${parsed.engineeringMap ?? ""}\n\n---\n\n## 03 — The Legacy Play\n\n${parsed.legacyPlay ?? ""}\n\n---\n\n## 04 — The Next Beat\n\n${parsed.nextBeat ?? ""}`;
+    content = `# ${title}\n\n**Client:** ${input.clientName} — ${input.company}\n**Framework:** Specter v2.0\n\n---\n\n## 01 — The Vibe Check\n\n${parsed.vibeCheck ?? ""}\n\n---\n\n## 02 — The Engineering Map\n\n${parsed.engineeringMap ?? ""}\n\n---\n\n## 03 — The Legacy Play\n\n${parsed.legacyPlay ?? ""}\n\n---\n\n## 04 — The Next Beat\n\n${parsed.nextBeat ?? ""}`;
   } else if (input.outputType === "quick") {
     const solutions = Array.isArray(parsed.solutions) ? parsed.solutions as string[] : [];
     content = `# ${title}\n\n**Client:** ${input.clientName} — ${input.company}\n\n---\n\n## Pain Points\n\n${parsed.painPoints ?? ""}\n\n---\n\n## AI Solutions\n\n${solutions.map((s, i) => `**${i + 1}.** ${s}`).join("\n\n")}\n\n---\n\n## Next Step\n\n${parsed.nextBeat ?? ""}`;

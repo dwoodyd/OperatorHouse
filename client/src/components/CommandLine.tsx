@@ -1,6 +1,6 @@
 /* =============================================================================
    Operator House — Command Line
-   Persistent AI chat sidebar powered by The Operator
+   Persistent AI chat sidebar powered by Specter
    Context-aware: injects live pipeline, lead, and vault data into every session
    ============================================================================= */
 import { useState, useRef, useEffect } from "react";
@@ -56,8 +56,8 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
     onError: (err) => {
       setIsStreaming(false);
       const errMsg = err.message?.includes('timed out')
-        ? 'Request timed out — The Operator is thinking hard. Try again.'
-        : err.message || 'The Operator is temporarily unavailable.';
+        ? 'Request timed out — Specter is thinking hard. Try again.'
+        : err.message || 'Specter is temporarily unavailable.';
       // Show error inline in the chat thread so it is always visible
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== 'streaming-placeholder'),
@@ -198,7 +198,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
                 Command Line
               </div>
               <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '9px', letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '1px' }}>
-                The Operator · Active
+                Specter · Active
               </div>
             </div>
           </div>
@@ -324,7 +324,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
               }}>
                 <Loader2 size={12} className="animate-spin" style={{ color: 'var(--amber)' }} />
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'Fira Code, monospace', letterSpacing: '0.05em' }}>
-                  Operator thinking...
+                  Specter thinking...
                 </span>
               </div>
             </div>
@@ -395,7 +395,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask The Operator anything…"
+              placeholder="Ask Specter anything…"
               rows={1}
               disabled={isStreaming}
               style={{

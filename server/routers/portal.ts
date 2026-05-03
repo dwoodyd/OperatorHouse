@@ -82,7 +82,7 @@ async function sendBookingEmail(
 }
 
 export const portalRouter = router({
-  // ─── Operator: list portals ───────────────────────────────────────────────
+  // ─── Specter: list portals ───────────────────────────────────────────────
   list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return [];
@@ -111,7 +111,7 @@ export const portalRouter = router({
     return enriched;
   }),
 
-  // ─── Operator: create portal for a contact ───────────────────────────────
+  // ─── Specter: create portal for a contact ───────────────────────────────
   create: protectedProcedure
     .input(
       z.object({
@@ -143,7 +143,7 @@ export const portalRouter = router({
       return { id: (result as any).insertId as number, accessToken: token };
     }),
 
-  // ─── Operator: revoke portal ──────────────────────────────────────────────
+  // ─── Specter: revoke portal ──────────────────────────────────────────────
   revoke: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -156,7 +156,7 @@ export const portalRouter = router({
       return { ok: true };
     }),
 
-  // ─── Operator: get messages for a portal ─────────────────────────────────
+  // ─── Specter: get messages for a portal ─────────────────────────────────
   getMessages: protectedProcedure
     .input(z.object({ portalId: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -186,7 +186,7 @@ export const portalRouter = router({
         .orderBy(portalMessages.createdAt);
     }),
 
-  // ─── Operator: send message to client ────────────────────────────────────
+  // ─── Specter: send message to client ────────────────────────────────────
   sendMessage: protectedProcedure
     .input(z.object({ portalId: z.number(), content: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -206,7 +206,7 @@ export const portalRouter = router({
       return { ok: true };
     }),
 
-  // ─── Operator: add document to portal ────────────────────────────────────
+  // ─── Specter: add document to portal ────────────────────────────────────
   addDocument: protectedProcedure
     .input(
       z.object({

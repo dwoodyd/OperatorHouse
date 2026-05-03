@@ -138,7 +138,7 @@ function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
           style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px" }}
         >
           {[
-            "All leads and Operator Audits will be deleted",
+            "All leads and Specter Audits will be deleted",
             "All pipeline deals and deal history will be deleted",
             "All vault items, frameworks, and templates will be deleted",
             "All strategies and generated documents will be deleted",
@@ -356,7 +356,7 @@ export default function Settings() {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Operator LLC"
+                  placeholder="Specter LLC"
                   className="w-full px-3 py-2 text-sm outline-none"
                   style={{ background: "var(--obsidian)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)", borderRadius: "6px", fontFamily: "DM Sans, sans-serif", transition: "border-color 180ms ease" }}
                   onFocus={(e) => (e.target.style.borderColor = "var(--amber)")}

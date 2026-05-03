@@ -127,8 +127,8 @@ export default function Pricing() {
             maxWidth: 520,
             margin: "0 auto 16px",
           }}>
-            Operators who close more<br />
-            <span style={{ color: "#d4a853" }}>don't work more.</span><br />
+            Specter operators close more<br />
+            <span style={{ color: "#d4a853" }}>without working more.</span><br />
             They work prepared.
           </h1>
           <p style={{
@@ -229,7 +229,7 @@ export default function Pricing() {
         </div>
 
         {/* Plan cards */}
-        {/* Operator Pro — full-width featured card */}
+        {/* Specter Pro — full-width featured card */}
         <div style={{ marginBottom: 20 }}>
           <div style={{
             position: "relative",
@@ -246,15 +246,15 @@ export default function Pricing() {
               letterSpacing: "0.12em", textTransform: "uppercase",
               padding: "3px 10px", borderRadius: 10, fontWeight: 700,
               whiteSpace: "nowrap",
-            }}>Operator Pro — Full Outreach Suite</div>
+            }}>Specter Pro — Full Outreach Suite</div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
               <div style={{ flex: 1, minWidth: 200 }}>
-                <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Operator Pro</p>
+                <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Specter Pro</p>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
                   <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$197</span>
                   <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
                 </div>
-                <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 16 }}>Everything in Operator + full outreach suite</p>
+                <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 16 }}>Everything in Specter + full outreach suite</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px" }}>
                   {["Client Pulse & Health Scores", "SMS Outreach", "Call Center + AI Scripts", "Email Sequences", "AI Voice Agents", "Priority support"].map(f => (
                     <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -267,7 +267,7 @@ export default function Pricing() {
               <button
                 onClick={() => {
                   if (!isAuthenticated) { window.location.href = getLoginUrl(); return; }
-                  toast.info("Operator Pro launching soon — you\'ll be first to know.");
+                  toast.info("Specter Pro launching soon — you\'ll be first to know.");
                 }}
                 style={{
                   padding: "12px 28px",
@@ -287,8 +287,8 @@ export default function Pricing() {
             </div>
           </div>
         </div>
-        {/* Operator base tier — monthly / annual */}
-        <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(212,168,83,0.3)", textAlign: "center", marginBottom: 12 }}>Operator — Core Intelligence Suite</p>
+        {/* Specter base tier — monthly / annual */}
+        <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(212,168,83,0.3)", textAlign: "center", marginBottom: 12 }}>Specter — Core Intelligence Suite</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
           {/* Monthly */}
           <div
@@ -409,7 +409,7 @@ export default function Pricing() {
             boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
             position: "relative",
           }}>
-            The operators who move fastest win.<br />Claim your seat before the window closes.
+            Those who move fastest win.<br />Claim your seat before the window closes.
             <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "8px solid rgba(212,175,55,0.3)" }} />
           </div>
           <SpectreVideoPlayer state="determined" size="lg" glow />
@@ -455,7 +455,7 @@ export default function Pricing() {
               (e.currentTarget as HTMLButtonElement).style.color = "rgba(245,166,35,0.6)";
             }}
           >
-            Book a free 15-min Operator Audit →
+            Book a free 15-min Specter Audit →
           </button>
           <p style={{
             marginTop: 8,

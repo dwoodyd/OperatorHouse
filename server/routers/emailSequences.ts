@@ -517,7 +517,7 @@ export const emailSequencesRouter = router({
       // Interpolate templates
       const vars = {
         clientName: client.name ?? "there",
-        senderName: ctx.user.name ?? "Your Operator",
+        senderName: ctx.user.name ?? "Your Specter",
         clientEmail: client.email,
       };
       const subject = interpolate(step.subjectTemplate, vars);

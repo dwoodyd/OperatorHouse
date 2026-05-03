@@ -1,5 +1,5 @@
 /* =============================================================================
-   Operator Audit — Book a 15-Minute Discovery Call
+   Specter Audit — Book a 15-Minute Discovery Call
    Public page — no auth required.
    Embeds the Calendly inline widget for dwoodyd/15-min-operator-house-discovery-call
    ============================================================================= */
@@ -178,7 +178,7 @@ export default function Audit() {
           }}
         >
           Book Your Free{" "}
-          <span style={{ color: "#F5A623" }}>Operator Audit</span>
+          <span style={{ color: "#F5A623" }}>Specter Audit</span>
         </h1>
 
         <p
