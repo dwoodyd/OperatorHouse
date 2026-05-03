@@ -554,3 +554,10 @@
 - [x] Switch SpectreVideoPlayer mix-blend-mode from multiply to screen (remove black background)
 - [x] Remove still images from all onboarding slides
 - [x] Rename "Operator" to "Specter" throughout onboarding slides and key UI copy (slides 1, 4, 7; Dashboard Specter Briefing; sidebar tooltip)
+
+## Specter Placement Cleanup (May 3)
+- [x] Remove purposeless fixed bottom-right idle Specter from Dashboard
+- [x] Remove sidebar SpectreIdleWidget (flashing glitch, no meaningful state)
+- [x] Remove decorative idle Specter from Pipeline empty columns
+- [x] Remove decorative Specter from Pricing page
+- [x] Remove decorative idle Specter from Dashboard GhostTerminalWidget

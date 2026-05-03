@@ -575,7 +575,6 @@ export default function Dashboard() {
 
       </>)}
       </div>
-      <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 40, pointerEvents: "none" }}><SpectreVideoPlayer state="idle" size="lg" glow /></div>
     </AppLayout>
   );
 }
