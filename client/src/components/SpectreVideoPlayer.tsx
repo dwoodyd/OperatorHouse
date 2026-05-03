@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 // Each entry maps a semantic state to one or more CDN URLs.
 // When multiple clips share a state, one is chosen at random on each transition.
 
-const BASE = "https://static-assets.manus.space/file/manus-storage";
+const BASE = "/manus-storage";
 
 export type SpectreState =
   | "idle"              // calm breathing — default sidebar widget
@@ -41,60 +41,60 @@ export type SpectreState =
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
-    `${BASE}/hf_20260503_000541_7cfe329e-91e6-41d4-8584-f98f722ef3da_63f9dd25.mp4`,
+    `${BASE}/hf_20260503_000541_7cfe329e-91e6-41d4-8584-f98f722ef3da_6c095791.mp4`,
   ],
   idle_neutral: [
-    `${BASE}/hf_20260503_003626_b5c13543-ddb2-40ee-b19d-2c2371d16946_be8d53f8.mp4`,
+    `${BASE}/hf_20260503_003626_b5c13543-ddb2-40ee-b19d-2c2371d16946_0308c250.mp4`,
   ],
   idle_hologram: [
-    `${BASE}/hf_20260502_211341_4ac80b83-1c05-4b01-a6ad-3da9c4301f83_23ad3e20.mp4`,
+    `${BASE}/hf_20260502_211341_4ac80b83-1c05-4b01-a6ad-3da9c4301f83_b88dac25.mp4`,
   ],
   idle_holding: [
-    `${BASE}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_3c2bde3b.mp4`,
+    `${BASE}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_d7c6ce08.mp4`,
   ],
   welcoming: [
-    `${BASE}/hf_20260503_002137_7360eac7-3852-42f4-9c72-9c3fc20abf2d_47867495.mp4`,
-    `${BASE}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_11ab1d67.mp4`,
+    `${BASE}/hf_20260503_002137_7360eac7-3852-42f4-9c72-9c3fc20abf2d_5fb388af.mp4`,
+    `${BASE}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_22eb71c6.mp4`,
   ],
   presenting: [
-    `${BASE}/hf_20260502_203849_a8f8de64-ff0e-4ff9-b10a-bd9fa90f8fcf_2e748e87.mp4`,
+    `${BASE}/hf_20260502_203849_a8f8de64-ff0e-4ff9-b10a-bd9fa90f8fcf_2c81370b.mp4`,
   ],
   pointing: [
-    `${BASE}/hf_20260502_210103_006c0c69-eee5-42c3-a844-f5a0263262c5_89c744f2.mp4`,
-    `${BASE}/hf_20260502_210127_8bb3cdfb-c6e5-46f2-b125-708e661ce5b4_50b9b574.mp4`,
+    `${BASE}/hf_20260502_210103_006c0c69-eee5-42c3-a844-f5a0263262c5_545601c0.mp4`,
+    `${BASE}/hf_20260502_210127_8bb3cdfb-c6e5-46f2-b125-708e661ce5b4_9b2a1832.mp4`,
   ],
   thinking: [
-    `${BASE}/hf_20260502_235500_5e9803e2-9521-491c-963b-0239e50e2721_9e5506ab.mp4`,
+    `${BASE}/hf_20260502_235500_5e9803e2-9521-491c-963b-0239e50e2721_f5031812.mp4`,
   ],
   typing: [
-    `${BASE}/hf_20260502_210704_d39721a7-dbc8-47cc-84a1-6c7c64371d80_a8eb24c6.mp4`,
+    `${BASE}/hf_20260502_210704_d39721a7-dbc8-47cc-84a1-6c7c64371d80_f84ef751.mp4`,
   ],
   thoughtful: [
-    `${BASE}/hf_20260503_003219_517286cd-52ec-44c7-b00a-12ec1ee7807a_c268f9ee.mp4`,
+    `${BASE}/hf_20260503_003219_517286cd-52ec-44c7-b00a-12ec1ee7807a_4d573ab3.mp4`,
   ],
   cast: [
-    `${BASE}/hf_20260502_204413_0386e184-d326-433f-8ef6-2c6a23476aa0_2666a4f9.mp4`,
+    `${BASE}/hf_20260502_204413_0386e184-d326-433f-8ef6-2c6a23476aa0_3be547a5.mp4`,
   ],
   hologram: [
-    `${BASE}/hf_20260503_004223_02f6a896-5e88-4d9e-9b2d-2a82dc1d39c6_b6b632d3.mp4`,
+    `${BASE}/hf_20260503_004223_02f6a896-5e88-4d9e-9b2d-2a82dc1d39c6_5769b801.mp4`,
   ],
   hand_on_heart: [
-    `${BASE}/hf_20260502_211821_a0046d06-816a-4584-8da1-ed990b173964_4da1543f.mp4`,
+    `${BASE}/hf_20260502_211821_a0046d06-816a-4584-8da1-ed990b173964_2729c527.mp4`,
   ],
   bow: [
-    `${BASE}/hf_20260502_205345_137b645e-3e27-46d2-b134-769ec6f03a25_5a8ae74e.mp4`,
+    `${BASE}/hf_20260502_205345_137b645e-3e27-46d2-b134-769ec6f03a25_6f86149d.mp4`,
   ],
   wave: [
-    `${BASE}/hf_20260502_214102_5c78de5f-a0aa-42de-a9a5-4605e13569e4_28799442.mp4`,
+    `${BASE}/hf_20260502_214102_5c78de5f-a0aa-42de-a9a5-4605e13569e4_d6f014e7.mp4`,
   ],
   determined: [
-    `${BASE}/hf_20260502_234831_90ab3ebb-1d16-4ea3-b6b8-38a0f1c057f9_4ee0ec3f.mp4`,
+    `${BASE}/hf_20260502_234831_90ab3ebb-1d16-4ea3-b6b8-38a0f1c057f9_745f7c13.mp4`,
   ],
   triumph: [
-    `${BASE}/mp__f9ac9948.mp4`,
+    `${BASE}/mp__3d1f90ea.mp4`,
   ],
   power_up: [
-    `${BASE}/Restrained_triumph_The_charac_b3601c14.mp4`,
+    `${BASE}/Restrained_triumph_The_charac_6a346f6b.mp4`,
   ],
 };
 
@@ -187,6 +187,7 @@ export function SpectreVideoPlayer({
           "w-full h-full object-contain transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
         )}
+        style={{ mixBlendMode: "multiply" }}
       />
     </div>
   );
