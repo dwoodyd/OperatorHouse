@@ -4,7 +4,7 @@
    Mobile: hamburger overlay drawer; Desktop: collapsible sidebar
    Accessibility: ARIA landmarks, anchor-based nav, labeled buttons
    ============================================================================= */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
@@ -124,6 +124,77 @@ function PaletteButton() {
         ⌘K
       </span>
     </button>
+  );
+}
+
+function SpectreIdleWidget() {
+  const [hovered, setHovered] = useState(false);
+  const [tooltipDismissed, setTooltipDismissed] = useState(() => {
+    try { return localStorage.getItem("specter_tooltip_seen") === "1"; } catch { return false; }
+  });
+  const [showTooltip, setShowTooltip] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    if (!tooltipDismissed) {
+      timerRef.current = setTimeout(() => setShowTooltip(true), 400);
+    }
+  };
+  const handleMouseLeave = () => {
+    setHovered(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (showTooltip) {
+      setShowTooltip(false);
+      setTooltipDismissed(true);
+      try { localStorage.setItem("specter_tooltip_seen", "1"); } catch {}
+    }
+  };
+
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "4px 8px 0",
+        opacity: hovered ? 1 : 0.85,
+        transition: "opacity 300ms ease",
+        position: "relative",
+        cursor: "default",
+      }}
+    >
+      <SpectreVideoPlayer state={hovered ? "welcoming" : "idle"} size="md" glow />
+      {/* Meet Specter tooltip — shows on first hover only */}
+      {showTooltip && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(10,8,6,0.95)",
+            border: "1px solid rgba(216,168,90,0.4)",
+            borderRadius: 10,
+            padding: "10px 14px",
+            width: 180,
+            zIndex: 9999,
+            pointerEvents: "none",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.5), 0 0 12px rgba(216,168,90,0.12)",
+            animation: "fadeIn 200ms ease",
+          }}
+        >
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "0.78rem", color: "rgba(216,168,90,0.9)", fontWeight: 600, marginBottom: 4 }}>Meet Specter</div>
+          <div style={{ fontFamily: "DM Sans, sans-serif", fontSize: "0.68rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.45 }}>Your AI operator. Always watching. Always ready.</div>
+          {/* Tooltip arrow */}
+          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", width: 10, height: 6, overflow: "hidden" }}>
+            <div style={{ width: 10, height: 10, background: "rgba(10,8,6,0.95)", border: "1px solid rgba(216,168,90,0.4)", transform: "rotate(45deg)", marginTop: -5 }} />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -463,18 +534,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
         {/* Specter idle widget — only when sidebar is expanded */}
         {(!collapsed || isMobile) && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              padding: "4px 8px 0",
-              opacity: 0.85,
-              pointerEvents: "none",
-            }}
-          >
-            <SpectreVideoPlayer state="idle" size="md" glow />
-          </div>
+          <SpectreIdleWidget />
         )}
 
         {/* Replay Intro — hidden when collapsed on desktop */}

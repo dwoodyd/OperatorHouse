@@ -121,6 +121,7 @@ export default function Pipeline() {
   const [form, setForm] = useState<NewDealForm>({ title: "", stage: "Discovery", value: "", notes: "" });
   const [dragId, setDragId] = useState<number | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [showTriumph, setShowTriumph] = useState(false);
 
   const dealsByStage = (stage: Stage) => deals?.filter((d) => d.stage === stage) ?? [];
   const totalValue = deals?.reduce((sum, d) => sum + (d.value ?? 0), 0) ?? 0;
@@ -128,11 +129,51 @@ export default function Pipeline() {
   const handleDrop = (stage: Stage) => {
     if (dragId == null) return;
     updateDeal.mutate({ id: dragId, stage });
+    if (stage === "Closed") {
+      setShowTriumph(true);
+      setTimeout(() => setShowTriumph(false), 4500);
+    }
     setDragId(null);
   };
 
   return (
     <AppLayout title="Client Pipeline" subtitle="Manage your deals across all stages">
+      {/* Specter triumph overlay — fires when a deal is dropped into Closed */}
+      {showTriumph && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "2rem",
+            right: "2rem",
+            zIndex: 9999,
+            pointerEvents: "none",
+            animation: "fadeIn 300ms ease",
+          }}
+        >
+          <div style={{ position: "relative" }}>
+            <SpectreVideoPlayer state="triumph" size="2xl" glow />
+            <div
+              style={{
+                position: "absolute",
+                top: "1rem",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "rgba(10,8,6,0.92)",
+                border: "1px solid rgba(216,168,90,0.6)",
+                borderRadius: 10,
+                padding: "8px 16px",
+                whiteSpace: "nowrap",
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "0.82rem",
+                color: "rgba(216,168,90,0.95)",
+                boxShadow: "0 0 20px rgba(216,168,90,0.2)",
+              }}
+            >
+              Deal Closed. ✨
+            </div>
+          </div>
+        </div>
+      )}
       <div className="p-6 space-y-4">
         {/* Header Row */}
         <div className="flex items-center justify-between">

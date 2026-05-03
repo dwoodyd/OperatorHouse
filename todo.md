@@ -539,3 +539,12 @@
 - [x] Wire Specter triumph state to StrategyGen on successful generation (4s flash)
 - [x] Add Specter to landing page hero section (welcoming state, right side)
 - [x] Add Specter to /audit booking page (hand_on_heart, fixed left side)
+
+## New Specter Asset Integration (May 3)
+- [x] Upload new mp_(1).mp4 video clip to CDN and register in SpectreVideoPlayer
+- [x] Upload 6 UI state images (completion, dashboard_reveal, loading, onboarding, recommendation, warning) to CDN
+- [x] Upload 11 gesture still images to CDN and export SPECTER_STILLS registry
+- [x] Increase Specter size to 2xl on all 7 onboarding slides
+- [x] Add UI context stills as subtle background panels on slides 1, 2, and 7
+- [x] Add "Meet Specter" first-hover tooltip on sidebar idle widget (switches to welcoming on hover)
+- [x] Wire Specter triumph to Pipeline Closed Won column drop (4.5s overlay + Deal Closed label)

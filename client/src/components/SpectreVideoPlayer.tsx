@@ -92,11 +92,36 @@ const CLIPS: Record<SpectreState, string[]> = {
   ],
   triumph: [
     `${BASE}/mp__3d1f90ea.mp4`,
+    `${BASE}/mp_1_new_bcbd7f39.mp4`,
   ],
   power_up: [
     `${BASE}/Restrained_triumph_The_charac_6a346f6b.mp4`,
   ],
 };
+
+// ─── Still image registry ─────────────────────────────────────────────────────
+// High-quality PNG stills for use as poster frames, companion images, or
+// fallback display when video cannot autoplay.
+export const SPECTER_STILLS = {
+  idle:        `${BASE}/gest_idle_db77de88.png`,
+  greeting:    `${BASE}/gest_greeting_535a6634.png`,
+  presenting:  `${BASE}/gest_presenting_547248fb.png`,
+  inviting:    `${BASE}/gest_inviting_1b0d5f6a.png`,
+  listening:   `${BASE}/gest_listening_c05495ff.png`,
+  scanning:    `${BASE}/gest_scanning_88b833d7.png`,
+  typing:      `${BASE}/gest_typing_2209e9bd.png`,
+  confirming:  `${BASE}/gest_confirming_5c24a281.png`,
+  celebrating: `${BASE}/gest_celebrating_79ef8621.png`,
+  pointing:    `${BASE}/gest_pointing_b922e939.png`,
+  bow:         `${BASE}/gest_bow_2b47f1ff.png`,
+  // UI context stills
+  ui_loading:       `${BASE}/ui_loading_c4dc78da.png`,
+  ui_onboarding:    `${BASE}/ui_onboarding_f697610b.png`,
+  ui_recommendation:`${BASE}/ui_recommendation_7cc45e99.png`,
+  ui_warning:       `${BASE}/ui_warning_2da07d4c.png`,
+  ui_completion:    `${BASE}/ui_completion_3b35b7f0.png`,
+  ui_dashboard:     `${BASE}/ui_dashboard_reveal_de21ca75.png`,
+} as const;
 
 // ─── Size presets ─────────────────────────────────────────────────────────────
 const SIZE_CLASSES: Record<string, string> = {

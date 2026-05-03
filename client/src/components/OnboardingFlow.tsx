@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
-import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { SpectreVideoPlayer, SPECTER_STILLS } from "@/components/SpectreVideoPlayer";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -443,7 +443,7 @@ function GhostSlide({ onNext, active, topLeadName }: { onNext: () => void; activ
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1.6rem" }}>
-        <SpectreVideoPlayer state="typing" size="lg" glow />
+        <SpectreVideoPlayer state="typing" size="2xl" glow />
       </div>
       <button className="oh-cta" onClick={onNext}>Meet The Operator →</button>
     </div>
@@ -473,7 +473,7 @@ function HoursSlide({ onNext, active }: { onNext: () => void; active: boolean })
       </h2>
       <p className="oh-body">Lead research. Proposal drafts. Strategy docs. Follow-up emails. The Ghost handles the repeatable work so you can focus on the work only you can do.</p>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1.4rem", marginBottom: "0.4rem" }}>
-        <SpectreVideoPlayer state="determined" size="lg" glow />
+        <SpectreVideoPlayer state="determined" size="2xl" glow />
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.6rem", marginTop: "0.8rem" }}>
         {["Lead audits: 12h", "Strategy docs: 8h", "Follow-ups: 9h", "Briefings: 6h", "Reporting: 12h"].map(l => (
@@ -634,6 +634,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       {/* Slide 1: The Door */}
       <section ref={slide1Ref as React.RefObject<HTMLElement>} className={`oh-slide${slide === 1 ? " active" : ""}`} style={{ background: "var(--bg)" }}>
         <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+        {/* UI context still — onboarding screen, far left, subtle */}
+        <div style={{ position: "absolute", left: "clamp(0.5rem,3vw,4rem)", top: "50%", transform: "translateY(-50%)", zIndex: 1, opacity: slide === 1 ? 0.18 : 0, transition: "opacity 800ms ease", pointerEvents: "none", filter: "blur(1px)" }}>
+          <img src={SPECTER_STILLS.ui_onboarding} alt="" style={{ width: "clamp(160px,18vw,260px)", borderRadius: 12, mixBlendMode: "screen" }} />
+        </div>
         {/* Specter — welcoming, right side */}
         <div style={{ position: "absolute", right: "clamp(1rem,6vw,8rem)", bottom: 0, zIndex: 1, opacity: slide === 1 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
           <SpectreVideoPlayer state="welcoming" size="2xl" glow />
@@ -665,9 +669,13 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 2: Pipeline */}
       <section className={`oh-slide${slide === 2 ? " active" : ""}`}>
+        {/* UI context still — dashboard reveal, far right, subtle */}
+        <div style={{ position: "absolute", right: "clamp(0.5rem,3vw,4rem)", top: "50%", transform: "translateY(-50%)", zIndex: 1, opacity: slide === 2 ? 0.18 : 0, transition: "opacity 800ms ease", pointerEvents: "none", filter: "blur(1px)" }}>
+          <img src={SPECTER_STILLS.ui_dashboard} alt="" style={{ width: "clamp(160px,18vw,260px)", borderRadius: 12, mixBlendMode: "screen" }} />
+        </div>
         {/* Specter — presenting, left side */}
         <div style={{ position: "absolute", left: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 2 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
-          <SpectreVideoPlayer state="presenting" size="xl" glow />
+          <SpectreVideoPlayer state="presenting" size="2xl" glow />
         </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Pipeline</div>
@@ -722,7 +730,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       <section className={`oh-slide${slide === 4 ? " active" : ""}`}>
         {/* Specter — thoughtful, right side */}
         <div style={{ position: "absolute", right: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 4 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
-          <SpectreVideoPlayer state="thoughtful" size="xl" glow />
+          <SpectreVideoPlayer state="thoughtful" size="2xl" glow />
         </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">Persona · The Operator</div>
@@ -758,7 +766,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       <section className={`oh-slide${slide === 5 ? " active" : ""}`}>
         {/* Specter — idle hologram, left side */}
         <div style={{ position: "absolute", left: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 5 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
-          <SpectreVideoPlayer state="idle_hologram" size="xl" glow />
+          <SpectreVideoPlayer state="idle_hologram" size="2xl" glow />
         </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Vault</div>
@@ -792,6 +800,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 7: Enter */}
       <section className={`oh-slide${slide === 7 ? " active" : ""}`}>
+        {/* UI context still — completion screen, far left, subtle */}
+        <div style={{ position: "absolute", left: "clamp(0.5rem,3vw,4rem)", top: "50%", transform: "translateY(-50%)", zIndex: 1, opacity: slide === 7 ? 0.2 : 0, transition: "opacity 800ms ease", pointerEvents: "none", filter: "blur(1px)" }}>
+          <img src={SPECTER_STILLS.ui_completion} alt="" style={{ width: "clamp(160px,18vw,260px)", borderRadius: 12, mixBlendMode: "screen" }} />
+        </div>
         {/* Specter — triumph on enter, hand_on_heart default, right side */}
         <div style={{ position: "absolute", right: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 7 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
           <SpectreVideoPlayer state={welcomed ? "triumph" : "hand_on_heart"} size="2xl" glow />
