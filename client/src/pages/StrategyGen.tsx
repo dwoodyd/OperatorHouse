@@ -11,6 +11,7 @@ import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckC
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { SpectreEmptyState } from "@/components/StateUI";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 const TEMPLATES = [
   { id: "full" as const, label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
@@ -47,6 +48,7 @@ export default function StrategyGen() {
   const [selectedClientId, setSelectedClientId] = useState<number | undefined>(undefined);
   const [result, setResult] = useState<StrategyResult | null>(null);
   const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
+  const [showTriumph, setShowTriumph] = useState(false);
 
   const generateStrategy = trpc.strategies.generate.useMutation({
     onSuccess: (data) => {
@@ -54,6 +56,9 @@ export default function StrategyGen() {
       utils.strategies.list.invalidate();
       utils.dashboard.metrics.invalidate();
       toast.success("Strategy generated and saved");
+      // Specter triumph moment — show for 4 seconds then return to idle
+      setShowTriumph(true);
+      setTimeout(() => setShowTriumph(false), 4000);
     },
     onError: (err) => {
       toast.error(err.message || "Generation failed. Please retry.");
@@ -292,8 +297,24 @@ export default function StrategyGen() {
               {generateStrategy.isPending && (
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4"
                   style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)' }}>
-                  <div className="w-12 h-12 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--amber)', borderTopColor: 'transparent' }} />
-                  <p style={{ color: 'var(--amber)', fontSize: '13px', fontFamily: 'Fira Code, monospace' }}>Ghost is working...</p>
+                  {/* Specter thinking while strategy is being generated */}
+                  <SpectreVideoPlayer state="thinking" size="lg" glow />
+                  <p style={{ color: 'var(--amber)', fontSize: '13px', fontFamily: 'Fira Code, monospace' }}>Specter is building the playbook...</p>
+                </div>
+              )}
+              {/* Specter triumph flash — shown briefly after successful generation */}
+              {showTriumph && result && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    bottom: '80px',
+                    right: '24px',
+                    zIndex: 50,
+                    pointerEvents: 'none',
+                    animation: 'fadeInUp 0.4s ease',
+                  }}
+                >
+                  <SpectreVideoPlayer state="triumph" size="md" glow />
                 </div>
               )}
 

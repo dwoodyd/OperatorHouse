@@ -5,6 +5,7 @@
    ============================================================================= */
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -134,6 +135,21 @@ export default function Audit() {
             pointerEvents: "none",
           }}
         />
+
+        {/* Specter — hand on heart, sincere greeting on left side */}
+        <div
+          style={{
+            position: "fixed",
+            left: "clamp(0px, 3vw, 48px)",
+            bottom: 0,
+            zIndex: 1,
+            pointerEvents: "none",
+            opacity: visible ? 0.85 : 0,
+            transition: "opacity 1.2s ease 0.5s",
+          }}
+        >
+          <SpectreVideoPlayer state="hand_on_heart" size="xl" glow />
+        </div>
 
         <div
           style={{

@@ -11,6 +11,7 @@ import {
   Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2
 } from "lucide-react";
 import { SkeletonRows, SpectreEmptyState } from "@/components/StateUI";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { toast } from "sonner";
 
 const SCORE_COLOR = (score: number) => {
@@ -177,19 +178,27 @@ export default function LeadIntel() {
             </button>
           </div>
           {analyzeLead.isPending && (
-            <div
-              className="mt-3 flex items-center gap-2"
-              style={{
-                color: "var(--amber)",
-                fontSize: "12px",
-                fontFamily: "Fira Code, monospace",
-              }}
-            >
+            <div className="mt-3 flex items-center gap-3">
+              {/* Specter thinking while AI processes the lead */}
+              <div style={{ flexShrink: 0 }}>
+                <SpectreVideoPlayer state="thinking" size="sm" />
+              </div>
               <div
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
-                style={{ background: "var(--amber)" }}
-              />
-              Operator is running the Operator Audit...
+                style={{
+                  color: "var(--amber)",
+                  fontSize: "12px",
+                  fontFamily: "Fira Code, monospace",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <div
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: "var(--amber)" }}
+                />
+                Specter is running the Operator Audit...
+              </div>
             </div>
           )}
         </div>

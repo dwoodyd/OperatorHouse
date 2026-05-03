@@ -523,3 +523,19 @@
 ### Stale Data Management
 - [x] Configure React Query: refetchOnWindowFocus: true, staleTime: 30s, gcTime: 5min globally
 - [x] Notifications query: refetchInterval: 60000 for live badge updates
+
+## Next Steps (Session 3)
+- [ ] Configure STRIPE_MONTHLY_PRICE_ID and STRIPE_ANNUAL_PRICE_ID secrets
+- [ ] Build observability layer: trpc.system.logClientError + wire into ErrorBoundary
+- [ ] Add "Book Audit" link to AppLayout sidebar INTEL section
+
+## Specter Character Video Integration (21 MP4 clips)
+- [x] Upload all 21 Specter MP4 clips to CDN via manus-upload-file --webdev
+- [x] Build SpectreVideoPlayer component with state machine + crossfade transitions
+- [x] Map clips to UI states: idle_breathing, welcoming, processing, thinking, triumph, pointing, bow, hologram, formal_bow
+- [x] Integrate Specter videos into OnboardingFlow slides (one clip per slide with crossfade)
+- [x] Add Specter idle video widget to AppLayout sidebar (bottom of nav, idle_breathing loop)
+- [x] Wire Specter thinking state to LeadIntel AI processing (analyzeLead.isPending)
+- [x] Wire Specter triumph state to StrategyGen on successful generation (4s flash)
+- [x] Add Specter to landing page hero section (welcoming state, right side)
+- [x] Add Specter to /audit booking page (hand_on_heart, fixed left side)

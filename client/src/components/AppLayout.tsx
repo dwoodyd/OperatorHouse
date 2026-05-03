@@ -18,6 +18,7 @@ import NotificationBell from "./NotificationBell";
 import { useCommandPalette } from "@/components/CommandPalette";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 import { trpc } from "@/lib/trpc";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; business?: boolean; enterprise?: boolean; }
 interface NavSection { title: string; items: NavItem[]; }
@@ -459,6 +460,22 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           <LogOut size={13} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
           {(!collapsed || isMobile) && <span>Sign Out</span>}
         </button>
+
+        {/* Specter idle widget — only when sidebar is expanded */}
+        {(!collapsed || isMobile) && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "4px 8px 0",
+              opacity: 0.85,
+              pointerEvents: "none",
+            }}
+          >
+            <SpectreVideoPlayer state="idle" size="md" glow />
+          </div>
+        )}
 
         {/* Replay Intro — hidden when collapsed on desktop */}
         {(!collapsed || isMobile) && (

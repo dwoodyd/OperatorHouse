@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import confetti from "canvas-confetti";
 import { SpectreWidget } from "@/components/SpectreWidget";
+import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -631,6 +632,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       {/* Slide 1: The Door */}
       <section ref={slide1Ref as React.RefObject<HTMLElement>} className={`oh-slide${slide === 1 ? " active" : ""}`} style={{ background: "var(--bg)" }}>
         <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+        {/* Specter — welcoming, right side */}
+        <div style={{ position: "absolute", right: "clamp(1rem,6vw,8rem)", bottom: 0, zIndex: 1, opacity: slide === 1 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
+          <SpectreVideoPlayer state="welcoming" size="2xl" glow />
+        </div>
         <div style={{ textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow" style={{ marginBottom: "1.8rem" }}>Operator House</div>
           <div ref={doorWrapRef as React.RefObject<HTMLDivElement>} className="oh-door-wrap" style={{ display: "inline-block", position: "relative", cursor: "pointer" }} onClick={enterTheHouse}>
@@ -658,6 +663,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 2: Pipeline */}
       <section className={`oh-slide${slide === 2 ? " active" : ""}`}>
+        {/* Specter — presenting, left side */}
+        <div style={{ position: "absolute", left: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 2 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
+          <SpectreVideoPlayer state="presenting" size="xl" glow />
+        </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Pipeline</div>
           <h1 className="oh-hero">
@@ -709,6 +718,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 4: The Operator */}
       <section className={`oh-slide${slide === 4 ? " active" : ""}`}>
+        {/* Specter — thoughtful, right side */}
+        <div style={{ position: "absolute", right: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 4 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
+          <SpectreVideoPlayer state="thoughtful" size="xl" glow />
+        </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">Persona · The Operator</div>
           <h1 className="oh-hero">
@@ -741,6 +754,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 5: The Vault */}
       <section className={`oh-slide${slide === 5 ? " active" : ""}`}>
+        {/* Specter — idle hologram, left side */}
+        <div style={{ position: "absolute", left: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 5 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
+          <SpectreVideoPlayer state="idle_hologram" size="xl" glow />
+        </div>
         <div style={{ width: "100%", maxWidth: 720, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-eyebrow">The Vault</div>
           <h1 className="oh-hero">
@@ -773,6 +790,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
 
       {/* Slide 7: Enter */}
       <section className={`oh-slide${slide === 7 ? " active" : ""}`}>
+        {/* Specter — triumph on enter, hand_on_heart default, right side */}
+        <div style={{ position: "absolute", right: "clamp(1rem,4vw,6rem)", bottom: 0, zIndex: 1, opacity: slide === 7 ? 1 : 0, transition: "opacity 600ms ease", pointerEvents: "none" }}>
+          <SpectreVideoPlayer state={welcomed ? "triumph" : "hand_on_heart"} size="2xl" glow />
+        </div>
         <div style={{ width: "100%", maxWidth: 680, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="oh-glow-ring" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 800, height: 800, opacity: 0.7 }} />
           <div style={{ position: "relative", zIndex: 2 }}>
