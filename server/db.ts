@@ -60,8 +60,24 @@ export async function upsertUserProfile(data: InsertUserProfile) {
   const db = await getDb();
   if (!db) return;
   await db.insert(userProfiles).values(data).onDuplicateKeyUpdate({
-    set: { companyName: data.companyName, timezone: data.timezone },
+    set: {
+      companyName: data.companyName,
+      timezone: data.timezone,
+      ...(data.spectreHidden !== undefined && { spectreHidden: data.spectreHidden }),
+      ...(data.spectreChatbotEnabled !== undefined && { spectreChatbotEnabled: data.spectreChatbotEnabled }),
+    },
   });
+}
+
+export async function updateSpectrePrefs(
+  userId: number,
+  prefs: { spectreHidden?: boolean; spectreChatbotEnabled?: boolean }
+) {
+  const db = await getDb();
+  if (!db) return;
+  // Ensure a profile row exists first
+  await db.insert(userProfiles).values({ userId, spectreHidden: false, spectreChatbotEnabled: true })
+    .onDuplicateKeyUpdate({ set: prefs });
 }
 
 // ─── Clients ──────────────────────────────────────────────────────────────────

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { SkeletonRows, SpectreEmptyState } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 import { toast } from "sonner";
 
 const SCORE_COLOR = (score: number) => {
@@ -29,6 +30,7 @@ const SECTION_META = [
 ];
 
 export default function LeadIntel() {
+  const { spectreHidden } = useSpectre();
   const utils = trpc.useUtils();
   const { data: leads, isLoading } = trpc.leads.list.useQuery();
 
@@ -180,9 +182,11 @@ export default function LeadIntel() {
           {analyzeLead.isPending && (
             <div className="mt-3 flex items-center gap-3">
               {/* Specter thinking while AI processes the lead */}
-              <div style={{ flexShrink: 0 }}>
-                <SpectreVideoPlayer state="thinking" size="sm" />
-              </div>
+              {!spectreHidden && (
+                <div style={{ flexShrink: 0 }}>
+                  <SpectreVideoPlayer state="thinking" size="sm" />
+                </div>
+              )}
               <div
                 style={{
                   color: "var(--amber)",

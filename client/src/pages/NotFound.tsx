@@ -1,11 +1,13 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 import { LayoutDashboard, Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
+  const { spectreHidden } = useSpectre();
 
   // Smart recovery: authenticated users go to Dashboard, guests go to Home
   const primaryDest = isAuthenticated ? "/dashboard" : "/";
@@ -22,9 +24,11 @@ export default function NotFound() {
         style={{ opacity: 0 }}
       >
         {/* Specter mascot */}
-        <div className="flex justify-center mb-6">
-          <SpectreVideoPlayer state="thoughtful" size="lg" glow />
-        </div>
+        {!spectreHidden && (
+          <div className="flex justify-center mb-6">
+            <SpectreVideoPlayer state="thoughtful" size="lg" glow />
+          </div>
+        )}
 
         {/* Ambient 404 label */}
         <div

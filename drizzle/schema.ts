@@ -181,6 +181,10 @@ export const userProfiles = mysqlTable("user_profiles", {
   userId: int("userId").notNull().unique(),
   companyName: varchar("companyName", { length: 255 }),
   timezone: varchar("timezone", { length: 64 }).default("America/New_York"),
+  /** When true, Specter is hidden from all UI contexts except the chatbot widget */
+  spectreHidden: boolean("spectreHidden").default(false).notNull(),
+  /** When false, the Specter chatbot widget is disabled entirely */
+  spectreChatbotEnabled: boolean("spectreChatbotEnabled").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

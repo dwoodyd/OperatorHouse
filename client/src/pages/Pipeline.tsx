@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { Plus, DollarSign, Loader2, X, Trash2 } from "lucide-react";
 import { SkeletonKanban } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 import DealSlideOver from "@/components/DealSlideOver";
 import { toast } from "sonner";
 
@@ -55,6 +56,7 @@ interface NewDealForm {
 }
 
 export default function Pipeline() {
+  const { spectreHidden } = useSpectre();
   const utils = trpc.useUtils();
   const { data: deals, isLoading } = trpc.pipeline.list.useQuery();
 
@@ -151,7 +153,7 @@ export default function Pipeline() {
           }}
         >
           <div style={{ position: "relative" }}>
-            <SpectreVideoPlayer state="triumph" size="2xl" glow />
+            {!spectreHidden && <SpectreVideoPlayer state="triumph" size="2xl" glow />}
             <div
               style={{
                 position: "absolute",
@@ -288,7 +290,7 @@ export default function Pipeline() {
                 <div className="flex-1 p-2 space-y-2 overflow-y-auto">
                   {dealsByStage(stage).length === 0 && (
                     <div className="py-8 flex flex-col items-center gap-3" style={{ opacity: 0.7 }}>
-                      <SpectreVideoPlayer state="idle" size="sm" />
+                      {!spectreHidden && <SpectreVideoPlayer state="idle" size="sm" />}
                       <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'Fira Code, monospace' }}>
                         {stage === 'Discovery' ? 'Waiting for leads' :
                          stage === 'Closed' ? 'Nothing closed yet' :

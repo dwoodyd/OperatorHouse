@@ -11,6 +11,7 @@ import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -23,6 +24,7 @@ const OUTCOMES = [
 ];
 
 export default function Pricing() {
+  const { spectreHidden } = useSpectre();
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
@@ -412,7 +414,7 @@ export default function Pricing() {
             Those who move fastest win.<br />Claim your seat before the window closes.
             <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "8px solid rgba(212,175,55,0.3)" }} />
           </div>
-          <SpectreVideoPlayer state="determined" size="lg" glow />
+          {!spectreHidden && <SpectreVideoPlayer state="determined" size="lg" glow />}
         </div>
 
         {/* Audit CTA — soft conversion for fence-sitters */}

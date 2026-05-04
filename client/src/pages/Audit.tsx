@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 
 const OH_SYMBOL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
@@ -14,6 +15,7 @@ const CALENDLY_URL =
   "https://calendly.com/dwoodyd/15-min-operator-house-discovery-call";
 
 export default function Audit() {
+  const { spectreHidden } = useSpectre();
   const [, setLocation] = useLocation();
   const [visible, setVisible] = useState(false);
 
@@ -148,7 +150,7 @@ export default function Audit() {
             transition: "opacity 1.2s ease 0.5s",
           }}
         >
-          <SpectreVideoPlayer state="hand_on_heart" size="xl" glow />
+          {!spectreHidden && <SpectreVideoPlayer state="hand_on_heart" size="xl" glow />}
         </div>
 
         <div

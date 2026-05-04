@@ -29,7 +29,7 @@ import {
   getStrategies, getTasks, getUserNotifications, getUserProfile, getVaultItems,
   getUnreadNotificationCount, logActivity, markAllNotificationsRead, markNotificationRead,
   updateClient, updateDeal, updateLead, updateStrategy, updateTask,
-  updateVaultItem, upsertUserProfile, getDb,
+  updateVaultItem, upsertUserProfile, updateSpectrePrefs, getDb,
 } from "./db";
 import { runLeadAudit, runStrategyGeneration, PROMPT_VERSIONS } from "./ai";
 import { notifyOwner } from "./_core/notification";
@@ -83,6 +83,15 @@ export const appRouter = router({
       .input(z.object({ companyName: z.string().optional(), timezone: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
         await upsertUserProfile({ userId: ctx.user.id, ...input });
+        return { success: true };
+      }),
+    updateSpectrePrefs: protectedProcedure
+      .input(z.object({
+        spectreHidden: z.boolean().optional(),
+        spectreChatbotEnabled: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await updateSpectrePrefs(ctx.user.id, input);
         return { success: true };
       }),
   }),

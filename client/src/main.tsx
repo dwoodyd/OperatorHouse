@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { CommandPaletteProvider } from "@/components/CommandPalette";
+import { SpectreProvider } from "@/contexts/SpectreContext";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
@@ -70,9 +71,11 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <CommandPaletteProvider>
-        <App />
-      </CommandPaletteProvider>
+      <SpectreProvider>
+        <CommandPaletteProvider>
+          <App />
+        </CommandPaletteProvider>
+      </SpectreProvider>
     </QueryClientProvider>
   </trpc.Provider>
 );

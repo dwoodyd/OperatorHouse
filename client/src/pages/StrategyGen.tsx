@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { SpectreEmptyState } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 
 const TEMPLATES = [
   { id: "full" as const, label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
@@ -36,6 +37,7 @@ interface StrategyResult {
 }
 
 export default function StrategyGen() {
+  const { spectreHidden } = useSpectre();
   const utils = trpc.useUtils();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: strategies, isLoading: strategiesLoading } = trpc.strategies.list.useQuery();
@@ -298,7 +300,7 @@ export default function StrategyGen() {
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4"
                   style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)' }}>
                   {/* Specter thinking while strategy is being generated */}
-                  <SpectreVideoPlayer state="thinking" size="lg" glow />
+                  {!spectreHidden && <SpectreVideoPlayer state="thinking" size="lg" glow />}
                   <p style={{ color: 'var(--amber)', fontSize: '13px', fontFamily: 'Fira Code, monospace' }}>Specter is building the playbook...</p>
                 </div>
               )}
@@ -314,7 +316,7 @@ export default function StrategyGen() {
                     animation: 'fadeInUp 0.4s ease',
                   }}
                 >
-                  <SpectreVideoPlayer state="triumph" size="md" glow />
+                  {!spectreHidden && <SpectreVideoPlayer state="triumph" size="md" glow />}
                 </div>
               )}
 

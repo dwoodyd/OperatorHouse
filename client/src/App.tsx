@@ -51,6 +51,7 @@ import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
 import { CapabilityGate } from "./components/CapabilityGate";
+import { SpectreChatbot } from "./components/SpectreChatbot";
 
 function Router() {
   return (
@@ -306,6 +307,7 @@ function App() {
             <IntroLayer />
             <PWAInstallBanner />
             <Router />
+            <SpectreChatbot />
           </TooltipProvider>
         </IntroReplayProvider>
       </ThemeProvider>

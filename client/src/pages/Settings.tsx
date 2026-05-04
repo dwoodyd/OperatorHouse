@@ -4,8 +4,9 @@ import AppLayout from "@/components/AppLayout";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle, CreditCard, Bell } from "lucide-react";
+import { User, Building2, Clock, Save, Trash2, ShieldAlert, Info, ExternalLink, AlertTriangle, PlayCircle, CreditCard, Bell, Ghost } from "lucide-react";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
+import { useSpectre } from "@/contexts/SpectreContext";
 
 const APP_VERSION = "1.0.0";
 const BUILD_DATE = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -286,6 +287,77 @@ function ReplayIntroButton() {
   );
 }
 
+// ─── Specter Preferences Section ────────────────────────────────────────────────
+function SpectrePrefsSection() {
+  const { spectreHidden, spectreChatbotEnabled, setSpectreHidden, setSpectreChatbotEnabled } = useSpectre();
+
+  const ToggleRow = ({
+    label,
+    description,
+    value,
+    onChange,
+  }: {
+    label: string;
+    description: string;
+    value: boolean;
+    onChange: (v: boolean) => void;
+  }) => (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", fontFamily: "DM Sans, sans-serif" }}>{label}</p>
+        <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "3px", lineHeight: 1.5 }}>{description}</p>
+      </div>
+      <button
+        onClick={() => onChange(!value)}
+        className="relative flex-shrink-0 mt-0.5"
+        style={{
+          width: 40, height: 22, borderRadius: 11,
+          background: value ? "var(--amber)" : "var(--border-subtle)",
+          border: "none", cursor: "pointer", transition: "background 200ms",
+        }}
+        aria-label={label}
+      >
+        <span style={{
+          position: "absolute", top: 3, left: value ? 21 : 3,
+          width: 16, height: 16, borderRadius: "50%",
+          background: "#fff", transition: "left 200ms",
+        }} />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="glass-panel p-6">
+      <SectionHeader icon={Ghost} label="Specter Preferences" />
+      <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "1.25rem", lineHeight: 1.6 }}>
+        Control where Specter appears in your workspace. When hidden, Specter is only available as the support chatbot in the bottom-right corner.
+      </p>
+      <div className="space-y-5">
+        <ToggleRow
+          label="Hide Specter from workspace"
+          description="Removes Specter animations from pipeline, lead intel, strategy, and all other pages. He remains available as the chatbot only."
+          value={spectreHidden}
+          onChange={(v) => {
+            setSpectreHidden(v);
+            toast.success(v ? "Specter hidden from workspace" : "Specter restored to workspace");
+          }}
+        />
+        <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "1.25rem" }}>
+          <ToggleRow
+            label="Enable Specter chatbot"
+            description="Shows the Specter support assistant in the bottom-right corner of every page. Auto-opens on first visit."
+            value={spectreChatbotEnabled}
+            onChange={(v) => {
+              setSpectreChatbotEnabled(v);
+              toast.success(v ? "Specter chatbot enabled" : "Specter chatbot disabled");
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Settings Page ────────────────────────────────────────────────────────
 export default function Settings() {
   const { user } = useAuth();
@@ -379,6 +451,9 @@ export default function Settings() {
             {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
           </select>
         </div>
+
+        {/* Specter Preferences */}
+        <SpectrePrefsSection />
 
         {/* Save Button */}
         <button

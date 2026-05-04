@@ -8,6 +8,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Search, GitBranch, FileText, Archive, BarChart3, CheckSquare, ArrowRight, Zap, Shield, Brain } from "lucide-react";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { useSpectre } from "@/contexts/SpectreContext";
 
 const OH_SYMBOL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
@@ -22,6 +23,7 @@ const FEATURES = [
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
+  const { spectreHidden } = useSpectre();
   const [, setLocation] = useLocation();
   const [visible, setVisible] = useState(false);
 
@@ -107,7 +109,7 @@ export default function Home() {
           opacity: visible ? 0.9 : 0,
           transition: "opacity 1.4s ease 0.6s",
         }}>
-          <SpectreVideoPlayer state="welcoming" size="2xl" glow />
+          {!spectreHidden && <SpectreVideoPlayer state="welcoming" size="2xl" glow />}
         </div>
 
         <img src={OH_SYMBOL} alt="Operator House" style={{ width: "88px", height: "88px", objectFit: "contain", marginBottom: "28px", position: "relative" }} />

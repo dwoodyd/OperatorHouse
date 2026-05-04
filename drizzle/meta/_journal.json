@@ -134,6 +134,13 @@
       "when": 1777732582934,
       "tag": "0018_blushing_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1777934717042,
+      "tag": "0019_glamorous_dazzler",
+      "breakpoints": true
     }
   ]
 }

@@ -141,6 +141,8 @@ interface SpectreVideoPlayerProps {
   /** Called when a non-looping clip finishes playing */
   onEnded?: () => void;
   className?: string;
+  /** Inline style for the container element */
+  style?: React.CSSProperties;
   /** Show a subtle dark radial glow beneath the character */
   glow?: boolean;
 }
@@ -151,6 +153,7 @@ export function SpectreVideoPlayer({
   loop = true,
   onEnded,
   className,
+  style,
   glow = false,
 }: SpectreVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -194,7 +197,7 @@ export function SpectreVideoPlayer({
   const sizeClass = SIZE_CLASSES[size] ?? size;
 
   return (
-    <div className={cn("relative flex items-end justify-center", sizeClass, className)}>
+    <div className={cn("relative flex items-end justify-center", sizeClass, className)} style={style}>
       {glow && (
         <div
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-8 rounded-full blur-xl opacity-40"
