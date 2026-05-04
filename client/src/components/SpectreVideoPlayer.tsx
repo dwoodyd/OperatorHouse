@@ -53,7 +53,7 @@ const CLIPS: Record<SpectreState, string[]> = {
     `${BASE}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_d7c6ce08.mp4`,
   ],
   welcoming: [
-    `${BASE}/hf_20260503_002137_7360eac7-3852-42f4-9c72-9c3fc20abf2d_5fb388af.mp4`,
+    // NOTE: hf_20260503_002137 (welcoming_1) removed — completely headless clip
     `${BASE}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_22eb71c6.mp4`,
   ],
   presenting: [

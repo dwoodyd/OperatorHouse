@@ -25,7 +25,7 @@ const TOTAL_SLIDES = 7;
 
 interface SlideData {
   id: number;
-  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph";
+  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding";
   eyebrow: string;
   headline: string;
   body: string;
@@ -49,7 +49,7 @@ const SLIDES: SlideData[] = [
   },
   {
     id: 3,
-    spectreState: "hologram",
+    spectreState: "idle_holding",
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
