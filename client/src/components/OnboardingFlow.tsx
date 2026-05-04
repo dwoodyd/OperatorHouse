@@ -25,7 +25,7 @@ const TOTAL_SLIDES = 7;
 
 interface SlideData {
   id: number;
-  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding";
+  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding" | "welcome_pleasant" | "offering_pleasant" | "inviting_pleasant" | "search_hologram" | "gear_hologram" | "sincere_pleasant" | "bow_pleasant" | "vault_lock";
   eyebrow: string;
   headline: string;
   body: string;
@@ -35,49 +35,49 @@ interface SlideData {
 const SLIDES: SlideData[] = [
   {
     id: 1,
-    spectreState: "welcoming",
+    spectreState: "welcome_pleasant",
     eyebrow: "Welcome to Operator House",
     headline: "The House\nis ready.",
     body: "Specter has been standing by. Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
   },
   {
     id: 2,
-    spectreState: "presenting",
+    spectreState: "offering_pleasant",
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
     body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — so you walk into every conversation already ahead.",
   },
   {
     id: 3,
-    spectreState: "idle_holding",
+    spectreState: "inviting_pleasant",
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
   },
   {
     id: 4,
-    spectreState: "typing",
+    spectreState: "search_hologram",
     eyebrow: "Strategy on Demand",
     headline: "Your next\nmove, written\nin seconds.",
     body: "Describe a deal. Specter generates a full outreach strategy — messaging, positioning, objection handling — grounded in your vault of knowledge.",
   },
   {
     id: 5,
-    spectreState: "thoughtful",
+    spectreState: "vault_lock",
     eyebrow: "The Vault",
     headline: "Everything\nyou know,\nalways on call.",
     body: "Store your frameworks, scripts, case studies, and intel. Specter pulls from your vault when generating strategies — your knowledge compounds.",
   },
   {
     id: 6,
-    spectreState: "determined",
+    spectreState: "sincere_pleasant",
     eyebrow: "Daily Briefings",
     headline: "Start every\nday with a\nclear picture.",
     body: "Each morning, Specter synthesizes your pipeline, flags stale deals, and delivers a briefing tailored to where you actually are — not where you wish you were.",
   },
   {
     id: 7,
-    spectreState: "bow",
+    spectreState: "bow_pleasant",
     eyebrow: "The House is yours",
     headline: "Specter is\nready to\nwork.",
     body: "Everything is set. Your operator is standing by. The only thing left is your first move.",

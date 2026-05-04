@@ -37,7 +37,16 @@ export type SpectreState =
   | "wave"              // hand raise greeting — welcome / acknowledgment
   | "determined"        // fist to chest — confirming critical decision
   | "triumph"           // fist pump + glow — task complete / deal won
-  | "power_up";         // blinding flash fist — level up / activation
+  | "power_up"         // blinding flash fist — level up / activation
+  // ── Pleasant onboarding clips (new) ──
+  | "welcome_pleasant"   // smiling, presenting to side — black bg, onboarding slide 1
+  | "offering_pleasant"  // both hands open, warm smile — grey bg, onboarding slide 2
+  | "inviting_pleasant"  // grinning, hand extended forward — dark bokeh, onboarding slide 3
+  | "search_hologram"    // holding search hologram — white bg, onboarding slide 4
+  | "gear_hologram"      // holding gear orb — white bg, onboarding slide 5
+  | "sincere_pleasant"   // hand to chest, subtle smile — dark bg, onboarding slide 6
+  | "bow_pleasant"       // smiling, hand on chest bow — white bg, onboarding slide 7
+  | "vault_lock";        // holding glowing padlock — grey bg, vault/security
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
@@ -97,6 +106,31 @@ const CLIPS: Record<SpectreState, string[]> = {
   power_up: [
     `${BASE}/Restrained_triumph_The_charac_6a346f6b.mp4`,
   ],
+  // ── Pleasant onboarding clips ──
+  welcome_pleasant: [
+    `${BASE}/specter_welcome_pleasant_51c6fad6.mp4`,
+  ],
+  offering_pleasant: [
+    `${BASE}/specter_offering_pleasant_26f0d8dc.mp4`,
+  ],
+  inviting_pleasant: [
+    `${BASE}/specter_inviting_pleasant_049a7dd1.mp4`,
+  ],
+  search_hologram: [
+    `${BASE}/specter_search_hologram_8e32bcda.mp4`,
+  ],
+  gear_hologram: [
+    `${BASE}/specter_gear_hologram_e6735037.mp4`,
+  ],
+  sincere_pleasant: [
+    `${BASE}/specter_sincere_pleasant_fd64bd09.mp4`,
+  ],
+  bow_pleasant: [
+    `${BASE}/specter_bow_pleasant_fa75f4da.mp4`,
+  ],
+  vault_lock: [
+    `${BASE}/specter_vault_lock_16e573ea.mp4`,
+  ],
 };
 
 // ─── Still image registry ─────────────────────────────────────────────────────
@@ -122,6 +156,23 @@ export const SPECTER_STILLS = {
   ui_completion:    `${BASE}/ui_completion_3b35b7f0.png`,
   ui_dashboard:     `${BASE}/ui_dashboard_reveal_de21ca75.png`,
 } as const;
+
+// ─── Blend mode registry ────────────────────────────────────────────────────────
+// Clips with dark/black backgrounds use 'screen' to blend out the bg.
+// Clips with white/grey/light backgrounds use 'multiply' to blend out the bg.
+// 'normal' = no blending (use when the clip has a transparent or fully dark bg).
+const BLEND_MODES: Partial<Record<SpectreState, string>> = {
+  // Light background clips — use multiply to remove white/grey bg
+  offering_pleasant:  "multiply",  // grey gradient bg
+  search_hologram:    "multiply",  // white bg
+  gear_hologram:      "multiply",  // white bg
+  bow_pleasant:       "multiply",  // white bg with letterbox
+  vault_lock:         "multiply",  // grey bg
+  // Dark background clips — use screen (default)
+  // welcome_pleasant: pure black bg — screen is perfect
+  // inviting_pleasant: dark cinematic bokeh — screen works
+  // sincere_pleasant: dark bg — screen works
+};
 
 // ─── Size presets ─────────────────────────────────────────────────────────────
 const SIZE_CLASSES: Record<string, string> = {
@@ -215,7 +266,7 @@ export function SpectreVideoPlayer({
           "w-full h-full object-contain transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
         )}
-        style={{ mixBlendMode: "screen" }}
+        style={{ mixBlendMode: (BLEND_MODES[state] ?? "screen") as React.CSSProperties["mixBlendMode"] }}
       />
     </div>
   );
