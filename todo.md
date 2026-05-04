@@ -592,3 +592,22 @@
 - [x] Ticket 2: Added boot-time guard — throws if VAPID keys missing; new keys stored in env secrets
 - [x] Ticket 3: Added SSRF assertSafeWebhook() with HTTPS-only + host allowlist + IP literal rejection
 - [x] Tests: 18 new P0 security tests in server/p0-security.test.ts (38 total passing)
+
+## Onboarding Cinematic Redesign (May 4)
+- [x] Analyzed 4 reference app videos for premium design patterns
+- [x] Full-bleed dark background (#060504), no cards/borders
+- [x] Specter fixed in right 42% panel, text slides independently left/right
+- [x] Thin gold progress bar at top (not pagination dots)
+- [x] Cormorant Garamond serif headlines + Inter body typography
+- [x] Slide-in/slide-out text transitions (translateX + opacity, spring easing)
+- [x] Staggered fade-up animations per element (eyebrow 0.1s, headline 0.2s, body 0.35s, CTA 0.5s)
+- [x] "Labor illusion" calibration screen between slides 6 and 7
+- [x] Keyboard navigation (arrow keys) and touch swipe support
+- [x] CTA pulse ring animation on final slide
+- [x] Film grain texture overlay (subtle, 0.025 opacity)
+- [x] Scanlines on Specter panel for cinematic depth
+- [x] Specter entrance fade-up animation on load
+- [x] Pulsing gold ambient glow behind Specter (4s breathe cycle)
+- [x] Left-edge gold accent line on text panel
+- [x] Cormorant Garamond added to index.html font preload
+- [x] Page title updated to "Operator House — Specter HQ"
