@@ -102,8 +102,12 @@ const GLOBAL_CSS = `
     overflow: hidden;
     position: fixed;
     inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: 9000;
     -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ── Progress bar ── */
@@ -143,8 +147,9 @@ const GLOBAL_CSS = `
   /* ── Layout ── */
   .oh2-layout {
     display: flex;
-    height: 100%;
+    flex: 1 1 0;
     width: 100%;
+    min-height: 0;
   }
 
   /* ── Left: text panel ── */
@@ -156,6 +161,7 @@ const GLOBAL_CSS = `
     padding: 0 6% 0 8%;
     position: relative;
     overflow: hidden;
+    min-height: 0;
   }
   /* Subtle left-edge gold accent */
   .oh2-text-panel::before {
@@ -177,16 +183,28 @@ const GLOBAL_CSS = `
     position: relative;
     overflow: hidden;
     padding-bottom: 0;
+    min-height: 0;
   }
 
-  /* Specter video container — fixed region, state changes in place */
+  /* Specter video container — fills the full panel height */
   .oh2-specter-video {
     width: 100%;
-    max-width: 420px;
     height: 100%;
     display: flex;
     align-items: flex-end;
     justify-content: center;
+  }
+  /* Override SpectreVideoPlayer size preset — let Specter fill the panel */
+  .oh2-specter-video > div {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+  }
+  .oh2-specter-video > div video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    object-position: bottom center;
   }
 
   /* ── Slide content wrapper ── */
@@ -701,6 +719,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
               <SpectreVideoPlayer
                 state={currentSlide.spectreState}
                 size="2xl"
+                className="!w-full !h-full"
               />
             </div>
           </div>
