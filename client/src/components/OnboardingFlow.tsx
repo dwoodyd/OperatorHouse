@@ -45,7 +45,7 @@ const SLIDES: SlideData[] = [
   },
   {
     id: 2,
-    spectreState: "offering_pleasant",
+    spectreState: "thinking",
     portrait: true,
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
