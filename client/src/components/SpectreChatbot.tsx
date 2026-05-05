@@ -125,11 +125,11 @@ export function SpectreChatbot() {
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-[#111]">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-black flex-shrink-0 ring-1 ring-[#c9a84c]/40">
-              <SpectreVideoPlayer
+                <SpectreVideoPlayer
                 state={spectreState}
                 size="xs"
                 className="w-full h-full"
-                style={{ mixBlendMode: "screen" }}
+                style={{ mixBlendMode: "multiply" }}
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -156,12 +156,11 @@ export function SpectreChatbot() {
                 )}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden bg-black flex-shrink-0 ring-1 ring-[#c9a84c]/30 mt-0.5">
-                    <SpectreVideoPlayer
-                      state="idle"
-                      size="xs"
-                      className="w-full h-full"
-                      style={{ mixBlendMode: "screen" }}
+                  <div className="w-6 h-6 rounded-full overflow-hidden bg-white/5 flex-shrink-0 ring-1 ring-[#c9a84c]/30 mt-0.5">
+                    <img
+                      src="/manus-storage/spector_friendly_welcome_6fb4122e.png"
+                      alt="Specter"
+                      className="w-full h-full object-cover object-top"
                     />
                   </div>
                 )}

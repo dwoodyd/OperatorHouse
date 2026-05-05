@@ -211,24 +211,48 @@ const CLIPS: Record<SpectreState, string[]> = {
 // High-quality PNG stills for use as poster frames, companion images, or
 // fallback display when video cannot autoplay.
 export const SPECTER_STILLS = {
-  idle:        `${BASE}/gest_idle_db77de88.png`,
-  greeting:    `${BASE}/gest_greeting_535a6634.png`,
-  presenting:  `${BASE}/gest_presenting_547248fb.png`,
-  inviting:    `${BASE}/gest_inviting_1b0d5f6a.png`,
-  listening:   `${BASE}/gest_listening_c05495ff.png`,
-  scanning:    `${BASE}/gest_scanning_88b833d7.png`,
-  typing:      `${BASE}/gest_typing_2209e9bd.png`,
-  confirming:  `${BASE}/gest_confirming_5c24a281.png`,
-  celebrating: `${BASE}/gest_celebrating_79ef8621.png`,
-  pointing:    `${BASE}/gest_pointing_b922e939.png`,
-  bow:         `${BASE}/gest_bow_2b47f1ff.png`,
-  // UI context stills
-  ui_loading:       `${BASE}/ui_loading_c4dc78da.png`,
-  ui_onboarding:    `${BASE}/ui_onboarding_f697610b.png`,
-  ui_recommendation:`${BASE}/ui_recommendation_7cc45e99.png`,
-  ui_warning:       `${BASE}/ui_warning_2da07d4c.png`,
-  ui_completion:    `${BASE}/ui_completion_3b35b7f0.png`,
-  ui_dashboard:     `${BASE}/ui_dashboard_reveal_de21ca75.png`,
+  // ── Gesture stills (updated batch) ──
+  idle:        `${BASE}/gest_idle_c42825f6.png`,
+  greeting:    `${BASE}/gest_greeting_c6b0cd78.png`,
+  presenting:  `${BASE}/gest_presenting_815af494.png`,
+  inviting:    `${BASE}/gest_inviting_e161c876.png`,
+  listening:   `${BASE}/gest_listening_d0fea5d1.png`,
+  scanning:    `${BASE}/gest_scanning_c055b483.png`,
+  typing:      `${BASE}/gest_typing_eb787c7b.png`,
+  confirming:  `${BASE}/gest_confirming_1880203b.png`,
+  celebrating: `${BASE}/gest_celebrating_1eea94d3.png`,
+  pointing:    `${BASE}/gest_pointing_d7f58446.png`,
+  bow:         `${BASE}/gest_bow_d0e618c9.png`,
+  // ── Friendly portrait stills ──
+  friendly_welcome:     `${BASE}/spector_friendly_welcome_6fb4122e.png`,
+  friendly_presenting:  `${BASE}/spector_friendly_presenting_af8b9442.png`,
+  friendly_guiding:     `${BASE}/spector_friendly_guiding_8ef24d6c.png`,
+  friendly_encouraging: `${BASE}/spector_friendly_encouraging_14cb61f7.png`,
+  // ── Expression stills ──
+  exp_welcoming:   `${BASE}/exp_welcoming_35d7e27b.png`,
+  exp_observant:   `${BASE}/exp_observant_64f45328.png`,
+  exp_thinking:    `${BASE}/exp_thinking_561b0feb.png`,
+  exp_focused:     `${BASE}/exp_focused_285aad1f.png`,
+  exp_caution:     `${BASE}/exp_caution_c66deceb.png`,
+  exp_success:     `${BASE}/exp_success_e79504f9.png`,
+  exp_curious:     `${BASE}/exp_curious_239930b6.png`,
+  exp_celebratory: `${BASE}/exp_celebratory_0a11aec2.png`,
+  // ── Shadow / silhouette stills ──
+  shadow_front:   `${BASE}/shadow_front_neutral_91def304.png`,
+  shadow_back:    `${BASE}/shadow_back_view_12c6789d.png`,
+  shadow_side:    `${BASE}/shadow_side_view_c8d6b153.png`,
+  shadow_bust:    `${BASE}/shadow_bust_portrait_af325453.png`,
+  shadow_icon:    `${BASE}/shadow_icon_bust_b24f766d.png`,
+  // ── UI context stills (updated batch) ──
+  ui_loading:           `${BASE}/ui_loading_f7b07d2e.png`,
+  ui_onboarding:        `${BASE}/ui_onboarding_1e4ac58d.png`,
+  ui_recommendation:    `${BASE}/ui_recommendation_ad92c6d7.png`,
+  ui_warning:           `${BASE}/ui_warning_dad19743.png`,
+  ui_completion:        `${BASE}/ui_completion_15993a96.png`,
+  ui_dashboard:         `${BASE}/ui_dashboard_reveal_311329f0.png`,
+  ui_dashboard_clean:   `${BASE}/ui_dashboard_reveal_clean_f2b0be67.png`,
+  ui_searching:         `${BASE}/ui_searching_3e406119.png`,
+  ui_secure:            `${BASE}/ui_secure_78bb5fd2.png`,
 } as const;
 
 // ─── Blend mode registry ────────────────────────────────────────────────────────
