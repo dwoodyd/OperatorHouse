@@ -690,6 +690,8 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   };
 
   const handleSkip = () => {
+    if (done) return;
+    setDone(true);
     if (!isReplay) {
       completeOnboarding.mutate(undefined, { onSettled: onComplete });
     } else {
@@ -711,6 +713,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       className="oh3-root"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      style={done ? { pointerEvents: "none" } : undefined}
     >
       {/* ── Video layer: Specter IS the background ── */}
       <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
