@@ -65,7 +65,8 @@ export type SpectreState =
   | "majorly_confused"   // confused head tilt — error state
   | "waiting_confused"   // waiting + confused — error / no results
   | "waiting"            // contemplative waiting pose — empty state
-  | "ui_loading";        // holding glowing search icon — loading state
+  | "ui_loading"        // holding glowing search icon — loading state
+  | "data_video";       // data visualization hologram — pipeline/analytics slide
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
@@ -164,7 +165,7 @@ const CLIPS: Record<SpectreState, string[]> = {
     `${BASE}/SpectorHearttoYours_c1a0c2c6.mp4`,
   ],
   bowing: [
-    `${BASE}/SpectorBowing_8e26c6a7.mp4`,
+    `${BASE}/specter_bowing_cropped_39485b8b.mp4`,
   ],
   celebration: [
     `${BASE}/SpectorCelebration_195be803.mp4`,
@@ -204,6 +205,9 @@ const CLIPS: Record<SpectreState, string[]> = {
   ],
   ui_loading: [
     `${BASE}/SpectorUILoading_85cd0594.mp4`,
+  ],
+  data_video: [
+    `${BASE}/specter_datavideo_cropped_e63779d0.mp4`,
   ],
 };
 
