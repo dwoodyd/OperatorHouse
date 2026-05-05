@@ -486,3 +486,12 @@
     z-index: 1;
   }
 }
+
+/* ============================================================================
+   Global Video Blend Mode
+   All video elements use screen blend mode so black backgrounds drop out
+   and Specter composites cleanly over any dark UI surface.
+   ============================================================================ */
+video {
+  mix-blend-mode: screen; /* or mix-blend-mode: lighten; */
+}
