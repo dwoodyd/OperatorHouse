@@ -316,7 +316,7 @@ export default function StrategyGen() {
                     animation: 'fadeInUp 0.4s ease',
                   }}
                 >
-                  {!spectreHidden && <SpectreVideoPlayer state="triumph" size="md" glow />}
+                  {!spectreHidden && <SpectreVideoPlayer state="celebration" size="md" glow />}
                 </div>
               )}
 

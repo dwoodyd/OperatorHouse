@@ -414,7 +414,7 @@ export default function Pricing() {
             Those who move fastest win.<br />Claim your seat before the window closes.
             <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "8px solid rgba(212,175,55,0.3)" }} />
           </div>
-          {!spectreHidden && <SpectreVideoPlayer state="determined" size="lg" glow />}
+          {!spectreHidden && <SpectreVideoPlayer state="approval_nod" size="lg" glow />}
         </div>
 
         {/* Audit CTA — soft conversion for fence-sitters */}

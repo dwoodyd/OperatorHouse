@@ -26,7 +26,7 @@ export default function NotFound() {
         {/* Specter mascot */}
         {!spectreHidden && (
           <div className="flex justify-center mb-6">
-            <SpectreVideoPlayer state="thoughtful" size="lg" glow />
+            <SpectreVideoPlayer state="majorly_confused" size="lg" glow />
           </div>
         )}
 

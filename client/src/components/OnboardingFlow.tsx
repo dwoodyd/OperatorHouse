@@ -25,7 +25,7 @@ const TOTAL_SLIDES = 7;
 
 interface SlideData {
   id: number;
-  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding" | "welcome_pleasant" | "offering_pleasant" | "inviting_pleasant" | "search_hologram" | "gear_hologram" | "sincere_pleasant" | "bow_pleasant" | "vault_lock" | "cast" | "idle_holding";
+  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding" | "welcome_pleasant" | "offering_pleasant" | "inviting_pleasant" | "search_hologram" | "gear_hologram" | "sincere_pleasant" | "bow_pleasant" | "vault_lock" | "cast" | "inviting_smiling" | "talking" | "this_way" | "heart_to_yours" | "bowing";
   /** true = portrait 9:16 clip (contain + bottom anchor); false/undefined = landscape clip (cover + center) */
   portrait?: boolean;
   eyebrow: string;
@@ -37,15 +37,15 @@ interface SlideData {
 const SLIDES: SlideData[] = [
   {
     id: 1,
-    spectreState: "welcome_pleasant",
-    portrait: false, // landscape 1280x720 — use cover to fill panel
+    spectreState: "inviting_smiling",
+    portrait: true,
     eyebrow: "Welcome to Operator House",
     headline: "The House\nis ready.",
     body: "Specter has been standing by. Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
   },
   {
     id: 2,
-    spectreState: "thinking",
+    spectreState: "talking",
     portrait: true,
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
@@ -53,7 +53,7 @@ const SLIDES: SlideData[] = [
   },
   {
     id: 3,
-    spectreState: "idle_holding",
+    spectreState: "this_way",
     portrait: true,
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
@@ -77,7 +77,7 @@ const SLIDES: SlideData[] = [
   },
   {
     id: 6,
-    spectreState: "sincere_pleasant",
+    spectreState: "heart_to_yours",
     portrait: true,
     eyebrow: "Daily Briefings",
     headline: "Start every\nday with a\nclear picture.",
@@ -85,7 +85,7 @@ const SLIDES: SlideData[] = [
   },
   {
     id: 7,
-    spectreState: "bow_pleasant",
+    spectreState: "bowing",
     portrait: true,
     eyebrow: "The House is yours",
     headline: "Specter is\nready to\nwork.",

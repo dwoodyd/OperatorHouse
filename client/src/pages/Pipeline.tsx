@@ -153,7 +153,7 @@ export default function Pipeline() {
           }}
         >
           <div style={{ position: "relative" }}>
-            {!spectreHidden && <SpectreVideoPlayer state="triumph" size="2xl" glow />}
+            {!spectreHidden && <SpectreVideoPlayer state="celebration" size="2xl" glow />}
             <div
               style={{
                 position: "absolute",

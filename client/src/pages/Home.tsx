@@ -109,7 +109,7 @@ export default function Home() {
           opacity: visible ? 0.9 : 0,
           transition: "opacity 1.4s ease 0.6s",
         }}>
-          {!spectreHidden && <SpectreVideoPlayer state="welcoming" size="2xl" glow />}
+          {!spectreHidden && <SpectreVideoPlayer state="happy_greeting" size="2xl" glow />}
         </div>
 
         <img src={OH_SYMBOL} alt="Operator House" style={{ width: "88px", height: "88px", objectFit: "contain", marginBottom: "28px", position: "relative" }} />

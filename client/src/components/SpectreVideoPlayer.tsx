@@ -46,7 +46,26 @@ export type SpectreState =
   | "gear_hologram"      // holding gear orb — white bg, onboarding slide 5
   | "sincere_pleasant"   // hand to chest, subtle smile — dark bg, onboarding slide 6
   | "bow_pleasant"       // smiling, hand on chest bow — white bg, onboarding slide 7
-  | "vault_lock";        // holding glowing padlock — grey bg, vault/security
+  | "vault_lock"        // holding glowing padlock — grey bg, vault/security
+  // ── New pleasant clips (batch 2) ──
+  | "inviting_smiling"   // full body, dark bg, smiling + forward gesture — onboarding slide 1
+  | "talking"            // full body, dark bg, pleasant talking — onboarding slide 2
+  | "this_way"           // full body, dark bg, directing gesture — onboarding slide 3
+  | "heart_to_yours"     // dark bg, sincere hand-to-heart — onboarding slide 6
+  | "bowing"             // full body, pleasant bow — onboarding slide 7 / success
+  | "celebration"        // arms raised, joyful — task complete / deal won
+  | "approval"           // thumbs up / nod, pleasant — confirmation
+  | "approval_nod"       // determined approval nod — strong confirmation
+  | "happy"              // smiling, upbeat — general positive state
+  | "happy_greeting"     // warm greeting wave — chatbot welcome
+  | "gesturing"          // open gesture toward user — chatbot / explaining
+  | "flipping_magic"     // magic trick with glowing cups — loading / processing
+  | "digital_trails"     // dark bg with blue energy trails — ambient / background
+  | "idol_breathing"     // full body idle breathing — ambient / empty state
+  | "majorly_confused"   // confused head tilt — error state
+  | "waiting_confused"   // waiting + confused — error / no results
+  | "waiting"            // contemplative waiting pose — empty state
+  | "ui_loading";        // holding glowing search icon — loading state
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
@@ -131,6 +150,61 @@ const CLIPS: Record<SpectreState, string[]> = {
   vault_lock: [
     `${BASE}/specter_vault_lock_16e573ea.mp4`,
   ],
+  // ── New pleasant clips (batch 2) ──
+  inviting_smiling: [
+    `${BASE}/SpectorInvitingSmiling_92a14245.mp4`,
+  ],
+  talking: [
+    `${BASE}/SpectorTalking_c166a610.mp4`,
+  ],
+  this_way: [
+    `${BASE}/SpectorThisWay_32888b15.mp4`,
+  ],
+  heart_to_yours: [
+    `${BASE}/SpectorHearttoYours_c1a0c2c6.mp4`,
+  ],
+  bowing: [
+    `${BASE}/SpectorBowing_8e26c6a7.mp4`,
+  ],
+  celebration: [
+    `${BASE}/SpectorCelebration_195be803.mp4`,
+  ],
+  approval: [
+    `${BASE}/SpectorApproval_fdf9628b.mp4`,
+  ],
+  approval_nod: [
+    `${BASE}/SpectorApprovalNod_78496d10.mp4`,
+  ],
+  happy: [
+    `${BASE}/SpectorHappy_b40303f1.mp4`,
+  ],
+  happy_greeting: [
+    `${BASE}/SpectorHappyGreeting_2857a01f.mp4`,
+  ],
+  gesturing: [
+    `${BASE}/SpectorGesturing_e1ab809c.mp4`,
+  ],
+  flipping_magic: [
+    `${BASE}/SpectorFlippingMagic_f55402cd.mp4`,
+  ],
+  digital_trails: [
+    `${BASE}/SpectorDigitalTrails_a375c572.mp4`,
+  ],
+  idol_breathing: [
+    `${BASE}/SpectorIdolBreathing_ef95ba2b.mp4`,
+  ],
+  majorly_confused: [
+    `${BASE}/SpectorMajorlyConfused_27f15ceb.mp4`,
+  ],
+  waiting_confused: [
+    `${BASE}/SpectorWaitingConfused_305f40fa.mp4`,
+  ],
+  waiting: [
+    `${BASE}/SpectorWaiting2_3d7b5780.mp4`,
+  ],
+  ui_loading: [
+    `${BASE}/SpectorUILoading_85cd0594.mp4`,
+  ],
 };
 
 // ─── Still image registry ─────────────────────────────────────────────────────
@@ -168,6 +242,24 @@ const BLEND_MODES: Partial<Record<SpectreState, string>> = {
   gear_hologram:      "multiply",  // white bg
   // bow_pleasant: transparent webm — use screen (default) to blend out dark letterbox bars
   vault_lock:         "multiply",  // grey bg
+  // New batch 2 — light bg clips use multiply
+  inviting_smiling:   "multiply",  // light bg
+  talking:            "multiply",  // light bg
+  // this_way: dark bg — screen (default) works fine
+  // heart_to_yours: dark bg — screen (default) works fine
+  bowing:             "multiply",  // light bg
+  celebration:        "multiply",  // light bg
+  approval:           "multiply",  // light bg
+  approval_nod:       "multiply",  // light bg
+  happy:              "multiply",  // light bg
+  happy_greeting:     "multiply",  // light bg
+  gesturing:          "multiply",  // light bg
+  flipping_magic:     "multiply",  // light bg
+  idol_breathing:     "multiply",  // light bg
+  majorly_confused:   "multiply",  // light bg
+  waiting_confused:   "multiply",  // light bg
+  waiting:            "multiply",  // light bg
+  ui_loading:         "multiply",  // light bg with ui overlay
   // Dark background clips — use screen (default)
   // welcome_pleasant: pure black bg — screen is perfect
   // inviting_pleasant: dark cinematic bokeh — screen works

@@ -183,7 +183,7 @@ function SpectreEmptyFigure({ spectreQuote }: { spectreQuote: string }) {
           borderTop: "8px solid rgba(212,175,55,0.3)",
         }} />
       </div>
-      <SpectreVideoPlayer state="thoughtful" size="md" glow />
+      <SpectreVideoPlayer state="waiting" size="md" glow />
     </div>
   );
 }

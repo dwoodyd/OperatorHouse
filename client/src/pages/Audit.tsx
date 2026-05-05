@@ -150,7 +150,7 @@ export default function Audit() {
             transition: "opacity 1.2s ease 0.5s",
           }}
         >
-          {!spectreHidden && <SpectreVideoPlayer state="hand_on_heart" size="xl" glow />}
+          {!spectreHidden && <SpectreVideoPlayer state="approval" size="xl" glow />}
         </div>
 
         <div
