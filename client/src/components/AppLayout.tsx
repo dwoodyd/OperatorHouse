@@ -137,13 +137,28 @@ function ReplayIntroSidebarButton() {
       style={{
         justifyContent: "flex-start",
         gap: "10px",
-        color: "var(--text-muted)",
+        color: "rgba(245,166,35,0.75)",
         fontSize: "12px",
         fontFamily: "DM Sans, sans-serif",
+        background: "rgba(245,166,35,0.05)",
+        border: "1px solid rgba(245,166,35,0.18)",
+        borderRadius: "6px",
+        padding: "9px 12px",
+        cursor: "pointer",
+        WebkitTapHighlightColor: "rgba(245,166,35,0.15)",
+        transition: "background 150ms ease, border-color 150ms ease",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.12)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.35)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.05)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.18)";
       }}
       title="Replay Intro"
     >
-      <PlayCircle size={13} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
+      <PlayCircle size={13} style={{ flexShrink: 0, color: "rgba(245,166,35,0.75)" }} />
       <span>Replay Intro</span>
     </button>
   );
