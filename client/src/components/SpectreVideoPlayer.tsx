@@ -126,7 +126,7 @@ const CLIPS: Record<SpectreState, string[]> = {
     `${BASE}/specter_sincere_pleasant_fd64bd09.mp4`,
   ],
   bow_pleasant: [
-    `${BASE}/specter_bow_pleasant_fa75f4da.mp4`,
+    `${BASE}/specter_bow_nobg_1ec3bba7.webm`,
   ],
   vault_lock: [
     `${BASE}/specter_vault_lock_16e573ea.mp4`,
@@ -166,7 +166,7 @@ const BLEND_MODES: Partial<Record<SpectreState, string>> = {
   offering_pleasant:  "multiply",  // grey gradient bg
   search_hologram:    "multiply",  // white bg
   gear_hologram:      "multiply",  // white bg
-  bow_pleasant:       "multiply",  // white bg with letterbox
+  // bow_pleasant: transparent webm — use screen (default) to blend out dark letterbox bars
   vault_lock:         "multiply",  // grey bg
   // Dark background clips — use screen (default)
   // welcome_pleasant: pure black bg — screen is perfect

@@ -25,7 +25,9 @@ const TOTAL_SLIDES = 7;
 
 interface SlideData {
   id: number;
-  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding" | "welcome_pleasant" | "offering_pleasant" | "inviting_pleasant" | "search_hologram" | "gear_hologram" | "sincere_pleasant" | "bow_pleasant" | "vault_lock";
+  spectreState: "welcoming" | "presenting" | "pointing" | "thinking" | "typing" | "thoughtful" | "determined" | "bow" | "hologram" | "triumph" | "idle_holding" | "welcome_pleasant" | "offering_pleasant" | "inviting_pleasant" | "search_hologram" | "gear_hologram" | "sincere_pleasant" | "bow_pleasant" | "vault_lock" | "cast" | "idle_holding";
+  /** true = portrait 9:16 clip (contain + bottom anchor); false/undefined = landscape clip (cover + center) */
+  portrait?: boolean;
   eyebrow: string;
   headline: string;
   body: string;
@@ -36,6 +38,7 @@ const SLIDES: SlideData[] = [
   {
     id: 1,
     spectreState: "welcome_pleasant",
+    portrait: false, // landscape 1280x720 — use cover to fill panel
     eyebrow: "Welcome to Operator House",
     headline: "The House\nis ready.",
     body: "Specter has been standing by. Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
@@ -43,27 +46,31 @@ const SLIDES: SlideData[] = [
   {
     id: 2,
     spectreState: "offering_pleasant",
+    portrait: true,
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
     body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — so you walk into every conversation already ahead.",
   },
   {
     id: 3,
-    spectreState: "inviting_pleasant",
+    spectreState: "idle_holding",
+    portrait: true,
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
   },
   {
     id: 4,
-    spectreState: "search_hologram",
+    spectreState: "cast",
+    portrait: true,
     eyebrow: "Strategy on Demand",
     headline: "Your next\nmove, written\nin seconds.",
     body: "Describe a deal. Specter generates a full outreach strategy — messaging, positioning, objection handling — grounded in your vault of knowledge.",
   },
   {
     id: 5,
-    spectreState: "vault_lock",
+    spectreState: "typing",
+    portrait: true,
     eyebrow: "The Vault",
     headline: "Everything\nyou know,\nalways on call.",
     body: "Store your frameworks, scripts, case studies, and intel. Specter pulls from your vault when generating strategies — your knowledge compounds.",
@@ -71,6 +78,7 @@ const SLIDES: SlideData[] = [
   {
     id: 6,
     spectreState: "sincere_pleasant",
+    portrait: true,
     eyebrow: "Daily Briefings",
     headline: "Start every\nday with a\nclear picture.",
     body: "Each morning, Specter synthesizes your pipeline, flags stale deals, and delivers a briefing tailored to where you actually are — not where you wish you were.",
@@ -78,6 +86,7 @@ const SLIDES: SlideData[] = [
   {
     id: 7,
     spectreState: "bow_pleasant",
+    portrait: true,
     eyebrow: "The House is yours",
     headline: "Specter is\nready to\nwork.",
     body: "Everything is set. Your operator is standing by. The only thing left is your first move.",
@@ -203,6 +212,11 @@ const GLOBAL_CSS = `
   .oh2-specter-video > div video {
     width: 100% !important;
     height: 100% !important;
+    object-fit: cover;
+    object-position: center center;
+  }
+  /* Portrait clips (9:16) — anchor to bottom so feet are grounded */
+  .oh2-specter-video.portrait > div video {
     object-fit: contain;
     object-position: bottom center;
   }
@@ -715,7 +729,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
           {/* Right: Specter panel */}
           <div className="oh2-specter-panel">
             <div className="oh2-specter-glow" />
-            <div className="oh2-specter-video">
+            <div className={`oh2-specter-video${currentSlide.portrait !== false ? " portrait" : ""}`}>
               <SpectreVideoPlayer
                 state={currentSlide.spectreState}
                 size="2xl"
