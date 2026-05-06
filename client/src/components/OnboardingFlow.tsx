@@ -1,13 +1,12 @@
 /**
- * OnboardingFlow v3 — Cinematic Full-Bleed
+ * OnboardingFlow v3.1 — Cinematic Full-Bleed (Level-Up Edition)
  *
- * Architecture: Specter IS the scene.
- * - Video fills 100vw × 100vh (object-fit: cover, anchored bottom-center)
- * - Dark gradient overlay lets text float over the video
- * - Zero chrome: no sidebar, no nav, no progress bar during Specter moments
- * - Word-by-word text reveal synced to a per-slide timing schedule
- * - Dissolve-to-dashboard: the entire screen fades to white then resolves into the app
- * - Skip is a ghost label in the top-right, disappears on last slide
+ * Changes from v3:
+ * 1. Slide 1 headline is now "Operator House" — brand name as the hero
+ * 2. Skip button replaced with a ✕ icon (no label, no apology)
+ * 3. Mobile: collapses to 3 slides (1, 3, 7) via CSS + JS mobile detection
+ * 4. Mobile: CTA/controls move to bottom-center, thumb-zone friendly
+ * 5. "Continue" replaced with → arrow only (no text label)
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -32,6 +31,8 @@ interface SlideData {
   cta?: string;
   /** ms delay before first word appears after slide enters */
   textDelay?: number;
+  /** Show on mobile (collapsed 3-slide flow). Default true. */
+  mobile?: boolean;
 }
 
 const SLIDES: SlideData[] = [
@@ -39,10 +40,11 @@ const SLIDES: SlideData[] = [
     id: 1,
     clip: "inviting_smiling",
     portrait: true,
-    eyebrow: "Welcome to Operator House",
-    headline: "The House\nis ready.",
-    body: "Specter has been standing by. Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
+    eyebrow: "Welcome",
+    headline: "Operator\nHouse.",
+    body: "Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
     textDelay: 600,
+    mobile: true,
   },
   {
     id: 2,
@@ -52,6 +54,7 @@ const SLIDES: SlideData[] = [
     headline: "Know every\nlead before\nyou speak.",
     body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — so you walk into every conversation already ahead.",
     textDelay: 400,
+    mobile: false,
   },
   {
     id: 3,
@@ -61,6 +64,7 @@ const SLIDES: SlideData[] = [
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
     textDelay: 400,
+    mobile: false,
   },
   {
     id: 4,
@@ -70,6 +74,7 @@ const SLIDES: SlideData[] = [
     headline: "Your next\nmove, written\nin seconds.",
     body: "Describe a deal. Specter generates a full outreach strategy — messaging, positioning, objection handling — grounded in your vault of knowledge.",
     textDelay: 500,
+    mobile: false,
   },
   {
     id: 5,
@@ -79,6 +84,7 @@ const SLIDES: SlideData[] = [
     headline: "Everything\nyou know,\nalways on call.",
     body: "Store your frameworks, scripts, case studies, and intel. Specter pulls from your vault when generating strategies — your knowledge compounds.",
     textDelay: 400,
+    mobile: false,
   },
   {
     id: 6,
@@ -88,6 +94,7 @@ const SLIDES: SlideData[] = [
     headline: "Start every\nday with a\nclear picture.",
     body: "Each morning, Specter synthesizes your pipeline, flags stale deals, and delivers a briefing tailored to where you actually are — not where you wish you were.",
     textDelay: 500,
+    mobile: false,
   },
   {
     id: 7,
@@ -98,10 +105,9 @@ const SLIDES: SlideData[] = [
     body: "Everything is set. Your operator is standing by. The only thing left is your first move.",
     cta: "Enter the House →",
     textDelay: 700,
+    mobile: true,
   },
 ];
-
-const TOTAL_SLIDES = SLIDES.length;
 
 // CDN base — must match SpectreVideoPlayer
 const BASE = "/manus-storage";
@@ -200,7 +206,6 @@ const CSS = `
     position: absolute;
     inset: 0;
     z-index: 2;
-    /* Left 55% = deep dark for text legibility; right 45% = lighter to let Specter show */
     background:
       linear-gradient(
         to right,
@@ -283,7 +288,7 @@ const CSS = `
     font-family: 'Inter', sans-serif;
     font-size: clamp(14px, 1.4vw, 17px);
     font-weight: 300;
-    line-height: 1.7;
+    line-height: 1.65;
     color: rgba(242,234,214,0.65);
     max-width: 440px;
     margin: 0 0 40px 0;
@@ -310,31 +315,29 @@ const CSS = `
     transform: translateY(0);
   }
 
-  /* Next button */
+  /* Next button — arrow only, no label */
   .oh3-next {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
     background: none;
-    border: none;
+    border: 1px solid rgba(242,234,214,0.18);
+    border-radius: 50%;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
     color: rgba(242,234,214,0.55);
+    font-size: 20px;
+    line-height: 1;
     padding: 0;
-    transition: color 0.2s;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .oh3-next:hover { color: #f2ead6; }
-  .oh3-next-line {
-    width: 28px;
-    height: 1px;
-    background: currentColor;
-    transition: width 0.3s cubic-bezier(0.22,1,0.36,1);
+  .oh3-next:hover {
+    border-color: rgba(242,234,214,0.45);
+    color: #f2ead6;
+    background: rgba(242,234,214,0.05);
   }
-  .oh3-next:hover .oh3-next-line { width: 48px; }
 
   /* CTA button — final slide */
   .oh3-cta {
@@ -354,6 +357,7 @@ const CSS = `
     padding: 14px 28px;
     transition: border-color 0.25s, color 0.25s, background 0.25s;
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
   .oh3-cta:hover {
     border-color: rgba(201,160,74,0.9);
@@ -373,25 +377,28 @@ const CSS = `
     50% { opacity: 1; transform: scale(1.04); }
   }
 
-  /* ── Skip button ── */
+  /* ── Skip button — ✕ icon only, no label ── */
   .oh3-skip {
     position: absolute;
-    top: 22px;
-    right: 28px;
+    top: 18px;
+    right: 22px;
     z-index: 10;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(242,234,214,0.25);
-    padding: 8px 4px;
+    color: rgba(242,234,214,0.22);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
     transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .oh3-skip:hover { color: rgba(242,234,214,0.6); }
+  .oh3-skip:hover { color: rgba(242,234,214,0.55); }
 
   /* ── Slide counter ── */
   .oh3-counter {
@@ -525,42 +532,58 @@ const CSS = `
   @media (max-width: 640px) {
     .oh3-text-panel {
       width: 100%;
+      top: auto;
+      bottom: 0;
       justify-content: flex-end;
-      padding: 0 6% 12% 6%;
-      background: linear-gradient(to top, rgba(6,5,4,0.95) 0%, rgba(6,5,4,0.7) 50%, transparent 100%);
+      padding: 0 6% 10% 6%;
+      background: linear-gradient(to top, rgba(6,5,4,0.97) 0%, rgba(6,5,4,0.75) 55%, transparent 100%);
     }
     .oh3-overlay {
-      background: rgba(6,5,4,0.4);
+      background: rgba(6,5,4,0.35);
     }
     .oh3-headline {
-      font-size: clamp(36px, 9vw, 52px);
+      font-size: clamp(40px, 10vw, 56px);
     }
-    .oh3-body { max-width: 100%; }
+    .oh3-body {
+      max-width: 100%;
+      font-size: 15px;
+    }
     .oh3-counter { display: none; }
+    /* Controls bottom-center on mobile */
+    .oh3-controls {
+      justify-content: center;
+    }
+    /* CTA full-width pill on mobile */
+    .oh3-cta {
+      width: 100%;
+      justify-content: center;
+      padding: 16px 28px;
+      font-size: 14px;
+    }
+    /* Arrow button larger touch target on mobile */
+    .oh3-next {
+      width: 56px;
+      height: 56px;
+      font-size: 22px;
+    }
   }
 `;
-
-// ─── Word-by-word reveal hook ─────────────────────────────────────────────────
-
-function useWordReveal(text: string, active: boolean, delayMs: number) {
-  const words = text.split(" ");
-  const [visibleCount, setVisibleCount] = useState(0);
-
-  useEffect(() => {
-    if (!active) { setVisibleCount(0); return; }
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    words.forEach((_, i) => {
-      timers.push(setTimeout(() => setVisibleCount(i + 1), delayMs + i * 90));
-    });
-    return () => timers.forEach(clearTimeout);
-  }, [active, text, delayMs]);
-
-  return { words, visibleCount };
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
+  // Detect mobile to use collapsed 3-slide flow
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  // Build the active slide list based on viewport
+  const activeSlides = isMobile ? SLIDES.filter(s => s.mobile !== false) : SLIDES;
+  const TOTAL = activeSlides.length;
+
   const [slideIdx, setSlideIdx] = useState(0);
   const [phase, setPhase] = useState<"idle" | "exiting" | "entering">("idle");
   const [textActive, setTextActive] = useState(false);
@@ -573,7 +596,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const completeOnboarding = trpc.onboarding.complete.useMutation();
 
-  const currentSlide = SLIDES[slideIdx];
+  const currentSlide = activeSlides[slideIdx];
 
   // Inject CSS once
   useEffect(() => {
@@ -623,7 +646,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [slideIdx, phase, showCalibration]);
+  });
 
   // Touch swipe
   const touchStartX = useRef(0);
@@ -643,20 +666,21 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       setVideoFading(false);
       // Load new video
       if (videoRef.current) {
-        videoRef.current.src = CLIP_URLS[SLIDES[target].clip];
+        videoRef.current.src = CLIP_URLS[activeSlides[target].clip];
         videoRef.current.load();
         videoRef.current.play().catch(() => {});
       }
       setTimeout(() => setPhase("idle"), 600);
     }, 380);
-  }, [phase]);
+  }, [phase, activeSlides]);
 
   const advance = useCallback(() => {
     if (phase !== "idle" || showCalibration) return;
-    if (slideIdx === TOTAL_SLIDES - 1) { handleEnter(); return; }
-    if (slideIdx === TOTAL_SLIDES - 2) { triggerCalibration(); return; }
+    if (slideIdx === TOTAL - 1) { handleEnter(); return; }
+    // Trigger calibration before last slide (only on desktop 7-slide flow)
+    if (!isMobile && slideIdx === TOTAL - 2) { triggerCalibration(); return; }
     goTo(slideIdx + 1);
-  }, [slideIdx, phase, showCalibration, goTo]);
+  }, [slideIdx, phase, showCalibration, goTo, TOTAL, isMobile]);
 
   const retreat = useCallback(() => {
     if (phase !== "idle" || showCalibration || slideIdx <= 0) return;
@@ -671,14 +695,13 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     });
     setTimeout(() => {
       setShowCalibration(false);
-      goTo(TOTAL_SLIDES - 1);
+      goTo(TOTAL - 1);
     }, 2600);
   };
 
   const handleEnter = () => {
     if (done) return;
     setDone(true);
-    // Dissolve to dashboard
     setDissolving(true);
     if (!isReplay) {
       completeOnboarding.mutate(undefined, {
@@ -788,9 +811,8 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                   {currentSlide.cta}
                 </button>
               ) : (
-                <button className="oh3-next" onClick={advance}>
-                  <span className="oh3-next-line" />
-                  Continue
+                <button className="oh3-next" onClick={advance} aria-label="Next slide">
+                  →
                 </button>
               )}
             </div>
@@ -798,17 +820,17 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
         </div>
       )}
 
-      {/* ── Skip ── */}
-      {!showCalibration && slideIdx < TOTAL_SLIDES - 1 && (
-        <button className="oh3-skip" onClick={handleSkip}>
-          Skip intro
+      {/* ── Skip — ✕ icon only, no label ── */}
+      {!showCalibration && slideIdx < TOTAL - 1 && (
+        <button className="oh3-skip" onClick={handleSkip} aria-label="Skip intro">
+          ✕
         </button>
       )}
 
       {/* ── Slide counter ── */}
       {!showCalibration && (
         <div className="oh3-counter">
-          {String(slideNum).padStart(2, "0")} / {String(TOTAL_SLIDES).padStart(2, "0")}
+          {String(slideNum).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
         </div>
       )}
 
