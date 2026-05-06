@@ -296,6 +296,7 @@ function App() {
             <Toaster
               theme="dark"
               toastOptions={{
+                duration: 4500,
                 style: {
                   background: '#18181E',
                   border: '1px solid rgba(245, 166, 35, 0.3)',

@@ -188,7 +188,7 @@ export default function Pipeline() {
             </div>
             <span style={{ color: 'var(--border-subtle)' }}>|</span>
             <span style={{ fontFamily: 'Fira Code, monospace', fontSize: '12px', color: 'var(--text-muted)' }}>
-              {deals?.length ?? 0} deals
+              {deals?.length ?? 0} {(deals?.length ?? 0) === 1 ? "deal" : "deals"}
             </span>
           </div>
           <button
@@ -244,7 +244,8 @@ export default function Pipeline() {
             </div>
             <button
               onClick={() => {
-                const result = createDealSchema.safeParse({ title: form.title, stage: form.stage, value: form.value ? Number(form.value) : undefined, notes: form.notes || undefined });
+                const parsedValue = form.value.trim() !== "" ? parseFloat(form.value) : undefined;
+                const result = createDealSchema.safeParse({ title: form.title, stage: form.stage, value: parsedValue, notes: form.notes || undefined });
                 if (!result.success) return toast.error(result.error.issues[0]?.message ?? "Invalid input");
                 createDeal.mutate(result.data);
               }}

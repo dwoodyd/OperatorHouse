@@ -410,7 +410,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', boxShadow: '0 0 8px rgba(74,222,128,0.7)', animation: 'statusPulse 2s ease-in-out infinite' }} />
                 <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                  Operator Active — Operator House
+                  Specter on duty
                 </span>
               </div>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
@@ -528,24 +528,47 @@ export default function Dashboard() {
                 <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No activity yet. Start by adding a lead or creating a deal.</p>
               </div>
             ) : (
-              metrics.recentActivities.slice(0, 8).map((item, i) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 px-5 py-3"
-                  style={{ borderBottom: i < (metrics.recentActivities?.length ?? 0) - 1 ? '1px solid var(--border-subtle)' : 'none', transition: 'background 150ms' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)', boxShadow: '0 0 6px rgba(245,166,35,0.5)', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{ACTIVITY_LABELS[item.activityType] ?? item.activityType}</span>
-                    {item.summary && <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 6 }}>— {item.summary}</span>}
-                  </div>
-                  <div style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
-                    {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-              ))
+              (() => {
+                const items = metrics.recentActivities.slice(0, 8);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+                const fmtGroup = (d: Date) => {
+                  const day = new Date(d); day.setHours(0,0,0,0);
+                  if (day.getTime() === today.getTime()) return 'Today';
+                  if (day.getTime() === yesterday.getTime()) return 'Yesterday';
+                  return day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                };
+                const result: React.ReactNode[] = [];
+                let lastGroup = '';
+                items.forEach((item, i) => {
+                  const group = fmtGroup(new Date(item.createdAt));
+                  if (group !== lastGroup) {
+                    lastGroup = group;
+                    result.push(
+                      <div key={`grp-${group}`} style={{ padding: '6px 20px 4px', fontFamily: 'Fira Code, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.015)' }}>{group}</div>
+                    );
+                  }
+                  result.push(
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 px-5 py-3"
+                      style={{ borderBottom: i < items.length - 1 ? '1px solid var(--border-subtle)' : 'none', transition: 'background 150ms' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)', boxShadow: '0 0 6px rgba(245,166,35,0.5)', flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{ACTIVITY_LABELS[item.activityType] ?? item.activityType}</span>
+                        {item.summary && <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginLeft: 6 }}>— {item.summary}</span>}
+                      </div>
+                      <div style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+                        {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                });
+                return result;
+              })()
             )}
           </div>
         </div>
@@ -559,7 +582,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[
               { number: "01", title: "Internal Structure", desc: "Every AI solution must simplify, not add noise. Cognitive offloading is the primary metric.", color: "var(--amber)" },
-              { number: "02", title: "Creative Flow", desc: "Protect the Artist's Space. Automation ensures maximum time in the Zone of Genius.", color: "#4ADE80" },
+              { number: "02", title: "Creative Flow", desc: "Specter handles the operational load so you stay in the work that generates revenue — not the admin that surrounds it.", color: "#4ADE80" },
               { number: "03", title: "The Vault (Legacy)", desc: "Every business move builds a living archive. The work compounds over time.", color: "#60A5FA" },
             ].map((pillar, i) => (
               <div key={pillar.number} className="p-6" style={{ borderRight: i < 2 ? '1px solid var(--border-subtle)' : 'none', position: 'relative', overflow: 'hidden' }}>
@@ -567,7 +590,7 @@ export default function Dashboard() {
                 <div style={{ fontFamily: 'Fira Code, monospace', fontSize: 22, fontWeight: 500, color: pillar.color, opacity: 0.45, lineHeight: 1, marginBottom: 12 }}>{pillar.number}</div>
                 <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>{pillar.title}</div>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{pillar.desc}</p>
-                <div className="ghost-badge mt-4" style={{ borderColor: `${pillar.color}40`, color: pillar.color, background: `${pillar.color}0A` }}>ACTIVE</div>
+                
               </div>
             ))}
           </div>
