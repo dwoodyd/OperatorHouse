@@ -194,8 +194,12 @@ const CSS = `
     object-position: center bottom;
     display: block;
   }
-  /* All clips: full-bleed cover — PWA full-screen, no letterboxing */
-  /* Portrait clips are cropped at the sides intentionally for cinematic fill */
+  /* Portrait clips: contain + bottom anchor so full body is always visible */
+  .oh3-video-layer.portrait video {
+    object-fit: contain;
+    object-position: center bottom;
+    background: #060504;
+  }
 
   /* ── Gradient overlay: text side is darker, Specter side is lighter ── */
   .oh3-overlay {
@@ -746,7 +750,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       style={done ? { pointerEvents: "none" } : undefined}
     >
       {/* ── Video layer: Specter IS the background ── */}
-      <div className={`oh3-video-layer${videoFading ? " fading" : ""}`}>
+      <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
         <video
           ref={videoRef}
           src={CLIP_URLS[currentSlide.clip]}
