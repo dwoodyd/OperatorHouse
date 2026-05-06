@@ -1,15 +1,17 @@
 /**
  * SpectreChatbot — floating bottom-right customer service chatbot
  *
- * - Shows Specter as a small avatar in the bottom-right corner
+ * Design: Obsidian/amber glass treatment matching the app aesthetic.
+ * - Large Specter video (~160px) at the top of the panel
+ * - Dark obsidian panel (#0a0908) with amber accent border
+ * - Amber glow behind Specter header
  * - Auto-opens on first visit (localStorage flag "spectre_chatbot_greeted")
  * - Can be dismissed; user can reopen by clicking the avatar
  * - Respects spectreChatbotEnabled from SpectreContext
- * - Sends messages to the /api/trpc chat procedure
  */
 
 import { useState, useEffect, useRef } from "react";
-import { X, Send, ChevronDown } from "lucide-react";
+import { Send, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
@@ -35,7 +37,9 @@ export function SpectreChatbot() {
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MSG]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [spectreState, setSpectreState] = useState<"idle" | "typing" | "thinking" | "wave">("idle");
+  const [spectreState, setSpectreState] = useState<
+    "happy_greeting" | "gesturing" | "thinking" | "idle" | "wave"
+  >("happy_greeting");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -46,7 +50,7 @@ export function SpectreChatbot() {
         { role: "assistant", content: data.reply },
       ]);
       setIsTyping(false);
-      setSpectreState("idle");
+      setSpectreState("happy_greeting");
     },
     onError: () => {
       setMessages((prev) => [
@@ -54,7 +58,7 @@ export function SpectreChatbot() {
         { role: "assistant", content: "I ran into an issue. Please try again." },
       ]);
       setIsTyping(false);
-      setSpectreState("idle");
+      setSpectreState("happy_greeting");
     },
   });
 
@@ -65,8 +69,7 @@ export function SpectreChatbot() {
     if (!greeted) {
       const timer = setTimeout(() => {
         setOpen(true);
-        setSpectreState("wave");
-        setTimeout(() => setSpectreState("idle"), 3000);
+        setSpectreState("happy_greeting");
         localStorage.setItem(GREETED_KEY, "1");
       }, 1500);
       return () => clearTimeout(timer);
@@ -90,11 +93,11 @@ export function SpectreChatbot() {
     setMessages((prev) => [...prev, { role: "user", content: text }]);
     setIsTyping(true);
     setSpectreState("thinking");
-    setTimeout(() => setSpectreState("typing"), 1200);
+    setTimeout(() => setSpectreState("gesturing"), 1200);
     chatMutation.mutate({
       message: text,
       history: messages
-        .filter((m) => m.role !== "assistant" || m !== messages[0]) // skip welcome
+        .filter((m) => m.role !== "assistant" || m !== messages[0])
         .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
     });
   };
@@ -109,8 +112,8 @@ export function SpectreChatbot() {
   if (!spectreChatbotEnabled) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      {/* Chat panel */}
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
+      {/* ── Chat panel ── */}
       <div
         className={cn(
           "transition-all duration-300 origin-bottom-right",
@@ -120,57 +123,165 @@ export function SpectreChatbot() {
         )}
         style={{ width: "340px" }}
       >
-        <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0a0a] flex flex-col"
-          style={{ height: "480px" }}>
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-[#111]">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-black flex-shrink-0 ring-1 ring-[#c9a84c]/40">
-                <SpectreVideoPlayer
-                state={spectreState}
-                size="xs"
-                className="w-full h-full"
-                style={{ mixBlendMode: "multiply" }}
-              />
+        <div
+          style={{
+            background: "#0a0908",
+            border: "1px solid rgba(201,160,74,0.28)",
+            borderRadius: "16px",
+            overflow: "hidden",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,160,74,0.08)",
+            display: "flex",
+            flexDirection: "column",
+            height: "520px",
+          }}
+        >
+          {/* ── Specter video header ── */}
+          <div
+            style={{
+              position: "relative",
+              height: "164px",
+              flexShrink: 0,
+              background: "radial-gradient(ellipse 80% 100% at 50% 100%, rgba(201,160,74,0.18) 0%, rgba(6,5,4,0.0) 70%)",
+              borderBottom: "1px solid rgba(201,160,74,0.15)",
+              overflow: "hidden",
+            }}
+          >
+            {/* Ambient glow */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "180px",
+                height: "80px",
+                background: "radial-gradient(ellipse, rgba(201,160,74,0.22) 0%, transparent 70%)",
+                pointerEvents: "none",
+              }}
+            />
+            {/* Specter video — fills the header, bottom-anchored */}
+            <SpectreVideoPlayer
+              state={spectreState}
+              size="lg"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            />
+            {/* Gradient fade at bottom so it blends into the panel */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "48px",
+                background: "linear-gradient(to top, #0a0908, transparent)",
+                pointerEvents: "none",
+              }}
+            />
+            {/* Name + status badge */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "14px",
+                right: "40px",
+              }}
+            >
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 500, color: "#f2ead6", lineHeight: 1, margin: 0 }}>
+                Specter
+              </p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "10px", color: "rgba(201,160,74,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "3px 0 0 0" }}>
+                Operator House
+              </p>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white leading-none">Specter</p>
-              <p className="text-xs text-white/40 mt-0.5">Operator House Support</p>
-            </div>
+            {/* Close button */}
             <button
               onClick={() => setOpen(false)}
-              className="text-white/40 hover:text-white/80 transition-colors p-1 rounded"
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "rgba(242,234,214,0.06)",
+                border: "1px solid rgba(242,234,214,0.1)",
+                borderRadius: "50%",
+                width: "28px",
+                height: "28px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "rgba(242,234,214,0.45)",
+                transition: "color 0.2s, background 0.2s",
+              }}
               aria-label="Close chat"
             >
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown style={{ width: "14px", height: "14px" }} />
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-thin scrollbar-thumb-white/10">
+          {/* ── Messages ── */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "12px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              scrollbarWidth: "thin",
+              scrollbarColor: "rgba(201,160,74,0.15) transparent",
+            }}
+          >
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={cn(
-                  "flex gap-2 text-sm",
-                  msg.role === "user" ? "flex-row-reverse" : "flex-row"
-                )}
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexDirection: msg.role === "user" ? "row-reverse" : "row",
+                  alignItems: "flex-start",
+                }}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden bg-white/5 flex-shrink-0 ring-1 ring-[#c9a84c]/30 mt-0.5">
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      flexShrink: 0,
+                      background: "#000",
+                      border: "1px solid rgba(201,160,74,0.3)",
+                      marginTop: "2px",
+                    }}
+                  >
                     <img
                       src="/manus-storage/spector_friendly_welcome_6fb4122e.png"
                       alt="Specter"
-                      className="w-full h-full object-cover object-top"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
                     />
                   </div>
                 )}
                 <div
-                  className={cn(
-                    "rounded-xl px-3 py-2 max-w-[80%] leading-relaxed",
-                    msg.role === "user"
-                      ? "bg-[#c9a84c]/20 text-white/90 rounded-tr-sm"
-                      : "bg-white/5 text-white/80 rounded-tl-sm"
-                  )}
+                  style={{
+                    maxWidth: "80%",
+                    padding: "8px 12px",
+                    borderRadius: msg.role === "user" ? "12px 4px 12px 12px" : "4px 12px 12px 12px",
+                    background: msg.role === "user"
+                      ? "rgba(201,160,74,0.15)"
+                      : "rgba(242,234,214,0.05)",
+                    border: msg.role === "user"
+                      ? "1px solid rgba(201,160,74,0.2)"
+                      : "1px solid rgba(242,234,214,0.07)",
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    color: msg.role === "user" ? "rgba(242,234,214,0.9)" : "rgba(242,234,214,0.75)",
+                    fontFamily: "'Inter', sans-serif",
+                  }}
                 >
                   {msg.role === "assistant" ? (
                     <Streamdown>{msg.content}</Streamdown>
@@ -183,20 +294,47 @@ export function SpectreChatbot() {
 
             {/* Typing indicator */}
             {isTyping && (
-              <div className="flex gap-2 text-sm">
-                <div className="w-6 h-6 rounded-full overflow-hidden bg-black flex-shrink-0 ring-1 ring-[#c9a84c]/30 mt-0.5">
-                  <SpectreVideoPlayer
-                    state={spectreState}
-                    size="xs"
-                    className="w-full h-full"
-                    style={{ mixBlendMode: "screen" }}
+              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                <div
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    background: "#000",
+                    border: "1px solid rgba(201,160,74,0.3)",
+                    marginTop: "2px",
+                  }}
+                >
+                  <img
+                    src="/manus-storage/spector_friendly_welcome_6fb4122e.png"
+                    alt="Specter"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
                   />
                 </div>
-                <div className="bg-white/5 rounded-xl rounded-tl-sm px-3 py-2">
-                  <div className="flex gap-1 items-center h-4">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "4px 12px 12px 12px",
+                    background: "rgba(242,234,214,0.05)",
+                    border: "1px solid rgba(242,234,214,0.07)",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "4px", alignItems: "center", height: "14px" }}>
+                    {[0, 150, 300].map((delay) => (
+                      <span
+                        key={delay}
+                        style={{
+                          width: "5px",
+                          height: "5px",
+                          borderRadius: "50%",
+                          background: "rgba(201,160,74,0.6)",
+                          display: "inline-block",
+                          animation: `chatbot-bounce 1.2s ease-in-out ${delay}ms infinite`,
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -204,8 +342,17 @@ export function SpectreChatbot() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <div className="px-3 py-3 border-t border-white/10 flex gap-2 items-end">
+          {/* ── Input ── */}
+          <div
+            style={{
+              padding: "10px 12px",
+              borderTop: "1px solid rgba(201,160,74,0.12)",
+              display: "flex",
+              gap: "8px",
+              alignItems: "flex-end",
+              background: "rgba(0,0,0,0.3)",
+            }}
+          >
             <textarea
               ref={inputRef}
               value={input}
@@ -213,44 +360,89 @@ export function SpectreChatbot() {
               onKeyDown={handleKeyDown}
               placeholder="Ask Specter anything..."
               rows={1}
-              className="flex-1 resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#c9a84c]/40 transition-colors"
-              style={{ maxHeight: "80px" }}
+              style={{
+                flex: 1,
+                resize: "none",
+                background: "rgba(242,234,214,0.05)",
+                border: "1px solid rgba(242,234,214,0.1)",
+                borderRadius: "10px",
+                padding: "9px 12px",
+                fontSize: "13px",
+                color: "rgba(242,234,214,0.9)",
+                fontFamily: "'Inter', sans-serif",
+                outline: "none",
+                maxHeight: "80px",
+                lineHeight: 1.5,
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(201,160,74,0.4)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(242,234,214,0.1)"; }}
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || isTyping}
-              className="p-2 rounded-lg bg-[#c9a84c]/20 hover:bg-[#c9a84c]/30 text-[#c9a84c] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                background: input.trim() && !isTyping ? "rgba(201,160,74,0.25)" : "rgba(201,160,74,0.08)",
+                border: "1px solid rgba(201,160,74,0.25)",
+                color: input.trim() && !isTyping ? "#c9a04a" : "rgba(201,160,74,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: input.trim() && !isTyping ? "pointer" : "not-allowed",
+                flexShrink: 0,
+                transition: "background 0.2s, color 0.2s",
+              }}
               aria-label="Send message"
             >
-              <Send className="w-4 h-4" />
+              <Send style={{ width: "14px", height: "14px" }} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Floating avatar button */}
+      {/* ── Floating avatar button ── */}
       <button
         onClick={() => {
           setOpen((v) => !v);
           if (!open) {
-            setSpectreState("wave");
-            setTimeout(() => setSpectreState("idle"), 2500);
+            setSpectreState("happy_greeting");
           }
         }}
-        className={cn(
-          "w-14 h-14 rounded-full overflow-hidden bg-black shadow-xl ring-2 transition-all duration-200",
-          open ? "ring-[#c9a84c]/60 scale-95" : "ring-[#c9a84c]/30 hover:ring-[#c9a84c]/60 hover:scale-105"
-        )}
+        style={{
+          width: "56px",
+          height: "56px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: "#0a0908",
+          boxShadow: open
+            ? "0 0 0 2px rgba(201,160,74,0.6), 0 8px 24px rgba(0,0,0,0.5)"
+            : "0 0 0 2px rgba(201,160,74,0.25), 0 8px 24px rgba(0,0,0,0.4)",
+          transform: open ? "scale(0.95)" : "scale(1)",
+          transition: "box-shadow 0.2s, transform 0.2s",
+          cursor: "pointer",
+          border: "none",
+          padding: 0,
+        }}
         aria-label="Open Specter chat"
         title="Chat with Specter"
       >
         <SpectreVideoPlayer
-          state={open ? spectreState : "idle"}
+          state={open ? spectreState : "happy_greeting"}
           size="sm"
-          className="w-full h-full"
-          style={{ mixBlendMode: "screen" }}
+          style={{ width: "100%", height: "100%" }}
         />
       </button>
+
+      {/* Bounce keyframes injected inline */}
+      <style>{`
+        @keyframes chatbot-bounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+          40% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

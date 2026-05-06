@@ -64,7 +64,7 @@ const SLIDES: SlideData[] = [
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
     textDelay: 400,
-    mobile: false,
+    mobile: true, // middle slide in the 3-slide mobile flow
   },
   {
     id: 4,
@@ -567,6 +567,16 @@ const CSS = `
       font-size: 22px;
     }
   }
+
+  /* ── Haptic tap animation ── */
+  .oh3-next.tapped {
+    animation: oh3-tap-pulse 0.28s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes oh3-tap-pulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
 `;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -592,6 +602,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const [dissolving, setDissolving] = useState(false);
   const [videoFading, setVideoFading] = useState(false);
   const [done, setDone] = useState(false);
+  const [nextTapped, setNextTapped] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const completeOnboarding = trpc.onboarding.complete.useMutation();
@@ -811,7 +822,15 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
                   {currentSlide.cta}
                 </button>
               ) : (
-                <button className="oh3-next" onClick={advance} aria-label="Next slide">
+                <button
+                  className={`oh3-next${nextTapped ? " tapped" : ""}`}
+                  onClick={() => {
+                    setNextTapped(true);
+                    setTimeout(() => setNextTapped(false), 300);
+                    advance();
+                  }}
+                  aria-label="Next slide"
+                >
                   →
                 </button>
               )}
