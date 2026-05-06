@@ -380,7 +380,7 @@ function ScriptsTab() {
       utils.callCenter.getScripts.invalidate();
       setGenerateOpen(false);
       setGenClientName(""); setGenCompany(""); setGenContext("");
-      toast.success(`Ghost generated: "${data.name}"`);
+      toast.success(`Specter generated: "${data.name}"`);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -392,7 +392,7 @@ function ScriptsTab() {
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{scripts?.length ?? 0} script{scripts?.length !== 1 ? "s" : ""}</p>
         <Button size="sm" onClick={() => setGenerateOpen(true)} className="gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20">
-          <Sparkles className="w-3.5 h-3.5" /> Generate with Ghost
+          <Sparkles className="w-3.5 h-3.5" /> Generate with Specter
         </Button>
       </div>
 
@@ -402,7 +402,7 @@ function ScriptsTab() {
           spectreQuote="A script is a weapon. Let me build one for you."
           action={
             <Button size="sm" onClick={() => setGenerateOpen(true)} className="gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> Generate with Ghost
+              <Sparkles className="w-3.5 h-3.5" /> Generate with Specter
             </Button>
           }
         />
@@ -423,7 +423,7 @@ function ScriptsTab() {
                 </Badge>
                 {script.isAiGenerated && (
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-400 border-amber-500/30">
-                    Ghost
+                    Specter
                   </Badge>
                 )}
                 {script.isBuiltIn && (
@@ -497,7 +497,7 @@ function ScriptsTab() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" /> Generate Script with Ghost
+              <Sparkles className="w-4 h-4 text-amber-400" /> Generate Script with Specter
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 pt-2">
@@ -544,7 +544,7 @@ function ScriptsTab() {
               className="w-full"
             >
               {generateScript.isPending ? (
-                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Ghost is writing...</>
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Specter is writing...</>
               ) : (
                 <><Sparkles className="w-4 h-4 mr-2" /> Generate Script</>
               )}

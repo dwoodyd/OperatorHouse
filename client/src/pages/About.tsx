@@ -18,7 +18,7 @@ const MODULES = [
     tagline: "AI-powered prospect audits in seconds.",
     color: "#F5A623",
     description:
-      "Paste a prospect's name, company, and URL. Specter's AI engine runs a full Ghost Consultant audit — scoring intent, surfacing pain points, mapping decision-maker dynamics, and recommending your exact next move. Every analysis is saved to your lead history and can be pushed directly into your pipeline with one click.",
+      "Paste a prospect's name, company, and URL. Specter's AI engine runs a full Specter audit — scoring intent, surfacing pain points, mapping decision-maker dynamics, and recommending your exact next move. Every analysis is saved to your lead history and can be pushed directly into your pipeline with one click.",
     capabilities: [
       "Intent scoring (0–100) with reasoning",
       "Pain point extraction from public signals",

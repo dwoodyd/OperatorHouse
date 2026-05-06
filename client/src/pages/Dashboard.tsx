@@ -71,8 +71,8 @@ function MetricCard({ label, value, suffix, icon: Icon, trend, color = "var(--am
 }
 
 /* ── Specter Briefing Panel ─────────────────────────────────────────────────── */
-/* ── Ghost Terminal Widget ─────────────────────────────────────────────────── */
-function GhostTerminalWidget({ deals, leads, staleCount }: {
+/* ── Specter Terminal Widget ─────────────────────────────────────────────────── */
+function SpecterTerminalWidget({ deals, leads, staleCount }: {
   deals: number; leads: number; staleCount: number;
 }) {
   const lines = [
@@ -99,9 +99,9 @@ function GhostTerminalWidget({ deals, leads, staleCount }: {
     >
       <div className="flex items-center gap-2 mb-4">
         <Ghost size={13} style={{ color: 'var(--amber)' }} />
-        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Terminal</span>
+        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Terminal</span>
         <span
-          title="Ghost Efficiency: the % of your operator workflow handled by the Ghost AI — lead audits, strategy docs, briefings, and follow-up prep. Target is 90%."
+          title="Specter Efficiency: the % of your workflow handled by Specter — lead audits, strategy docs, briefings, and follow-up prep. Target is 90%."
           style={{
             marginLeft: 'auto',
             fontFamily: 'Fira Code, monospace',
@@ -141,7 +141,7 @@ function GhostTerminalWidget({ deals, leads, staleCount }: {
     </div>
   );
 }
-function GhostBriefingPanel() {
+function SpecterBriefingPanel() {
   const utils = trpc.useUtils();
   const { data: latest } = trpc.briefings.latest.useQuery();
   const [showTriumph, setShowTriumph] = useState(false);
@@ -227,7 +227,7 @@ function GhostBriefingPanel() {
           {([
             { label: "SITUATION", value: briefing.situation, color: 'var(--text-secondary)', italic: false },
             { label: "PRIORITY", value: briefing.priority, color: 'var(--amber)', italic: false },
-            { label: "GHOST NOTE", value: briefing.ghostNote, color: 'var(--text-primary)', italic: true },
+            { label: "SPECTER NOTE", value: briefing.ghostNote, color: 'var(--text-primary)', italic: true },
           ] as const).map(({ label, value, color, italic }) => value ? (
             <div key={label}>
               <div className="data-label mb-1">{label}</div>
@@ -294,16 +294,16 @@ function NextBestAction() {
 
   const actions: { label: string; desc: string; path: string; icon: React.ElementType; color: string }[] = [];
   if ((metrics?.totalLeads ?? 0) === 0)
-    actions.push({ label: "Add your first lead", desc: "Start the Ghost analysis engine", path: "/leads", icon: Target, color: "var(--amber)" });
+    actions.push({ label: "Add your first lead", desc: "Start the Specter analysis engine", path: "/leads", icon: Target, color: "var(--amber)" });
   if ((metrics?.activeDeals ?? 0) === 0)
     actions.push({ label: "Create a pipeline deal", desc: "Track your first opportunity", path: "/pipeline", icon: TrendingUp, color: "#4ADE80" });
   if ((metrics?.strategiesGenerated ?? 0) === 0)
-    actions.push({ label: "Generate a strategy", desc: "Let the Ghost write your first doc", path: "/strategy", icon: Brain, color: "#60A5FA" });
+    actions.push({ label: "Generate a strategy", desc: "Let Specter write your first doc", path: "/strategy", icon: Brain, color: "#60A5FA" });
   const proposals = deals?.filter(d => d.stage === 'Proposal') ?? [];
   if (proposals.length > 0)
     actions.push({ label: `Follow up on ${proposals.length} proposal${proposals.length > 1 ? 's' : ''}`, desc: "Deals waiting for a response", path: "/pipeline", icon: CheckCircle2, color: "#A78BFA" });
   if (actions.length === 0)
-    actions.push({ label: "Analyze a new lead", desc: "Keep the Ghost engine running", path: "/leads", icon: Zap, color: "var(--amber)" });
+    actions.push({ label: "Analyze a new lead", desc: "Keep Specter running", path: "/leads", icon: Zap, color: "var(--amber)" });
 
   return (
     <div className="glass-panel p-5 fade-in-up" style={{ animationDelay: '0.15s', opacity: 0 }}>
@@ -471,15 +471,15 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Ghost Terminal row */}
-        <GhostTerminalWidget
+        {/* Specter Terminal row */}
+        <SpecterTerminalWidget
           deals={totalDeals}
           leads={metrics?.totalLeads ?? 0}
           staleCount={staleDeals?.length ?? 0}
         />
         {/* Three-column middle row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <GhostBriefingPanel />
+          <SpecterBriefingPanel />
           <NextBestAction />
           <div className="space-y-4">
             <StaleDealAlerts />
@@ -514,7 +514,7 @@ export default function Dashboard() {
         <div className="glass-panel fade-in-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Activity Log</div>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Activity Log</div>
               <div className="data-label mt-0.5">Recent autonomous actions</div>
             </div>
             <button onClick={() => setLocation('/analytics')} className="flex items-center gap-1" style={{ color: 'var(--amber)', fontSize: 12 }}>

@@ -1,6 +1,6 @@
 /* =============================================================================
    Operator House — Tasks
-   Ghost-suggested task management with priority, due dates, and client linking
+   Specter-suggested task management with priority, due dates, and client linking
    ============================================================================= */
 import { useState } from "react";
 import { createTaskSchema } from "@/lib/schemas";
@@ -73,7 +73,7 @@ export default function Tasks() {
   const done = (tasks ?? []).filter((t) => t.status === "done").length;
 
   return (
-    <AppLayout title="Tasks" subtitle="Ghost-suggested actions and follow-ups">
+    <AppLayout title="Tasks" subtitle="Specter-suggested actions and follow-ups">
       <div className="p-6 space-y-5 max-w-3xl mx-auto">
 
         {/* Stats Row */}
@@ -187,7 +187,7 @@ export default function Tasks() {
             <SpectreEmptyState
               title={filter === "done" ? "No completed tasks yet." : "No tasks yet."}
               spectreQuote={filter === "done" ? "Nothing marked done yet. I respect the grind." : "Your task list is empty. I'll hold the silence — for now."}
-              body={filter !== "done" ? "Add one above or let the Ghost suggest actions from your leads." : undefined}
+              body={filter !== "done" ? "Add one above or let Specter suggest actions from your leads." : undefined}
               compact
             />
           ) : (

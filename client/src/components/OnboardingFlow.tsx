@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import type { SpectreState } from "@/components/SpectreVideoPlayer";
 
@@ -36,75 +37,72 @@ interface SlideData {
 }
 
 const SLIDES: SlideData[] = [
+  // Screen 1 — Pain hook (replaces feature-list welcome)
   {
     id: 1,
     clip: "inviting_smiling",
     portrait: true,
     eyebrow: "Welcome",
-    headline: "Operator\nHouse.",
-    body: "Your intelligence layer, your pipeline, your strategy — all in one place. Built for operators who move fast.",
+    headline: "You're not a CRM,\na researcher,\nand a strategist.",
+    body: "You only feel like one because nobody built the room you actually need.",
+    cta: "Show me the room →",
     textDelay: 600,
     mobile: true,
   },
+  // Screen 2 — Specter introduction (NEW)
   {
     id: 2,
+    clip: "welcoming",
+    portrait: true,
+    eyebrow: "The Operator",
+    headline: "Meet Specter.",
+    body: "Specter is the room. Built to do the work that doesn't need you — so you can do the work that does.",
+    textDelay: 500,
+    mobile: false,
+  },
+  // Screen 3 — Intelligence Layer (was screen 2, tightened)
+  {
+    id: 3,
     clip: "talking",
     portrait: true,
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
-    body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — so you walk into every conversation already ahead.",
+    body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — and brings it to you before the call. You walk in already ahead.",
     textDelay: 400,
-    mobile: false,
+    mobile: true, // middle slide in the 3-slide mobile flow
   },
+  // Screen 4 — Pipeline + briefing (consolidates old screens 3 + 6)
   {
-    id: 3,
+    id: 4,
     clip: "data_video",
     portrait: false,
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
-    body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Specter flags what needs your attention so nothing slips through.",
+    body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Each morning, Specter delivers a briefing tailored to where you actually are — not where you wish you were. Nothing slips through.",
     textDelay: 400,
-    mobile: true, // middle slide in the 3-slide mobile flow
-  },
-  {
-    id: 4,
-    clip: "cast",
-    portrait: true,
-    eyebrow: "Strategy on Demand",
-    headline: "Your next\nmove, written\nin seconds.",
-    body: "Describe a deal. Specter generates a full outreach strategy — messaging, positioning, objection handling — grounded in your vault of knowledge.",
-    textDelay: 500,
     mobile: false,
   },
+  // Screen 5 — The Vault (moved before Strategy so Vault is known when Strategy references it)
   {
     id: 5,
     clip: "typing",
     portrait: true,
     eyebrow: "The Vault",
     headline: "Everything\nyou know,\nalways on call.",
-    body: "Store your frameworks, scripts, case studies, and intel. Specter pulls from your vault when generating strategies — your knowledge compounds.",
+    body: "Your frameworks, your scripts, your case studies, your voice. Specter reads the Vault before generating anything — so the output sounds like you, not like AI. Your knowledge compounds.",
     textDelay: 400,
     mobile: false,
   },
+  // Screen 6 — Strategy + first action (replaces old screen 4 + screen 7)
   {
     id: 6,
-    clip: "heart_to_yours",
+    clip: "cast",
     portrait: true,
-    eyebrow: "Daily Briefings",
-    headline: "Start every\nday with a\nclear picture.",
-    body: "Each morning, Specter synthesizes your pipeline, flags stale deals, and delivers a briefing tailored to where you actually are — not where you wish you were.",
+    eyebrow: "Strategy on Demand",
+    headline: "Your next\nmove, written\nin seconds.",
+    body: "Describe a deal. Specter generates a full outreach strategy — messaging, positioning, objection handling — grounded in your Vault. The only thing left is your first lead.",
+    cta: "Add your first lead →",
     textDelay: 500,
-    mobile: false,
-  },
-  {
-    id: 7,
-    clip: "bowing",
-    portrait: true,
-    eyebrow: "The House is yours",
-    headline: "Specter is\nready to\nwork.",
-    body: "Everything is set. Your operator is standing by. The only thing left is your first move.",
-    cta: "Enter the House →",
-    textDelay: 700,
     mobile: true,
   },
 ];
@@ -582,6 +580,7 @@ const CSS = `
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
+  const [, setLocation] = useLocation();
   // Detect mobile to use collapsed 3-slide flow
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
   useEffect(() => {
@@ -714,12 +713,20 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     if (done) return;
     setDone(true);
     setDissolving(true);
+    // If the final CTA is "Add your first lead", navigate to /leads after onboarding
+    const isLeadCTA = currentSlide.cta?.startsWith("Add your first lead");
     if (!isReplay) {
       completeOnboarding.mutate(undefined, {
-        onSettled: () => setTimeout(onComplete, 900),
+        onSettled: () => setTimeout(() => {
+          onComplete();
+          if (isLeadCTA) setLocation("/leads");
+        }, 900),
       });
     } else {
-      setTimeout(onComplete, 900);
+      setTimeout(() => {
+        onComplete();
+        if (isLeadCTA) setLocation("/leads");
+      }, 900);
     }
   };
 
@@ -736,7 +743,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const CAL_ITEMS = [
     "Mapping your pipeline intelligence",
     "Loading Specter's strategy engine",
-    "Calibrating your operator profile",
+    "Calibrating your profile",
     "The House is ready",
   ];
 

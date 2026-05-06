@@ -73,7 +73,7 @@ export default function Analytics() {
     { label: "Total Leads", value: String(metrics?.totalLeads ?? 0), change: "live", positive: true },
     { label: "Strategies Built", value: String(metrics?.strategiesGenerated ?? 0), change: "live", positive: true },
     { label: "Active Deals", value: String(metrics?.activeDeals ?? 0), change: "live", positive: true },
-    { label: "Ghost Efficiency", value: "90%", change: "target", positive: true },
+    { label: "Specter Efficiency", value: "90%", change: "target", positive: true },
     { label: "Hours Saved/Month", value: `${Math.round((metrics?.strategiesGenerated ?? 0) * 3)}h`, change: "live", positive: true },
   ];
 
@@ -214,7 +214,7 @@ export default function Analytics() {
               {/* Weekly Activity */}
               <div className="glass-panel">
                 <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>Ghost Activity — This Week</div>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>Specter Activity — This Week</div>
                   <div className="data-label mt-0.5">Strategies, leads, and briefings generated</div>
                 </div>
                 <div className="p-5">

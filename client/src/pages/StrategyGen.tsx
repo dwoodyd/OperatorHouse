@@ -252,7 +252,7 @@ export default function StrategyGen() {
                 }}
               >
                 {generateStrategy.isPending ? (
-                  <><RefreshCw size={15} className="animate-spin" />Ghost is generating...</>
+                  <><RefreshCw size={15} className="animate-spin" />Specter is generating...</>
                 ) : (
                   <><Zap size={15} />Generate Strategy</>
                 )}
@@ -347,7 +347,7 @@ export default function StrategyGen() {
                     <div className="mx-5 mt-4 p-3 flex items-start gap-2" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid var(--border-amber)' }}>
                       <AlertCircle size={13} style={{ color: 'var(--amber)', flexShrink: 0, marginTop: '2px' }} />
                       <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--amber)', fontWeight: 500 }}>Ghost note: </span>
+                        <span style={{ color: 'var(--amber)', fontWeight: 500 }}>Specter note: </span>
                         {result.missingContext}
                       </p>
                     </div>

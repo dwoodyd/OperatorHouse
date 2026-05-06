@@ -221,7 +221,7 @@ export const callCenterRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
-      const systemPrompt = `You are Ghost, an elite sales intelligence engine for Operator House. 
+      const systemPrompt = `You are Specter, an elite sales intelligence engine for Operator House. 
 Generate a concise, high-converting call script for a ${input.pipelineStage} stage call.
 Return ONLY valid JSON matching this exact schema:
 {
@@ -277,10 +277,10 @@ Generate a sharp, natural-sounding call script. Keep talking points as questions
       });
 
       const content = response.choices?.[0]?.message?.content as string | null;
-      if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Ghost failed to generate a script. Try again." });
+      if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Specter failed to generate a script. Try again." });
 
       const parsed = JSON.parse(content);
-      const scriptName = `${input.clientName} — ${input.pipelineStage} (Ghost)`;
+      const scriptName = `${input.clientName} — ${input.pipelineStage} (Specter)`;
 
       const [result] = await db.insert(callScripts).values({
         userId: ctx.user.id,
