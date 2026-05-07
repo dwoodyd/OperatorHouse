@@ -825,7 +825,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
             {/* Controls */}
             <div className={`oh3-controls${bodyVisible ? " visible" : ""}`}>
               {currentSlide.cta ? (
-                <button className="oh3-cta" onClick={handleEnter}>
+                <button
+                  className="oh3-cta"
+                  onClick={slideIdx === TOTAL - 1 ? handleEnter : () => {
+                    setNextTapped(true);
+                    setTimeout(() => setNextTapped(false), 300);
+                    advance();
+                  }}
+                >
                   {currentSlide.cta}
                 </button>
               ) : (
