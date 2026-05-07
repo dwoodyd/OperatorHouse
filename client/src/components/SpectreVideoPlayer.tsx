@@ -66,7 +66,9 @@ export type SpectreState =
   | "waiting_confused"   // waiting + confused — error / no results
   | "waiting"            // contemplative waiting pose — empty state
   | "ui_loading"        // holding glowing search icon — loading state
-  | "data_video";       // data visualization hologram — pipeline/analytics slide
+  | "data_video"        // data visualization hologram — pipeline/analytics slide
+  | "ethereal_reveal"   // ethereal entity emerging — cinematic intro / screen 4
+  | "holographic_typing"; // man typing holographic keyboard — vault/knowledge screen
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
@@ -208,6 +210,12 @@ const CLIPS: Record<SpectreState, string[]> = {
   ],
   data_video: [
     `${BASE}/specter_datavideo_cropped_e63779d0.mp4`,
+  ],
+  ethereal_reveal: [
+    `${BASE}/specter_ethereal_reveal_ac7f994c.mp4`,
+  ],
+  holographic_typing: [
+    `${BASE}/specter_holographic_typing_7d89d984.mp4`,
   ],
 };
 

@@ -24,6 +24,8 @@ interface OnboardingFlowProps {
 interface SlideData {
   id: number;
   clip: SpectreState;
+  /** If true, no video is shown — pure typography on dark background */
+  noVideo?: boolean;
   /** Clip is portrait 9:16 — use contain + bottom anchor */
   portrait?: boolean;
   eyebrow: string;
@@ -37,10 +39,11 @@ interface SlideData {
 }
 
 const SLIDES: SlideData[] = [
-  // Screen 1 — Pain hook (replaces feature-list welcome)
+  // Screen 1 — Pain hook, NO VIDEO — pure typography on dark background
   {
     id: 1,
-    clip: "inviting_smiling",
+    clip: null as unknown as SpectreState, // no video on screen 1
+    noVideo: true,
     portrait: true,
     eyebrow: "Welcome",
     headline: "You're not a CRM,\na researcher,\nand a strategist.",
@@ -49,18 +52,19 @@ const SLIDES: SlideData[] = [
     textDelay: 600,
     mobile: true,
   },
-  // Screen 2 — Specter introduction (NEW)
+  // Screen 2 — Meet Specter (first video appearance)
   {
     id: 2,
-    clip: "welcoming",
+    clip: "inviting_smiling",
     portrait: true,
     eyebrow: "The Operator",
     headline: "Meet Specter.",
     body: "Specter is the room. Built to do the work that doesn't need you — so you can do the work that does.",
+    cta: "What does Specter actually do? →",
     textDelay: 500,
     mobile: false,
   },
-  // Screen 3 — Intelligence Layer (was screen 2, tightened)
+  // Screen 3 — Intelligence Layer
   {
     id: 3,
     clip: "talking",
@@ -68,32 +72,34 @@ const SLIDES: SlideData[] = [
     eyebrow: "Your Intelligence Layer",
     headline: "Know every\nlead before\nyou speak.",
     body: "Specter runs a deep audit on every prospect — intent signals, pain profile, objection map — and brings it to you before the call. You walk in already ahead.",
+    cta: "And the deals already in motion? →",
     textDelay: 400,
     mobile: true, // middle slide in the 3-slide mobile flow
   },
-  // Screen 4 — Pipeline + briefing (consolidates old screens 3 + 6)
+  // Screen 4 — Pipeline (ethereal reveal video)
   {
     id: 4,
-    clip: "data_video",
+    clip: "ethereal_reveal",
     portrait: false,
     eyebrow: "The Pipeline",
     headline: "See the whole\nboard at once.",
     body: "Every deal, every stage, every stale opportunity — surfaced and tracked. Each morning, Specter delivers a briefing tailored to where you actually are — not where you wish you were. Nothing slips through.",
+    cta: "How does Specter sound like me? →",
     textDelay: 400,
     mobile: false,
   },
-  // Screen 5 — The Vault (moved before Strategy so Vault is known when Strategy references it)
+  // Screen 5 — The Vault (holographic typing video)
   {
     id: 5,
-    clip: "typing",
-    portrait: true,
+    clip: "holographic_typing",
+    portrait: false,
     eyebrow: "The Vault",
     headline: "Everything\nyou know,\nalways on call.",
     body: "Your frameworks, your scripts, your case studies, your voice. Specter reads the Vault before generating anything — so the output sounds like you, not like AI. Your knowledge compounds.",
     textDelay: 400,
     mobile: false,
   },
-  // Screen 6 — Strategy + first action (replaces old screen 4 + screen 7)
+  // Screen 6 — Strategy + first action
   {
     id: 6,
     clip: "cast",
@@ -157,6 +163,8 @@ const CLIP_URLS: Record<SpectreState, string> = {
   waiting:           `${BASE}/SpectorWaiting2_3d7b5780.mp4`,
   ui_loading:        `${BASE}/SpectorUILoading_85cd0594.mp4`,
   data_video:        `${BASE}/specter_datavideo_cropped_e63779d0.mp4`,
+  ethereal_reveal:   `${BASE}/specter_ethereal_reveal_ac7f994c.mp4`,
+  holographic_typing:`${BASE}/specter_holographic_typing_7d89d984.mp4`,
 };
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -674,8 +682,8 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       setSlideIdx(target);
       setPhase("entering");
       setVideoFading(false);
-      // Load new video
-      if (videoRef.current) {
+      // Load new video (skip on noVideo slides)
+      if (videoRef.current && !activeSlides[target].noVideo && activeSlides[target].clip) {
         videoRef.current.src = CLIP_URLS[activeSlides[target].clip];
         videoRef.current.load();
         videoRef.current.play().catch(() => {});
@@ -756,18 +764,20 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
       onTouchEnd={handleTouchEnd}
       style={done ? { pointerEvents: "none" } : undefined}
     >
-      {/* ── Video layer: Specter IS the background ── */}
-      <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
-        <video
-          ref={videoRef}
-          src={CLIP_URLS[currentSlide.clip]}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        />
-      </div>
+      {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
+      {!currentSlide.noVideo && (
+        <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
+          <video
+            ref={videoRef}
+            src={CLIP_URLS[currentSlide.clip]}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+          />
+        </div>
+      )}
 
       {/* ── Dark gradient overlay ── */}
       <div className="oh3-overlay" />
