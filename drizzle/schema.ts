@@ -1119,3 +1119,34 @@ export const userNotificationPreferences = mysqlTable("user_notification_prefere
 });
 export type UserNotificationPreferences = typeof userNotificationPreferences.$inferSelect;
 export type InsertUserNotificationPreferences = typeof userNotificationPreferences.$inferInsert;
+
+// ── Invite Codes ──────────────────────────────────────────────────────────────
+export const inviteCodes = mysqlTable("invite_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  /** null = not yet redeemed */
+  redeemedByUserId: int("redeemedByUserId"),
+  redeemedAt: timestamp("redeemedAt"),
+  /** optional label so admin knows who it was sent to */
+  label: varchar("label", { length: 255 }),
+  /** optional expiry */
+  expiresAt: timestamp("expiresAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type InviteCode = typeof inviteCodes.$inferSelect;
+export type InsertInviteCode = typeof inviteCodes.$inferInsert;
+
+// ── Applications ──────────────────────────────────────────────────────────────
+export const applications = mysqlTable("applications", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  reason: text("reason").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  inviteCodeId: int("inviteCodeId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Application = typeof applications.$inferSelect;
+export type InsertApplication = typeof applications.$inferInsert;

@@ -21,6 +21,7 @@ import { contractsRouter } from './routers/contracts';
 import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import { integrationsRouter } from "./routers/integrations";
+import { funnelRouter } from "./routers/funnel";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -792,6 +793,7 @@ ${contextBlock}`;
   reviews: reviewsRouter,
   team: teamRouter,
   integrations: integrationsRouter,
+  funnel: funnelRouter,
 });
 
 export type AppRouter = typeof appRouter;

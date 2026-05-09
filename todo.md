@@ -611,3 +611,13 @@
 - [x] Left-edge gold accent line on text panel
 - [x] Cormorant Garamond added to index.html font preload
 - [x] Page title updated to "Operator House — Specter HQ"
+
+## User Acquisition Funnel (2026-05-09)
+- [ ] Add invite_codes table to DB schema and push migration
+- [ ] Build server procedures: generate code, validate code, redeem code, apply form submit + email
+- [ ] Build /apply page (application form — name, email, why)
+- [ ] Build /redeem page (invite code entry + Manus OAuth handoff)
+- [ ] Build /admin/codes page (role-gated code management)
+- [ ] Add subscription enforcement gate on dashboard (redirect unpaid → /pricing)
+- [ ] Wire /apply, /redeem, /admin/codes routes in App.tsx
+- [ ] Update Home.tsx CTAs to point to /apply

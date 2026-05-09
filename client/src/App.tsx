@@ -52,11 +52,17 @@ import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
 import { CapabilityGate } from "./components/CapabilityGate";
 import { SpectreChatbot } from "./components/SpectreChatbot";
+import Apply from "./pages/Apply";
+import Redeem from "./pages/Redeem";
+import AdminCodes from "./pages/AdminCodes";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/apply" component={Apply} />
+      <Route path="/redeem" component={Redeem} />
+      <Route path="/admin/codes" component={AdminCodes} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/leads" component={LeadIntel} />
       <Route path="/pipeline" component={Pipeline} />
