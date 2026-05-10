@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   activities, briefings, clients, leads, notifications, pipelineDeals,
@@ -258,7 +258,7 @@ export async function getDashboardMetrics(userId: number) {
 
   const [leadsCount, dealsResult, strategiesCount, recentActivitiesResult] = await Promise.all([
     db.select({ count: sql<number>`count(*)` }).from(leads).where(eq(leads.userId, userId)),
-    db.select({ count: sql<number>`count(*)`, totalValue: sql<number>`sum(value)` }).from(pipelineDeals).where(eq(pipelineDeals.userId, userId)),
+    db.select({ count: sql<number>`count(*)`, totalValue: sql<number>`sum(value)` }).from(pipelineDeals).where(and(eq(pipelineDeals.userId, userId), ne(pipelineDeals.stage, 'Closed'))),
     db.select({ count: sql<number>`count(*)` }).from(strategies).where(eq(strategies.userId, userId)),
     db.select().from(activities).where(eq(activities.userId, userId)).orderBy(desc(activities.createdAt)).limit(10),
   ]);

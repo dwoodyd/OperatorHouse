@@ -1,0 +1,114 @@
+{
+  "query": "DESCRIBE vault_items;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4A9VQZNRBpHGiCF.8f32b7e20875 --database UYrVyz2BYHYzFAx4PneEpK --execute DESCRIBE vault_items;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "userId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "title",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "type",
+      "Type": "enum('framework','case_study','voice_note','template','research','note')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "note",
+      "Extra": ""
+    },
+    {
+      "Field": "textContent",
+      "Type": "longtext",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "fileUrl",
+      "Type": "varchar(1000)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "tags",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "clientId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "content",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "filePath",
+      "Type": "varchar(1000)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "metadata",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nuserId\tint\tNO\t\tNULL\t\ntitle\tvarchar(255)\tNO\t\tNULL\t\ntype\tenum('framework','case_study','voice_note','template','research','note')\tNO\t\tnote\t\ntextContent\tlongtext\tYES\t\tNULL\t\nfileUrl\tvarchar(1000)\tYES\t\tNULL\t\ntags\tjson\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nclientId\tint\tYES\t\tNULL\t\ncontent\ttext\tYES\t\tNULL\t\nfilePath\tvarchar(1000)\tYES\t\tNULL\t\nmetadata\tjson\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 621
+}

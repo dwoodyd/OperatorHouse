@@ -113,7 +113,7 @@ function SpecterTerminalWidget({ deals, leads, staleCount }: {
             borderBottom: '1px dashed rgba(212,175,55,0.4)',
           }}
         >
-          GHOST EFF: 90%
+          SPECTER EFF: 90%
         </span>
       </div>
       <div className="space-y-2 mb-4">

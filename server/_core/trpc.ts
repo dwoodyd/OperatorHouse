@@ -5,14 +5,37 @@ import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
-  // Strip stack traces from client-facing error responses in production
-  errorFormatter: ({ shape, error }) => ({
-    ...shape,
-    data: {
-      ...shape.data,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
-    },
-  }),
+  // Sanitize error messages — never leak raw SQL, DB internals, or stack traces to the client
+  errorFormatter: ({ shape, error }) => {
+    const isDev = process.env.NODE_ENV === 'development';
+
+    // Detect raw DB errors from Drizzle ORM, MySQL driver, or connection issues
+    const causeMsg = error.cause instanceof Error ? error.cause.message : '';
+    const isDbError =
+      causeMsg.startsWith('Failed query:') ||
+      causeMsg.includes('ER_') ||
+      causeMsg.includes('ECONNREFUSED') ||
+      causeMsg.includes('Access denied') ||
+      shape.message.startsWith('Failed query:');
+
+    if (isDbError) {
+      // Log full details server-side for debugging
+      console.error('[tRPC DB Error]', causeMsg || shape.message);
+    }
+
+    const safeMessage = isDbError
+      ? "Specter couldn't reach the data layer. We've logged this — please try again in a moment."
+      : shape.message;
+
+    return {
+      ...shape,
+      message: safeMessage,
+      data: {
+        ...shape.data,
+        stack: isDev ? error.stack : undefined,
+      },
+    };
+  },
 });
 
 export const router = t.router;

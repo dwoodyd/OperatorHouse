@@ -528,7 +528,7 @@ export const appRouter = router({
           activeDeals.length > 0 ? `Top deals: ${activeDeals.slice(0, 3).map(d => `${d.title} (${d.stage}, $${(d.value ?? 0).toLocaleString()})`).join('; ')}` : '',
         ].filter(Boolean).join('\n');
 
-        const systemPrompt = `You are The Operator — the AI strategist powering Operator House, the command center for ${ctx.user.name ?? 'this operator'}.
+        const systemPrompt = `You are Specter — the AI worker powering Operator House, the command center for ${ctx.user.name ?? 'this operator'}.
 
 You have full context on their business. Be direct, strategic, and actionable. No filler. Respond in markdown.
 

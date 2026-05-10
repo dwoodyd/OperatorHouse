@@ -1,0 +1,43 @@
+{
+  "query": "SHOW TABLES LIKE 'vault_items'; DESCRIBE vault_items;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4A9VQZNRBpHGiCF.8f32b7e20875 --database UYrVyz2BYHYzFAx4PneEpK --execute SHOW TABLES LIKE 'vault_items'; DESCRIBE vault_items;",
+  "rows": [
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "vault_items"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "Field\tType\tNull\tKey\tDefault\tExtra"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "id\tint\tNO\tPRI\tNULL\tauto_increment"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "userId\tint\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "title\tvarchar(255)\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "type\tenum('framework','case_study','voice_note','template','research','note')\tNO\t\tnote\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "textContent\tlongtext\tYES\t\tNULL\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "fileUrl\tvarchar(1000)\tYES\t\tNULL\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "tags\tjson\tYES\t\tNULL\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "createdAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t"
+    },
+    {
+      "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)": "updatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_UYrVyz2BYHYzFAx4PneEpK (vault_items)\nvault_items\nField\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nuserId\tint\tNO\t\tNULL\t\ntitle\tvarchar(255)\tNO\t\tNULL\t\ntype\tenum('framework','case_study','voice_note','template','research','note')\tNO\t\tnote\t\ntextContent\tlongtext\tYES\t\tNULL\t\nfileUrl\tvarchar(1000)\tYES\t\tNULL\t\ntags\tjson\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 1333
+}

@@ -29,7 +29,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
     {
       id: "welcome",
       role: "assistant",
-      content: "**Command Line active.** I'm The Operator — your AI strategist inside Operator House.\n\nI have full context on your pipeline, leads, and vault. Ask me anything:\n- *\"What should I focus on today?\"*\n- *\"Analyze my pipeline health\"*\n- *\"Draft an outreach email for [client]\"*\n- *\"What's blocking my top deals?\"*",
+      content: "**Command Line active.** I'm Specter — your AI worker inside Operator House.\n\nI have full context on your pipeline, leads, and Vault. Ask me anything:\n- *\"What should I focus on today?\"*\n- *\"Analyze my pipeline health\"*\n- *\"Draft an outreach email for [client]\"*\n- *\"What's blocking my top deals?\"*",
       timestamp: new Date(),
     },
   ]);
