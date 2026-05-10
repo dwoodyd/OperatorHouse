@@ -10,10 +10,6 @@ import { SpectreEmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 import { Send, Plus, MessageSquare, FileText, Phone, CheckCheck, Clock, AlertCircle } from "lucide-react";
 
-const TWILIO_CONFIGURED = !!(
-  (window as any).__TWILIO_CONFIGURED__ ?? false
-);
-
 function statusIcon(status: string) {
   if (status === "delivered" || status === "read") return <CheckCheck className="w-3 h-3 text-amber-400" />;
   if (status === "sent") return <CheckCheck className="w-3 h-3 text-zinc-400" />;
@@ -29,6 +25,8 @@ export default function SMS() {
   const [newPhone, setNewPhone] = useState("");
   const [newClientId, setNewClientId] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { data: caps } = trpc.capabilities.check.useQuery();
+  const twilioConfigured = caps?.twilio ?? false;
 
   const utils = trpc.useUtils();
   const { data: convos = [] } = trpc.sms.listConversations.useQuery();
@@ -93,9 +91,9 @@ export default function SMS() {
         </div>
 
         {/* Twilio status banner */}
-        {!TWILIO_CONFIGURED && (
+        {!twilioConfigured && (
           <div className="mx-3 mt-3 px-3 py-2 rounded-lg bg-amber-950/40 border border-amber-800/40 text-xs text-amber-400">
-            Twilio not connected — messages will be queued
+            <strong>Twilio not connected</strong> — messages are queued locally but won't send until you add Twilio credentials in Settings → Integrations.
           </div>
         )}
 

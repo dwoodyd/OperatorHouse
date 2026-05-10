@@ -19,7 +19,7 @@ import { useCommandPalette } from "@/components/CommandPalette";
 import { useIntroReplay } from "@/contexts/IntroReplayContext";
 import { trpc } from "@/lib/trpc";
 
-interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; business?: boolean; enterprise?: boolean; }
+interface NavItem { icon: React.ElementType; label: string; path: string; pro?: boolean; business?: boolean; enterprise?: boolean; beta?: boolean; roadmap?: boolean; }
 interface NavSection { title: string; items: NavItem[]; }
 
 const NAV_SECTIONS: NavSection[] = [
@@ -37,38 +37,36 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "OUTREACH",
     items: [
-      { icon: Activity,      label: "Client Pulse",     path: "/pulse",        pro: true },
-      { icon: MessageSquare, label: "SMS Outreach",     path: "/sms",          pro: true },
-      { icon: Phone,         label: "Call Center",      path: "/call-center",     pro: true },
+      { icon: Activity,      label: "Client Pulse",     path: "/pulse",           pro: true, beta: true },
+      { icon: MessageSquare, label: "SMS Outreach",     path: "/sms",             pro: true, beta: true },
+      { icon: Phone,         label: "Call Center",      path: "/call-center",     pro: true, beta: true },
       { icon: Mail,          label: "Email Sequences",  path: "/email-sequences", pro: true },
-      { icon: Mic,           label: "Voice Agents",     path: "/voice-agents", pro: true },
+      { icon: Mic,           label: "Voice Agents",     path: "/voice-agents",   pro: true, beta: true },
     ],
   },
   {
     title: "GROWTH",
     items: [
-      { icon: Users,        label: "CRM Suite",           path: "/crm",         business: true },
-      { icon: Layers,       label: "Funnel Builder",        path: "/funnels",     business: true },
-      { icon: Share2,       label: "Social Media Agents",  path: "/social",      business: true },
-      { icon: Workflow,     label: "Automations",          path: "/automations", business: true },
-      { icon: Telescope,    label: "Prospecting Engine",   path: "/prospecting", business: true },
+      { icon: Users,  label: "CRM Suite",          path: "/crm",    business: true },
+      { icon: Layers, label: "Funnel Builder",      path: "/funnels", business: true, beta: true },
+      { icon: Share2, label: "Social Media Agents", path: "/social", business: true, beta: true },
     ],
   },
   {
     title: "OPERATIONS",
     items: [
-      { icon: Receipt,      label: "Invoicing",      path: "/invoicing",   business: true },
-      { icon: CalendarDays, label: "Booking",         path: "/booking",     business: true },
-      { icon: Globe,        label: "Client Portal",  path: "/portal",      business: true },
+      { icon: Receipt,      label: "Invoicing & Payments", path: "/invoicing",   business: true, beta: true },
+      { icon: CalendarDays, label: "Booking & Scheduling", path: "/booking",     business: true, beta: true },
+      { icon: Globe,        label: "Client Portal",        path: "/portal",      business: true },
     ],
   },
   {
     title: "ENTERPRISE",
     items: [
-      { icon: Shield,        label: "Team & Permissions", path: "/team",         business: true },
-      { icon: FileSignature, label: "Contracts",           path: "/contracts",    business: true },
+      { icon: Shield,        label: "Team & Permissions", path: "/team",         business: true, beta: true },
+      { icon: FileSignature, label: "Contracts & E-Sign", path: "/contracts",    business: true },
       { icon: Star,          label: "Reputation",          path: "/reputation",   business: true },
-      { icon: Plug,          label: "Integrations Hub",    path: "/integrations", business: true },
+      { icon: Plug,          label: "Integrations Hub",    path: "/integrations", business: true, beta: true },
     ],
   },
   {
@@ -77,6 +75,13 @@ const NAV_SECTIONS: NavSection[] = [
       { icon: BarChart3, label: "Analytics",       path: "/analytics" },
       { icon: Info,      label: "About & Features", path: "/about" },
       { icon: CreditCard,label: "Pricing",          path: "/pricing" },
+    ],
+  },
+  {
+    title: "ROADMAP",
+    items: [
+      { icon: Workflow,  label: "Automations",       path: "/automations", roadmap: true },
+      { icon: Telescope, label: "Prospecting Engine", path: "/prospecting", roadmap: true },
     ],
   },
 ];
@@ -179,7 +184,9 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
-  const isPro = subData?.tier === "operator_pro";
+  // hasFullAccess is true for founding members (isFounding) OR operator_pro subscribers.
+  // Founding members get full-platform access permanently, independent of tier.
+  const isPro = subData?.hasFullAccess ?? false;
 
   // Listen for oh:open-specter custom event dispatched by the Command Palette
   useEffect(() => {
@@ -312,12 +319,49 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 location === item.path ||
                 (item.path === "/dashboard" && location === "/");
               const isLocked = (item.pro && !isPro) || (item.business && !isPro) || item.enterprise;
+
+              // Roadmap items — never navigable, shown as coming-soon placeholders
+              if (item.roadmap) {
+                return (
+                  <div
+                    key={item.path}
+                    title={!isMobile && collapsed ? `${item.label} — Coming Q3 2025` : undefined}
+                    className="sidebar-item w-full text-left"
+                    style={{
+                      justifyContent: !isMobile && collapsed ? "center" : "flex-start",
+                      padding: !isMobile && collapsed ? "10px" : "9px 12px",
+                      display: "flex", alignItems: "center", gap: "10px",
+                      opacity: 0.3, cursor: "default",
+                    }}
+                  >
+                    <item.icon size={15} style={{ flexShrink: 0, color: "var(--text-muted)" }} />
+                    {(!collapsed || isMobile) && (
+                      <>
+                        <span style={{ fontSize: "13px", color: "var(--text-muted)", flex: 1, textAlign: "left" }}>
+                          {item.label}
+                        </span>
+                        <span style={{
+                          fontSize: "8px",
+                          fontFamily: "Fira Code, monospace",
+                          letterSpacing: "0.08em",
+                          color: "rgba(212,168,83,0.4)",
+                          border: "1px solid rgba(212,168,83,0.2)",
+                          borderRadius: "3px",
+                          padding: "1px 4px",
+                          flexShrink: 0,
+                        }}>Q3</span>
+                      </>
+                    )}
+                  </div>
+                );
+              }
+
               if (isLocked) {
                 return (
                   <button
                     key={item.path}
                     onClick={() => setLocation("/pricing")}
-                    title={!isMobile && collapsed ? `${item.label} — Specter Pro` : undefined}
+                    title={!isMobile && collapsed ? `${item.label} — Operator Pro` : undefined}
                     className="sidebar-item w-full text-left"
                     style={{
                       justifyContent: !isMobile && collapsed ? "center" : "flex-start",
@@ -370,6 +414,19 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                     }}>
                       {item.label}
                     </span>
+                  )}
+                  {/* Beta badge — shown for beta modules when unlocked */}
+                  {(!collapsed || isMobile) && item.beta && !isLocked && (
+                    <span style={{
+                      fontSize: "8px",
+                      fontFamily: "Fira Code, monospace",
+                      letterSpacing: "0.08em",
+                      color: "rgba(245,166,35,0.7)",
+                      border: "1px solid rgba(245,166,35,0.3)",
+                      borderRadius: "3px",
+                      padding: "1px 4px",
+                      flexShrink: 0,
+                    }}>BETA</span>
                   )}
                 </Link>
               );

@@ -745,13 +745,22 @@ ${contextBlock}`;
   subscription: router({
     getMyTier: protectedProcedure.query(async ({ ctx }) => {
       const db = await getDb();
-      if (!db) return { tier: "operator" as const };
-      const { userSubscriptions } = await import("../drizzle/schema");
+      if (!db) return { tier: "operator" as const, isFounding: false, hasFullAccess: false };
+      const { userSubscriptions, users } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      const rows = await db.select().from(userSubscriptions)
+      const [subRow] = await db.select().from(userSubscriptions)
         .where(eq(userSubscriptions.userId, ctx.user.id))
         .limit(1);
-      return { tier: (rows[0]?.tier ?? "operator") as "operator" | "operator_pro" };
+      // isFounding is a permanent per-user attribute — NEVER derived from tier.
+      // Founding members (Cohort 1-4) keep full-platform access at their lifetime-locked
+      // rate regardless of any future subscription tier changes.
+      const [userRow] = await db.select({ isFounding: users.isFounding })
+        .from(users)
+        .where(eq(users.id, ctx.user.id))
+        .limit(1);
+      const isFounding = userRow?.isFounding ?? false;
+      const tier = (subRow?.tier ?? "operator") as "operator" | "operator_pro";
+      return { tier, isFounding, hasFullAccess: isFounding || tier === "operator_pro" };
     }),
     upgradeToPro: protectedProcedure.mutation(async ({ ctx }) => {
       const db = await getDb();

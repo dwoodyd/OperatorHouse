@@ -31,6 +31,13 @@ export const users = mysqlTable("users", {
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   subscriptionStatus: varchar("subscriptionStatus", { length: 50 }).default("inactive"),
   subscriptionId: varchar("subscriptionId", { length: 255 }),
+  /**
+   * Permanent founding-member flag. Set to true for Cohort 1-4 members.
+   * NEVER modified by billing logic — founding members keep full-platform access
+   * at their lifetime-locked rate regardless of subscription tier changes.
+   * This is intentionally separate from the tier field in userSubscriptions.
+   */
+  isFounding: boolean("isFounding").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

@@ -50,6 +50,8 @@ export default function VoiceAgents() {
   });
 
   const utils = trpc.useUtils();
+  const { data: caps } = trpc.capabilities.check.useQuery();
+  const vapiConfigured = caps?.vapi ?? false;
   const { data: agents = [] } = trpc.voiceAgents.listAgents.useQuery();
   const { data: calls = [] } = trpc.voiceAgents.listCalls.useQuery(
     { agentId: selectedAgentId ?? undefined },
@@ -187,8 +189,15 @@ export default function VoiceAgents() {
                   <Button
                     size="sm"
                     className="h-8 text-xs bg-amber-600 hover:bg-amber-500"
-                    onClick={() => deployToVapi.mutate({ agentId: selectedAgent.id })}
+                    onClick={() => {
+                      if (!vapiConfigured) {
+                        toast.error("Vapi not connected — add your VAPI_API_KEY in Settings → Integrations to enable live voice deployment.");
+                        return;
+                      }
+                      deployToVapi.mutate({ agentId: selectedAgent.id });
+                    }}
                     disabled={deployToVapi.isPending}
+                    title={!vapiConfigured ? "Vapi API key required to deploy" : undefined}
                   >
                     <Zap className="w-3 h-3 mr-1.5" />
                     {selectedAgent.vapiAgentId ? "Re-deploy" : "Deploy to Vapi"}

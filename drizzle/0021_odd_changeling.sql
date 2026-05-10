@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `isFounding` boolean DEFAULT false NOT NULL;
