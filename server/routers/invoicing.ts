@@ -215,7 +215,7 @@ export const invoicingRouter = router({
         const resend = new Resend(RESEND_API_KEY);
         const lineItemsTyped = invoice.lineItems as Array<{ description: string; quantity: number; rate: number; amount: number }>;
         await resend.emails.send({
-          from: "outreach@operatorhouse.click",
+          from: process.env.EMAIL_FROM ?? "Operator House <ops@mail.operatorhouse.click>",
           to: invoice.clientEmail,
           subject: `Invoice ${invoice.invoiceNumber} from Operator House`,
           html: `

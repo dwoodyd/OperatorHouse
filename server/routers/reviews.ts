@@ -11,7 +11,7 @@ import { getDb } from "../db";
 import { reviews, bookings, crmContacts } from "../../drizzle/schema";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "Operator House <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "Operator House <ops@mail.operatorhouse.click>";
 
 export const reviewsRouter = router({
   // List all reviews for the operator

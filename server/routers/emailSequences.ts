@@ -528,7 +528,7 @@ export const emailSequencesRouter = router({
       let status: "sent" | "failed" = "sent";
       try {
         const { data, error } = await resend.emails.send({
-          from: "Operator House <onboarding@resend.dev>",
+          from: process.env.EMAIL_FROM ?? "Operator House <ops@mail.operatorhouse.click>",
           to: client.email,
           subject,
           text: body,
