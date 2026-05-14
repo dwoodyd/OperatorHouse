@@ -27,28 +27,31 @@ export default function Pricing() {
   const { spectreHidden } = useSpectre();
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
-  const [billing, setBilling] = useState<"monthly" | "annual">("annual");
+  const [billing, setBilling] = useState<"operator" | "operator_pro">("operator");
   const [loading, setLoading] = useState<string | null>(null);
 
-  const createCheckout = trpc.stripe.createCheckout.useMutation();
+  const { data: paypalData } = trpc.paypal.plans.useQuery();
 
-  const handleCheckout = async (plan: "monthly" | "annual") => {
+  const handleCheckout = async (tier: "operator" | "operator_pro") => {
     if (!isAuthenticated) {
       window.location.href = getLoginUrl();
       return;
     }
-    setLoading(plan);
-    try {
-      const result = await createCheckout.mutateAsync({ plan, origin: window.location.origin });
-      if (result.url) {
-        toast.success("Redirecting to checkout…");
-        window.location.href = result.url;
-      }
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Checkout failed");
-    } finally {
-      setLoading(null);
+    const planId = tier === "operator"
+      ? paypalData?.plans.operator.planId
+      : paypalData?.plans.operator_pro.planId;
+    if (!planId) {
+      toast.error("Payment plans not yet configured. Please try again shortly.");
+      return;
     }
+    setLoading(tier);
+    toast.info("Opening PayPal checkout…");
+    const clientId = paypalData?.clientId ?? "";
+    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscribed=1`);
+    const cancelUrl = encodeURIComponent(`${window.location.origin}/pricing?cancelled=1`);
+    const paypalUrl = `https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=${planId}&client_id=${clientId}&return_url=${returnUrl}&cancel_url=${cancelUrl}`;
+    window.open(paypalUrl, "_blank");
+    setLoading(null);
   };
 
   return (
@@ -112,12 +115,11 @@ export default function Pricing() {
 
         {/* Headline */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <p style={{
-            fontFamily: "Fira Code, monospace", fontSize: 10,
+          <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10,
             letterSpacing: "0.25em", textTransform: "uppercase",
             color: "rgba(212,168,83,0.55)", marginBottom: 16,
           }}>
-            Operator House · Beta Access
+            Operator House · Founding Cohort
           </p>
           <h1 style={{
             fontFamily: "Playfair Display, serif",
@@ -175,28 +177,28 @@ export default function Pricing() {
           ))}
         </div>
 
-        {/* Billing toggle */}
+        {/* Tier toggle */}
         <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 28 }}>
-          {(["monthly", "annual"] as const).map((b) => (
+          {(["operator", "operator_pro"] as const).map((t) => (
             <button
-              key={b}
-              onClick={() => setBilling(b)}
+              key={t}
+              onClick={() => setBilling(t)}
               style={{
                 padding: "8px 18px",
                 borderRadius: 20,
                 border: "1px solid",
-                borderColor: billing === b ? "rgba(212,168,83,0.5)" : "rgba(255,255,255,0.08)",
-                background: billing === b ? "rgba(212,168,83,0.1)" : "transparent",
-                color: billing === b ? "#d4a853" : "rgba(245,240,232,0.35)",
+                borderColor: billing === t ? "rgba(212,168,83,0.5)" : "rgba(255,255,255,0.08)",
+                background: billing === t ? "rgba(212,168,83,0.1)" : "transparent",
+                color: billing === t ? "#d4a853" : "rgba(245,240,232,0.35)",
                 fontFamily: "DM Sans, sans-serif",
-                fontSize: 13, fontWeight: billing === b ? 600 : 400,
+                fontSize: 13, fontWeight: billing === t ? 600 : 400,
                 cursor: "pointer",
                 transition: "all 180ms ease",
                 display: "flex", alignItems: "center", gap: 6,
               }}
             >
-              {b === "monthly" ? "Monthly" : "Annual"}
-              {b === "annual" && (
+              {t === "operator" ? "Operator" : "Operator Pro"}
+              {t === "operator" && (
                 <span style={{
                   fontSize: 10, fontFamily: "Fira Code, monospace",
                   background: "rgba(74,222,128,0.15)",
@@ -204,30 +206,18 @@ export default function Pricing() {
                   padding: "2px 6px", borderRadius: 10,
                   letterSpacing: "0.05em",
                 }}>
-                  SAVE 32%
+                  SAVE 50%
                 </span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Social proof */}
-        <div style={{ marginBottom: 36 }}>
-          <p style={{ fontFamily: 'Fira Code, monospace', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(212,168,83,0.4)', textAlign: 'center', marginBottom: 20 }}>From operators in the House</p>
-          {[
-            { quote: 'I walked into a $40K retainer pitch with a full AI briefing. The client asked how I knew so much about their pipeline. I just smiled.', name: 'M.R.', role: 'Strategy Consultant' },
-            { quote: 'Closed three deals in the first two weeks. The Command Line thinks faster than I do — and it never forgets a detail.', name: 'D.K.', role: 'Business Development' },
-            { quote: 'Finally a tool built for how I actually work. Not a CRM. Not a chatbot. An actual operator HQ.', name: 'T.A.', role: 'Independent Advisor' },
-          ].map((t, i) => (
-            <div key={i} style={{ padding: '16px 20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, marginBottom: 10 }}>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(245,240,232,0.6)', lineHeight: 1.6, marginBottom: 10, fontStyle: 'italic' }}>&#34;{t.quote}&#34;</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#d4a853', flexShrink: 0 }} />
-                <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, color: 'rgba(212,168,83,0.7)' }}>{t.name}</span>
-                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(245,240,232,0.25)' }}>· {t.role}</span>
-              </div>
-            </div>
-          ))}
+        {/* 90-day trial note */}
+        <div style={{ textAlign: "center", marginBottom: 28, padding: "12px 20px", background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 8 }}>
+          <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(74,222,128,0.8)", margin: 0, lineHeight: 1.6 }}>
+            <strong style={{ color: "#4ADE80" }}>90-day beta — no charge.</strong> Set up billing now, lock your founding rate. First charge at day 91.
+          </p>
         </div>
 
         {/* Plan cards */}
@@ -235,12 +225,16 @@ export default function Pricing() {
         <div style={{ marginBottom: 20 }}>
           <div style={{
             position: "relative",
-            background: "rgba(212,168,83,0.06)",
-            border: "1px solid rgba(212,168,83,0.5)",
+            background: billing === "operator_pro" ? "rgba(212,168,83,0.06)" : "rgba(255,255,255,0.02)",
+            border: `1px solid ${billing === "operator_pro" ? "rgba(212,168,83,0.5)" : "rgba(255,255,255,0.08)"}`,
             borderRadius: 10,
             padding: "28px 28px",
-            boxShadow: "0 0 40px rgba(212,168,83,0.08)",
-          }}>
+            boxShadow: billing === "operator_pro" ? "0 0 40px rgba(212,168,83,0.08)" : "none",
+            cursor: "pointer",
+            transition: "all 200ms ease",
+          }}
+          onClick={() => setBilling("operator_pro")}
+          >
             <div style={{
               position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)",
               background: "#d4a853", color: "#0e0e0e",
@@ -253,7 +247,7 @@ export default function Pricing() {
               <div style={{ flex: 1, minWidth: 200 }}>
                 <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Operator Pro</p>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$197</span>
+                  <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$99</span>
                   <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
                 </div>
                 <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 16 }}>Everything in Operator House + full outreach suite</p>
@@ -267,7 +261,7 @@ export default function Pricing() {
                 </div>
               </div>
               <button
-                onClick={() => handleCheckout("monthly")}
+                onClick={() => handleCheckout("operator_pro")}
                 disabled={loading !== null}
                 style={{
                   padding: "12px 28px",
@@ -283,41 +277,45 @@ export default function Pricing() {
                   display: "flex", alignItems: "center", gap: 6,
                 }}
               >
-                {loading ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Operator Pro"}
+                {loading === "operator_pro" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Operator Pro"}
               </button>
             </div>
           </div>
         </div>
-        {/* Operator House base tier — monthly / annual */}
+        {/* Operator House base tier — founding rates */}
         <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(212,168,83,0.3)", textAlign: "center", marginBottom: 12 }}>Operator House — Core Intelligence Suite</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
-          {/* Monthly */}
+          {/* Monthly — $99/mo founding */}
           <div
             style={{
               position: "relative",
-              background: "rgba(255,255,255,0.02)",
-              border: `1px solid ${billing === "monthly" ? "rgba(212,168,83,0.4)" : "rgba(255,255,255,0.08)"}`,
+              background: billing === "operator_pro" ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.02)",
+              border: `1px solid ${billing === "operator" ? "rgba(212,168,83,0.4)" : "rgba(255,255,255,0.08)"}`,
               borderRadius: 10,
               padding: "28px 24px",
               transition: "border-color 200ms ease",
               cursor: "pointer",
             }}
-            onClick={() => setBilling("monthly")}
+            onClick={() => setBilling("operator")}
           >
             <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Monthly</p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 20 }}>
-              <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#f5f0e8", lineHeight: 1 }}>$97</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+              <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#f5f0e8", lineHeight: 1 }}>$99</span>
               <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
             </div>
+            <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 4 }}>
+              <span style={{ textDecoration: "line-through", color: "rgba(245,240,232,0.2)" }}>$197/mo retail</span>
+            </p>
+            <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, color: "#4ADE80", letterSpacing: "0.1em", marginBottom: 16 }}>FOUNDING RATE · LOCKED FOR LIFE</p>
             <button
-              onClick={(e) => { e.stopPropagation(); handleCheckout("monthly"); }}
+              onClick={(e) => { e.stopPropagation(); handleCheckout("operator"); }}
               disabled={loading !== null}
               style={{
                 width: "100%", padding: "10px 0",
-                background: billing === "monthly" ? "#d4a853" : "rgba(212,168,83,0.08)",
-                border: `1px solid ${billing === "monthly" ? "transparent" : "rgba(212,168,83,0.2)"}`,
+                background: billing === "operator" ? "#d4a853" : "rgba(212,168,83,0.08)",
+                border: `1px solid ${billing === "operator" ? "transparent" : "rgba(212,168,83,0.2)"}`,
                 borderRadius: 6,
-                color: billing === "monthly" ? "#0e0e0e" : "#d4a853",
+                color: billing === "operator" ? "#0e0e0e" : "#d4a853",
                 fontFamily: "DM Sans, sans-serif",
                 fontSize: 13, fontWeight: 700,
                 cursor: loading ? "default" : "pointer",
@@ -325,23 +323,23 @@ export default function Pricing() {
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
             >
-              {loading === "monthly" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Access"}
+              {loading === "operator" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Access"}
             </button>
           </div>
 
-          {/* Annual — recommended */}
+          {/* Annual — $399/yr founding, recommended */}
           <div
             style={{
               position: "relative",
-              background: billing === "annual" ? "rgba(212,168,83,0.06)" : "rgba(255,255,255,0.02)",
-              border: `1px solid ${billing === "annual" ? "rgba(212,168,83,0.5)" : "rgba(255,255,255,0.08)"}`,
+              background: billing === "operator" ? "rgba(212,168,83,0.06)" : "rgba(255,255,255,0.02)",
+              border: `1px solid ${billing === "operator" ? "rgba(212,168,83,0.5)" : "rgba(255,255,255,0.08)"}`,
               borderRadius: 10,
               padding: "28px 24px",
               transition: "border-color 200ms ease, background 200ms ease",
               cursor: "pointer",
-              boxShadow: billing === "annual" ? "0 0 40px rgba(212,168,83,0.08)" : "none",
+              boxShadow: billing === "operator" ? "0 0 40px rgba(212,168,83,0.08)" : "none",
             }}
-            onClick={() => setBilling("annual")}
+            onClick={() => setBilling("operator")}
           >
             {/* Recommended badge */}
             <div style={{
@@ -352,16 +350,19 @@ export default function Pricing() {
               padding: "3px 10px", borderRadius: 10, fontWeight: 700,
               whiteSpace: "nowrap",
             }}>
-              Recommended
+              Best Value
             </div>
             <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Annual</p>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-              <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$66</span>
-              <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
+              <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#d4a853", lineHeight: 1 }}>$399</span>
+              <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/yr</span>
             </div>
-            <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 20 }}>Billed $797/year</p>
+            <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 4 }}>
+              <span style={{ textDecoration: "line-through", color: "rgba(245,240,232,0.2)" }}>$797/yr retail</span>
+            </p>
+            <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, color: "#4ADE80", letterSpacing: "0.1em", marginBottom: 16 }}>FOUNDING RATE · LOCKED FOR LIFE</p>
             <button
-              onClick={(e) => { e.stopPropagation(); handleCheckout("annual"); }}
+              onClick={(e) => { e.stopPropagation(); handleCheckout("operator"); }}
               disabled={loading !== null}
               style={{
                 width: "100%", padding: "10px 0",
@@ -378,7 +379,7 @@ export default function Pricing() {
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 32px rgba(212,168,83,0.5)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 20px rgba(212,168,83,0.3)"; }}
             >
-              {loading === "annual" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Claim Your Seat"}
+              {loading === "operator" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Claim Your Seat"}
             </button>
           </div>
         </div>
@@ -391,7 +392,7 @@ export default function Pricing() {
           color: "rgba(245,240,232,0.2)",
           lineHeight: 1.7,
         }}>
-          Secure checkout via Stripe · Cancel anytime · No setup fees
+          Secure checkout via PayPal · Cancel anytime · No setup fees
         </p>
 
         {/* Specter conversion nudge */}

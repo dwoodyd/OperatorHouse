@@ -11,6 +11,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { strictAiRateLimiter, aiRateLimiter, authRateLimiter } from "./rateLimiter";
+import { startEmailCron } from "../emailCron";
 
 // Allowed origins: Manus preview domains + production domains
 const ALLOWED_ORIGINS = [
@@ -70,23 +71,17 @@ async function startServer() {
     })
   );
 
-  // Stripe webhook MUST use raw body — register BEFORE express.json()
-  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-    const sig = req.headers["stripe-signature"] as string;
+  // PayPal webhook — receives billing events (subscription activated, payment completed, cancelled)
+  app.post("/api/paypal/webhook", express.json(), async (req, res) => {
     try {
-      const { handleStripeWebhook } = await import("../stripe");
-      const result = await handleStripeWebhook(req.body as Buffer, sig);
-      res.json(result);
+      const { handlePayPalWebhook } = await import("../paypal");
+      const event = req.body as Parameters<typeof handlePayPalWebhook>[0];
+      console.log(`[PayPal Webhook] Received: ${event.event_type} (${event.id})`);
+      const result = await handlePayPalWebhook(event);
+      res.json({ received: true, ...result });
     } catch (err: unknown) {
-      const isStripeSigError =
-        err !== null &&
-        typeof err === "object" &&
-        (err as { type?: string }).type === "StripeSignatureVerificationError";
-      const clientMsg = isStripeSigError
-        ? (err as Error).message
-        : "Webhook processing failed";
-      console.error("[Stripe Webhook]", err instanceof Error ? err.message : err);
-      res.status(400).json({ error: clientMsg });
+      console.error("[PayPal Webhook]", err instanceof Error ? err.message : err);
+      res.status(400).json({ error: "Webhook processing failed" });
     }
   });
 
@@ -148,3 +143,5 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+// Start daily email cron (Day-0 through Day-75 founding member emails)
+startEmailCron();

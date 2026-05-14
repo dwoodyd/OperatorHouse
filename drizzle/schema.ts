@@ -28,14 +28,22 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
-  subscriptionStatus: varchar("subscriptionStatus", { length: 50 }).default("inactive"),
-  subscriptionId: varchar("subscriptionId", { length: 255 }),
+  /** PayPal subscription ID for the founding member billing agreement */
+  paypalSubscriptionId: varchar("paypalSubscriptionId", { length: 255 }),
+  /** Founding tier locked at signup: operator ($399/yr) or operator_pro ($99/mo) */
+  foundingTier: mysqlEnum("foundingTier", ["operator", "operator_pro"]),
+  /** Billing status: inactive | trialing | active | cancelled | past_due */
+  billingStatus: varchar("billingStatus", { length: 50 }).default("inactive"),
+  /** Beta start date — set when founding member completes PayPal card capture */
+  betaStartDate: timestamp("betaStartDate"),
+  /** Beta end date — betaStartDate + 90 days */
+  betaEndDate: timestamp("betaEndDate"),
+  /** First-run intro flag — true until Specter intro completes on first dashboard load */
+  needsIntro: boolean("needsIntro").default(true).notNull(),
   /**
    * Permanent founding-member flag. Set to true for Cohort 1-4 members.
    * NEVER modified by billing logic — founding members keep full-platform access
    * at their lifetime-locked rate regardless of subscription tier changes.
-   * This is intentionally separate from the tier field in userSubscriptions.
    */
   isFounding: boolean("isFounding").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

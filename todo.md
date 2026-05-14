@@ -621,3 +621,71 @@
 - [x] Remove all CapabilityGate wrappers and OAuth guards from pages (gates removed per user request)
 - [x] Wire /apply, /redeem, /admin/codes routes in App.tsx
 - [x] Update Home.tsx CTAs to point to /apply
+
+## Founding Cohort Launch — Builder Handoff (2026-05-13)
+- [ ] Replace Stripe billing with PayPal Billing Agreements (Pattern B: 90-day trial, card-on-file)
+- [ ] Remove Stripe server code and webhook handler, add PayPal server module
+- [ ] Add PayPal subscription plans (Operator $399/yr, Operator Pro $99/mo) via API
+- [ ] Add PayPal fields to users schema: paypalSubscriptionId, foundingTier, billingStatus, betaStartDate, betaEndDate, needsIntro
+- [ ] Fix CTA routing on marketing site: HIRE SPECTER / primary CTAs → /apply
+- [ ] Fix SIGN IN CTA → app.operatorhouse.click (OAuth)
+- [ ] Remove testimonials from marketing site (WHAT OPERATORS SAY section)
+- [ ] Remove testimonials from in-app /pricing page
+- [ ] Remove "Coming soon · join waitlist" from Operator Pro on marketing site
+- [ ] Wire Template 1 (In Queue) email on application submit via Resend
+- [ ] Wire admin notification on application submit (notifyOwner)
+- [ ] Wire Template 2 (Approval + magic link) email on admin approve
+- [ ] Build /invite/:code route — validates code, pre-fills, triggers OAuth then PayPal card-capture
+- [ ] Build PayPal card-capture / tier-selection screen (post-OAuth, pre-dashboard)
+- [ ] Implement needs_intro flag: auto-fire Specter intro on first dashboard load
+- [ ] Wire Settings → Replay Intro to re-set needs_intro = true
+- [ ] Update in-app /pricing page with founding rates ($399/yr Operator, $99/mo Operator Pro)
+- [ ] Wire /pricing page buttons to /apply (non-founding) or PayPal tier change (founding)
+- [ ] Add beta trial status badge to dashboard (days remaining)
+- [ ] Build Settings → Subscription page (trial status, locked rate, card on file, cancel button)
+- [ ] Wire Template 5 (Day-0 Welcome) on first sign-in after invite redemption
+- [ ] Wire Template 3 (Day-75 Reminder) scheduled job
+- [ ] Wire Template 4 (Charge Confirmation) on PayPal billing event
+- [ ] Wire Template 6 (Day-3 Check-in) conditional scheduled job
+- [ ] Wire Template 7A/7B (Day-7 Recap) conditional scheduled job
+- [ ] Wire Template 8 (Day-30 Milestone) scheduled job
+- [ ] Verify mail.operatorhouse.click in Resend (pending DNS)
+- [ ] Swap PayPal sandbox → live credentials before cohort 1 opens
+
+## Founding Cohort Launch — Handoff Doc Implementation
+- [x] Store PayPal sandbox credentials and create subscription plans (Operator $399/yr, Operator Pro $99/mo)
+- [x] Replace Stripe with PayPal Billing Agreements (Pattern B — card-on-file, 90-day trial)
+- [x] Add isFounding permanent flag to users table (DB + schema)
+- [x] Add PayPal billing fields to users table (paypalSubscriptionId, foundingTier, billingStatus, betaStartDate, betaEndDate)
+- [x] Add needsIntro flag to users table for first-run Specter intro
+- [x] Add team role enforcement middleware to Team router (admin/member/viewer)
+- [x] Flip gate logic: isFounding || operator_pro unlocks all 25 modules
+- [x] Add BETA badges to 10 beta-grade modules in sidebar
+- [x] Add ROADMAP section to sidebar (Automations, Prospecting — non-clickable Q3)
+- [x] Rename Specter Pro → Operator Pro everywhere
+- [x] Fix marketing site CTAs to point to /apply (not OAuth)
+- [x] Remove fake testimonials from Pricing.tsx
+- [x] Wire Template 1 — application confirmation email (Resend, specter@mail.operatorhouse.click)
+- [x] Wire Template 2 — approval email with magic link (invite code, /invite/:code URL)
+- [x] Create /invite/:code route (pre-fills code, auto-validates, OAuth flow, routes to /billing-setup)
+- [x] Create /billing-setup PayPal card-capture screen (tier selector, PayPal subscription button, 90-day trial)
+- [x] Update IntroLayer to use needsIntro DB flag as source of truth (not localStorage)
+- [x] Update Pricing page with founding rates ($399/yr, $99/mo) and retail struck-through
+- [x] Add beta trial status banner to Dashboard (days remaining, beta end date)
+- [x] Wire Day-0 (Template 5), Day-3 (Template 6), Day-7 (Template 7A/7B), Day-30 (Template 8), Day-75 (Template 3) scheduled emails
+- [x] Email cron runs daily at 08:00 UTC via node-cron
+- [x] Email dedup via activities table (email_sent_* activity type)
+- [x] Update all email from addresses to ops@mail.operatorhouse.click (EMAIL_FROM env var)
+- [x] Wire PayPal webhook handler for subscription events (BILLING.SUBSCRIPTION.ACTIVATED, PAYMENT.SALE.COMPLETED, BILLING.SUBSCRIPTION.CANCELLED)
+- [x] PayPal vitest: 5/5 tests passing (credentials, API auth, plan IDs)
+
+## Remaining Pre-Launch Items
+- [ ] Verify mail.operatorhouse.click DNS records in Resend (submit to Manus support)
+- [ ] Set EMAIL_FROM secret in Manus Settings → Secrets: "Operator House <ops@mail.operatorhouse.click>"
+- [ ] Add book.operatorhouse.click and portal.operatorhouse.click in Manus Settings → Domains
+- [ ] Mark first founding members: UPDATE users SET is_founding = true WHERE id IN (...)
+- [ ] Swap PayPal sandbox credentials for live credentials before cohort 1 opens
+- [ ] Template 4 (charge confirmation) — wire to PayPal PAYMENT.SALE.COMPLETED webhook (currently logs only)
+- [ ] /founding page — tier confirmation/change page (linked from Day-75 email)
+- [ ] Booking confirmation emails (Booking router sets confirmationSent: false but never sends)
+- [ ] Test full invite flow end-to-end: apply → approve → /invite/:code → OAuth → /billing-setup → dashboard → Specter intro

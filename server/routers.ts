@@ -62,7 +62,7 @@ export const appRouter = router({
       const u = opts.ctx.user;
       if (!u) return null;
       // Strip payment-sensitive fields before sending to client
-      const { stripeCustomerId: _sc, subscriptionId: _si, ...safe } = u;
+      const { paypalSubscriptionId: _ps, ...safe } = u;
       return safe;
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -634,37 +634,106 @@ ${contextBlock}`;
     }),
   }),
 
-  stripe: router({
-    createCheckout: protectedProcedure
-      .input(z.object({ plan: z.enum(["monthly", "annual"]), origin: z.string().url() }))
-      .mutation(async ({ ctx, input }) => {
-        const { createCheckoutSession, PLANS } = await import('./stripe');
-        const priceId = PLANS[input.plan].priceId;
-        if (!priceId) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Plan price not configured. Please set STRIPE_MONTHLY_PRICE_ID / STRIPE_ANNUAL_PRICE_ID.' });
-        const session = await createCheckoutSession({
-          userId: ctx.user.id,
-          email: ctx.user.email ?? '',
-          name: ctx.user.name ?? '',
-          priceId,
-          origin: input.origin,
-        });
-        return { url: session.url };
-      }),
-    billingPortal: protectedProcedure
-      .input(z.object({ origin: z.string() }))
-      .mutation(async ({ ctx, input }) => {
-        const { stripe: stripeClient } = await import('./stripe');
-        const user = ctx.user as { stripeCustomerId?: string };
-        if (!user.stripeCustomerId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'No subscription found' });
-        const session = await stripeClient.billingPortal.sessions.create({
-          customer: user.stripeCustomerId,
-          return_url: `${input.origin}/settings`,
-        });
-        return { url: session.url };
-      }),
-    subscriptionStatus: protectedProcedure.query(async ({ ctx }) => ({
-      status: (ctx.user as { subscriptionStatus?: string }).subscriptionStatus ?? 'inactive',
+  paypal: router({
+    /** Returns PayPal plan IDs and client ID for the frontend subscription buttons */
+    plans: publicProcedure.query(() => ({
+      clientId: process.env.PAYPAL_CLIENT_ID ?? '',
+      plans: {
+        operator: {
+          planId: process.env.PAYPAL_PLAN_OPERATOR ?? '',
+          label: 'Operator',
+          founding: '$399/yr',
+          retail: '$797/yr',
+          description: 'Core Intelligence Suite — Command, Pipeline, Vault, Strategy, Analytics',
+        },
+        operator_pro: {
+          planId: process.env.PAYPAL_PLAN_OPERATOR_PRO ?? '',
+          label: 'Operator Pro',
+          founding: '$99/mo',
+          retail: '$197/mo',
+          description: 'Full Outreach Suite — SMS, Email Sequences, Call Center, Voice Agents, Pulse',
+        },
+      },
     })),
+    /** Called after PayPal subscription is approved — activates founding member status */
+    captureSubscription: protectedProcedure
+      .input(z.object({
+        subscriptionId: z.string(),
+        tier: z.enum(['operator', 'operator_pro']),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { activateFoundingMember } = await import('./paypal');
+        const { betaStartDate, betaEndDate } = await activateFoundingMember(
+          ctx.user.id,
+          input.subscriptionId,
+          input.tier
+        );
+        await logActivity({ userId: ctx.user.id, activityType: 'founding_member_activated', summary: `Founding member activated — ${input.tier} tier` });
+        notifyOwner({
+          title: `New Founding Member: ${ctx.user.name ?? ctx.user.email}`,
+          content: `Tier: ${input.tier}\nBeta ends: ${betaEndDate.toDateString()}\nSubscription: ${input.subscriptionId}`,
+        }).catch(() => {});
+        return { success: true, betaStartDate, betaEndDate };
+      }),
+    /** Cancel subscription */
+    cancelSubscription: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const user = ctx.user as { paypalSubscriptionId?: string };
+        if (!user.paypalSubscriptionId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'No subscription found' });
+        const { cancelSubscription } = await import('./paypal');
+        await cancelSubscription(user.paypalSubscriptionId, 'Cancelled during trial by user');
+        const { getDb: _getDb } = await import('./db');
+        const { users } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const _db = await _getDb();
+        if (_db) await _db.update(users).set({ billingStatus: 'cancelled' }).where(eq(users.id, ctx.user.id));
+        return { success: true };
+      }),
+    /** Get billing status for Settings → Subscription page */
+    billingStatus: protectedProcedure.query(async ({ ctx }) => {
+      const u = ctx.user as {
+        billingStatus?: string;
+        foundingTier?: string;
+        betaStartDate?: Date;
+        betaEndDate?: Date;
+        paypalSubscriptionId?: string;
+        isFounding?: boolean;
+      };
+      const betaEndDate = u.betaEndDate ? new Date(u.betaEndDate) : null;
+      const today = new Date();
+      const daysRemaining = betaEndDate
+        ? Math.max(0, Math.ceil((betaEndDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+        : null;
+      return {
+        billingStatus: u.billingStatus ?? 'inactive',
+        foundingTier: u.foundingTier ?? null,
+        betaStartDate: u.betaStartDate ?? null,
+        betaEndDate,
+        daysRemaining,
+        hasSubscription: !!u.paypalSubscriptionId,
+        isFounding: u.isFounding ?? false,
+      };
+    }),
+    /** Mark intro as seen — clears needsIntro flag */
+    markIntroSeen: protectedProcedure.mutation(async ({ ctx }) => {
+      const _db = await getDb();
+      if (_db) {
+        const { users: _users } = await import('../drizzle/schema');
+        const { eq: _eq } = await import('drizzle-orm');
+        await _db.update(_users).set({ needsIntro: false }).where(_eq(_users.id, ctx.user.id));
+      }
+      return { success: true };
+    }),
+    /** Reset intro — for Settings → Replay Intro */
+    resetIntro: protectedProcedure.mutation(async ({ ctx }) => {
+      const _db = await getDb();
+      if (_db) {
+        const { users: _users } = await import('../drizzle/schema');
+        const { eq: _eq } = await import('drizzle-orm');
+        await _db.update(_users).set({ needsIntro: true }).where(_eq(_users.id, ctx.user.id));
+      }
+      return { success: true };
+    }),
   }),
 
   notifications: router({

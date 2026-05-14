@@ -211,16 +211,15 @@ function DeleteAccountModal({ onConfirm, onCancel, isPending }: {
   );
 }
 
-// ─── Manage Subscription Button ──────────────────────────────────────────────
+/// ─── Manage Subscription Button ────────────────────────────────────────────
 function ManageSubscriptionButton() {
-  const billingPortal = trpc.stripe.billingPortal.useMutation({
-    onSuccess: ({ url }) => { if (url) window.location.href = url; },
-    onError: (e) => toast.error(e.message),
-  });
+  const handleManage = () => {
+    // Direct users to PayPal to manage their subscription
+    window.open("https://www.paypal.com/myaccount/autopay/", "_blank");
+  };
   return (
     <button
-      onClick={() => billingPortal.mutate({ origin: window.location.origin })}
-      disabled={billingPortal.isPending}
+      onClick={handleManage}
       style={{
         marginTop: "10px",
         display: "flex",
@@ -234,14 +233,13 @@ function ManageSubscriptionButton() {
         fontSize: "12px",
         fontFamily: "DM Sans, sans-serif",
         fontWeight: 500,
-        cursor: billingPortal.isPending ? "not-allowed" : "pointer",
-        opacity: billingPortal.isPending ? 0.6 : 1,
+        cursor: "pointer",
         width: "100%",
         justifyContent: "center",
       }}
     >
       <CreditCard size={13} />
-      {billingPortal.isPending ? "Opening…" : "Manage Subscription"}
+      Manage Subscription (PayPal)
     </button>
   );
 }

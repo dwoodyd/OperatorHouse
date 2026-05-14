@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE users \n  ADD COLUMN paypalSubscriptionId VARCHAR(255) NULL,\n  ADD COLUMN foundingTier ENUM('operator', 'operator_pro') NULL,\n  ADD COLUMN billingStatus VARCHAR(50) DEFAULT 'inactive',\n  ADD COLUMN betaStartDate TIMESTAMP NULL,\n  ADD COLUMN betaEndDate TIMESTAMP NULL,\n  ADD COLUMN needsIntro TINYINT(1) NOT NULL DEFAULT 1;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4A9VQZNRBpHGiCF.8f32b7e20875 --database UYrVyz2BYHYzFAx4PneEpK --execute \nALTER TABLE users \n  ADD COLUMN paypalSubscriptionId VARCHAR(255) NULL,\n  ADD COLUMN foundingTier ENUM('operator', 'operator_pro') NULL,\n  ADD COLUMN billingStatus VARCHAR(50) DEFAULT 'inactive',\n  ADD COLUMN betaStartDate TIMESTAMP NULL,\n  ADD COLUMN betaEndDate TIMESTAMP NULL,\n  ADD COLUMN needsIntro TINYINT(1) NOT NULL DEFAULT 1;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1430
+}

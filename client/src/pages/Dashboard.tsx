@@ -383,6 +383,36 @@ export default function Dashboard() {
       subtitle={`${greeting()}, ${user?.name?.split(' ')[0] ?? 'Specter'} — ${currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
     >
       <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
+        {/* Beta trial status banner */}
+        {(() => {
+          const u = user as any;
+          if (!u?.betaEndDate) return null;
+          const daysLeft = Math.max(0, Math.ceil((new Date(u.betaEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+          if (daysLeft <= 0) return null;
+          const isUrgent = daysLeft <= 14;
+          return (
+            <div style={{
+              padding: '10px 16px',
+              borderRadius: 8,
+              background: isUrgent ? 'rgba(251,146,60,0.08)' : 'rgba(74,222,128,0.06)',
+              border: `1px solid ${isUrgent ? 'rgba(251,146,60,0.25)' : 'rgba(74,222,128,0.2)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isUrgent ? '#FB923C' : '#4ADE80', boxShadow: `0 0 8px ${isUrgent ? 'rgba(251,146,60,0.7)' : 'rgba(74,222,128,0.7)'}`, flexShrink: 0 }} />
+                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: isUrgent ? '#FB923C' : '#4ADE80' }}>
+                  {u.isFounding ? '🏆 Founding Member · ' : ''}
+                  <strong>Beta trial active</strong> — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining · No charge until {new Date(u.betaEndDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+              {u.billingStatus === 'inactive' && (
+                <a href="/billing-setup" style={{ fontFamily: 'Fira Code, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#d4a853', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  Set up billing →
+                </a>
+              )}
+            </div>
+          );
+        })()}
         {isNewUser ? (
           <div className="flex items-center justify-center min-h-[60vh]">
             <FirstMission onComplete={() => setMissionDone(true)} />

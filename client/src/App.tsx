@@ -51,8 +51,11 @@ import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
 import { SpectreChatbot } from "./components/SpectreChatbot";
+import { trpc } from "./lib/trpc";
 import Apply from "./pages/Apply";
 import Redeem from "./pages/Redeem";
+import InviteRedeem from "./pages/InviteRedeem";
+import BillingSetup from "./pages/BillingSetup";
 import AdminCodes from "./pages/AdminCodes";
 
 function Router() {
@@ -61,6 +64,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/apply" component={Apply} />
       <Route path="/redeem" component={Redeem} />
+      <Route path="/invite/:code" component={InviteRedeem} />
+      <Route path="/billing-setup" component={BillingSetup} />
       <Route path="/admin/codes" component={AdminCodes} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/leads" component={LeadIntel} />
@@ -234,20 +239,27 @@ function PWAInstallBanner() {
 
 function IntroLayer() {
   const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
-  // Onboarding slides: shown ONCE ever, gated by localStorage (persists across sessions)
-  const [onboardingDone, setOnboardingDone] = useState(() =>
+  // DB-backed first-run gate: needsIntro=true means user has never seen the intro
+  // Falls back to localStorage for unauthenticated visitors (marketing site)
+  const [localOnboardingDone, setLocalOnboardingDone] = useState(() =>
     localStorage.getItem("oh_onboarding_complete") === "true"
   );
-  // Splash: shown once per session (brief brand moment, only after onboarding is permanently done)
+  // Splash: shown once per session (brief brand moment)
   const [splashDone, setSplashDone] = useState(() =>
     sessionStorage.getItem("oh_splash_shown") === "true"
   );
 
+  const markIntroSeen = trpc.paypal.markIntroSeen.useMutation();
+
   const handleOnboardingComplete = () => {
     localStorage.setItem("oh_onboarding_complete", "true");
-    setOnboardingDone(true);
+    setLocalOnboardingDone(true);
+    // If user is authenticated, persist to DB so intro doesn't re-fire on new devices
+    if (user) {
+      markIntroSeen.mutate();
+    }
   };
   const handleSplashComplete = () => {
     sessionStorage.setItem("oh_splash_shown", "true");
@@ -262,8 +274,16 @@ function IntroLayer() {
     return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
   }
 
-  // Step 1: New visitor — show onboarding slides FIRST (before welcome/sign-in page)
-  if (!onboardingDone) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  // Wait for auth to resolve before checking needsIntro (avoids flash)
+  if (authLoading) return null;
+
+  // Step 1: Determine if onboarding is needed
+  // For authenticated users: use DB flag (needsIntro). For visitors: use localStorage.
+  const needsOnboarding = user
+    ? (user as any).needsIntro === true
+    : !localOnboardingDone;
+
+  if (needsOnboarding) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   // Step 2: Each new session — brief splash after onboarding is permanently done
   if (!splashDone) return <OHSplash onComplete={handleSplashComplete} userName={user?.name} />;
   // Step 3: Returning user — nothing to show, Router renders Home or app normally

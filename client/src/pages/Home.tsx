@@ -149,7 +149,7 @@ export default function Home() {
 
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center", position: "relative" }}>
           <a
-            href={getLoginUrl()}
+            href="/apply"
             style={{
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "14px 28px",
@@ -162,7 +162,7 @@ export default function Home() {
               letterSpacing: "0.02em",
             }}
           >
-            Enter Operator House <ArrowRight size={15} />
+            Apply for Access <ArrowRight size={15} />
           </a>
           <button
             onClick={() => setLocation("/about")}
@@ -278,13 +278,13 @@ export default function Home() {
           borderRadius: "12px",
         }}>
           <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 700, color: "#E8E4D9", marginBottom: "12px" }}>
-            Ready to operate at full capacity?
+            Founding cohort. 25 seats.
           </h2>
           <p style={{ fontSize: "14px", color: "rgba(232,228,217,0.55)", marginBottom: "28px", lineHeight: 1.65 }}>
-            Sign in to access your Command Center. Specter is waiting.
+            Applications are reviewed personally. If you’re selected, you’ll receive an invite code within 48 hours.
           </p>
           <a
-            href={getLoginUrl()}
+            href="/apply"
             style={{
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "14px 32px",
@@ -296,7 +296,7 @@ export default function Home() {
               textDecoration: "none",
             }}
           >
-            Enter Operator House <ArrowRight size={15} />
+            Apply for Access <ArrowRight size={15} />
           </a>
           <div style={{ marginTop: "16px" }}>
             <button
