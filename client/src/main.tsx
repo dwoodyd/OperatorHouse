@@ -26,13 +26,36 @@ const queryClient = new QueryClient({
   },
 });
 
+const LOGIN_REDIRECT_KEY = "oh_last_login_redirect";
+const LOGIN_REDIRECT_COOLDOWN_MS = 15_000;
+
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
+
+  // Loop guard: if we redirected to login very recently and STILL get an
+  // unauthorized error, the session cookie isn't sticking (misconfigured
+  // APP_ID/JWT_SECRET on the server, blocked cookie, etc.). Bouncing again
+  // would trap the user in an infinite app -> Manus -> app loop, which is
+  // exactly the "onboarding cuts off and goes to Manus" symptom. Stop here so
+  // the app can render in visitor mode instead of looping.
+  try {
+    const last = Number(sessionStorage.getItem(LOGIN_REDIRECT_KEY) || 0);
+    if (Date.now() - last < LOGIN_REDIRECT_COOLDOWN_MS) {
+      console.error(
+        "[Auth] Suppressed repeat login redirect — session did not persist after sign-in. " +
+        "Check server APP_ID/JWT_SECRET and that the cookie is being set on this origin."
+      );
+      return;
+    }
+    sessionStorage.setItem(LOGIN_REDIRECT_KEY, String(Date.now()));
+  } catch {
+    // sessionStorage unavailable (private mode / embedded webview) — fall
+    // through and redirect once.
+  }
 
   window.location.href = getLoginUrl();
 };

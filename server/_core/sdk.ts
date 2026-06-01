@@ -212,19 +212,20 @@ class SDKServer {
       });
       const { openId, appId, name } = payload as Record<string, unknown>;
 
-      if (
-        !isNonEmptyString(openId) ||
-        !isNonEmptyString(appId) ||
-        !isNonEmptyString(name)
-      ) {
-        console.warn("[Auth] Session payload missing required fields");
+      // Identity is the openId; the token is HMAC-signed with our own secret,
+      // so only this server can mint it. appId/name are informational and may
+      // be empty (e.g. when the IdP returns no display name, or when the
+      // server-side APP_ID env is unset) — requiring them here caused an
+      // infinite post-login redirect loop. Require only openId.
+      if (!isNonEmptyString(openId)) {
+        console.warn("[Auth] Session payload missing openId");
         return null;
       }
 
       return {
         openId,
-        appId,
-        name,
+        appId: isNonEmptyString(appId) ? appId : ENV.appId,
+        name: isNonEmptyString(name) ? name : "",
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));

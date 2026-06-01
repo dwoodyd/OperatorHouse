@@ -18,6 +18,11 @@ DATABASE_URL=mysql://user:password@host:3306/operatorhouse
 # Secret used to sign the JWT session cookie this server issues.
 JWT_SECRET=change-me-to-a-long-random-string
 # Manus app id for THIS project. Must match the project registered on Manus.
+# IMPORTANT: set BOTH. VITE_APP_ID is baked into the browser build; APP_ID is
+# read by the server at runtime. If the server only has VITE_APP_ID at build
+# time (not at runtime), sessions are signed with an empty appId and every
+# request after login fails -> infinite redirect to Manus. APP_ID prevents that.
+APP_ID=UYrVyz2BYHYzFAx4PneEpK
 VITE_APP_ID=UYrVyz2BYHYzFAx4PneEpK
 # Browser-facing OAuth portal the login button redirects to.
 VITE_OAUTH_PORTAL_URL=https://manus.im
@@ -49,6 +54,11 @@ EMAIL_FROM=Operator House <no-reply@operatorhouse.click>
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 
+# ── Billing: Stripe ─────────────────────────────────────────────────────────
+STRIPE_SECRET_KEY=
+STRIPE_MONTHLY_PRICE_ID=
+STRIPE_ANNUAL_PRICE_ID=
+
 # ── Billing: PayPal ───────────────────────────────────────────────────────────
 PAYPAL_ENV=sandbox
 PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
@@ -79,7 +89,8 @@ The server will throw at startup if any of these are missing in `NODE_ENV=produc
 | `PUBLIC_URL` | Builds absolute URLs in emails |
 | `DATABASE_URL` | MySQL/TiDB connection |
 | `JWT_SECRET` | Signs session cookies |
-| `VITE_APP_ID` | Manus OAuth app identifier |
+| `APP_ID` | Manus OAuth app identifier (server runtime) |
+| `VITE_APP_ID` | Manus OAuth app identifier (browser build) |
 | `OAUTH_SERVER_URL` | Manus OAuth token exchange |
 | `BUILT_IN_FORGE_API_URL` | Manus storage proxy (onboarding videos) |
 | `BUILT_IN_FORGE_API_KEY` | Manus storage proxy auth |

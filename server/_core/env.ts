@@ -1,5 +1,7 @@
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
+  // Server runtime may not receive VITE_-prefixed vars (those are injected at
+  // client build time). Accept a plain APP_ID as the primary source.
+  appId: process.env.APP_ID ?? process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
