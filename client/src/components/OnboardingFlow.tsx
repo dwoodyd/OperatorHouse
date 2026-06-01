@@ -17,6 +17,8 @@ import type { SpectreState } from "@/components/SpectreVideoPlayer";
 interface OnboardingFlowProps {
   onComplete: () => void;
   isReplay?: boolean;
+  /** Pass true only when the user is logged in — prevents firing protectedProcedure for visitors */
+  isAuthenticated?: boolean;
 }
 
 // ─── Slide data ───────────────────────────────────────────────────────────────
@@ -587,7 +589,7 @@ const CSS = `
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function OnboardingFlow({ onComplete, isReplay = false }: OnboardingFlowProps) {
+export default function OnboardingFlow({ onComplete, isReplay = false, isAuthenticated = false }: OnboardingFlowProps) {
   const [, setLocation] = useLocation();
   // Detect mobile to use collapsed 3-slide flow
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
@@ -612,6 +614,9 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
   const [nextTapped, setNextTapped] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
+  // Only wire the protected mutation when the user is authenticated.
+  // For unauthenticated visitors (marketing site), isReplay is always false
+  // and onComplete handles localStorage — no server call needed.
   const completeOnboarding = trpc.onboarding.complete.useMutation();
 
   const currentSlide = activeSlides[slideIdx];
@@ -721,27 +726,25 @@ export default function OnboardingFlow({ onComplete, isReplay = false }: Onboard
     if (done) return;
     setDone(true);
     setDissolving(true);
-    // If the final CTA is "Add your first lead", navigate to /leads after onboarding
     const isLeadCTA = currentSlide.cta?.startsWith("Add your first lead");
-    if (!isReplay) {
-      completeOnboarding.mutate(undefined, {
-        onSettled: () => setTimeout(() => {
-          onComplete();
-          if (isLeadCTA) setLocation("/leads");
-        }, 900),
-      });
+    const finish = () => setTimeout(() => {
+      onComplete();
+      if (isLeadCTA) setLocation("/leads");
+    }, 900);
+    // Only call the protected server mutation when the user is authenticated.
+    // For unauthenticated visitors the onComplete callback (VisitorIntroLayer)
+    // handles localStorage — no tRPC call needed.
+    if (isAuthenticated) {
+      completeOnboarding.mutate(undefined, { onSettled: finish });
     } else {
-      setTimeout(() => {
-        onComplete();
-        if (isLeadCTA) setLocation("/leads");
-      }, 900);
+      finish();
     }
   };
 
   const handleSkip = () => {
     if (done) return;
     setDone(true);
-    if (!isReplay) {
+    if (isAuthenticated) {
       completeOnboarding.mutate(undefined, { onSettled: onComplete });
     } else {
       onComplete();

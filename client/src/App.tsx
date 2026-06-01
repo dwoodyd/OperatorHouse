@@ -237,57 +237,114 @@ function PWAInstallBanner() {
   );
 }
 
-function IntroLayer() {
-  const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
-  const { user, loading: authLoading } = useAuth();
-
-  // DB-backed first-run gate: needsIntro=true means user has never seen the intro
-  // Falls back to localStorage for unauthenticated visitors (marketing site)
-  const [localOnboardingDone, setLocalOnboardingDone] = useState(() =>
-    localStorage.getItem("oh_onboarding_complete") === "true"
-  );
-  // Splash: shown once per session (brief brand moment)
+/**
+ * Authenticated intro layer — only mounts when user is logged in.
+ * Safe to call protectedProcedure mutations here.
+ */
+function AuthenticatedIntroLayer({
+  user,
+  _replayPhase,
+  _onSplashComplete,
+  _onOnboardingComplete,
+}: {
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>;
+  _replayPhase: string | null;
+  _onSplashComplete: () => void;
+  _onOnboardingComplete: () => void;
+}) {
   const [splashDone, setSplashDone] = useState(() =>
     sessionStorage.getItem("oh_splash_shown") === "true"
   );
-
   const markIntroSeen = trpc.paypal.markIntroSeen.useMutation();
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("oh_onboarding_complete", "true");
-    setLocalOnboardingDone(true);
-    // If user is authenticated, persist to DB so intro doesn't re-fire on new devices
-    if (user) {
-      markIntroSeen.mutate();
-    }
+    markIntroSeen.mutate();
   };
   const handleSplashComplete = () => {
     sessionStorage.setItem("oh_splash_shown", "true");
     setSplashDone(true);
   };
 
-  // Replay takes priority over the first-run gate
   if (_replayPhase === "splash") {
-    return <OHSplash onComplete={_onSplashComplete} userName={user?.name} />;
+    return <OHSplash onComplete={_onSplashComplete} userName={user.name} />;
   }
   if (_replayPhase === "onboarding") {
     return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
   }
 
-  // Wait for auth to resolve before checking needsIntro (avoids flash)
+  // First-run: DB flag is the source of truth for authenticated users
+  if ((user as any).needsIntro === true) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} isAuthenticated />;
+  }
+  // Each new session: brief splash
+  if (!splashDone) {
+    return <OHSplash onComplete={handleSplashComplete} userName={user.name} />;
+  }
+  return null;
+}
+
+/**
+ * Visitor (unauthenticated) intro layer — NO tRPC mutations, pure localStorage.
+ * Safe to render for any visitor on the marketing site.
+ */
+function VisitorIntroLayer({
+  _replayPhase,
+  _onSplashComplete,
+  _onOnboardingComplete,
+}: {
+  _replayPhase: string | null;
+  _onSplashComplete: () => void;
+  _onOnboardingComplete: () => void;
+}) {
+  const [localOnboardingDone, setLocalOnboardingDone] = useState(() =>
+    localStorage.getItem("oh_onboarding_complete") === "true"
+  );
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem("oh_onboarding_complete", "true");
+    setLocalOnboardingDone(true);
+  };
+
+  if (_replayPhase === "splash") {
+    return <OHSplash onComplete={_onSplashComplete} />;
+  }
+  if (_replayPhase === "onboarding") {
+    return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
+  }
+
+  if (!localOnboardingDone) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+  return null;
+}
+
+function IntroLayer() {
+  const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
+  const { user, loading: authLoading } = useAuth();
+
+  // Wait for auth to resolve before deciding which layer to render
   if (authLoading) return null;
 
-  // Step 1: Determine if onboarding is needed
-  // For authenticated users: use DB flag (needsIntro). For visitors: use localStorage.
-  const needsOnboarding = user
-    ? (user as any).needsIntro === true
-    : !localOnboardingDone;
+  if (user) {
+    return (
+      <AuthenticatedIntroLayer
+        user={user}
+        _replayPhase={_replayPhase}
+        _onSplashComplete={_onSplashComplete}
+        _onOnboardingComplete={_onOnboardingComplete}
+      />
+    );
+  }
 
-  if (needsOnboarding) return <OnboardingFlow onComplete={handleOnboardingComplete} />;
-  // Step 2: Each new session — brief splash after onboarding is permanently done
-  if (!splashDone) return <OHSplash onComplete={handleSplashComplete} userName={user?.name} />;
-  // Step 3: Returning user — nothing to show, Router renders Home or app normally
-  return null;
+  // Unauthenticated visitor — no protected mutations
+  return (
+    <VisitorIntroLayer
+      _replayPhase={_replayPhase}
+      _onSplashComplete={_onSplashComplete}
+      _onOnboardingComplete={_onOnboardingComplete}
+    />
+  );
 }
 
 function App() {
