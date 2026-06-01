@@ -688,12 +688,6 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       setSlideIdx(target);
       setPhase("entering");
       setVideoFading(false);
-      // Load new video (skip on noVideo slides)
-      if (videoRef.current && !activeSlides[target].noVideo && activeSlides[target].clip) {
-        videoRef.current.src = CLIP_URLS[activeSlides[target].clip];
-        videoRef.current.load();
-        videoRef.current.play().catch(() => {});
-      }
       setTimeout(() => setPhase("idle"), 600);
     }, 380);
   }, [phase, activeSlides]);
@@ -784,6 +778,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
           <video
+            key={currentSlide.id}
             ref={videoRef}
             src={CLIP_URLS[currentSlide.clip]}
             autoPlay
@@ -792,10 +787,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
             playsInline
             preload="auto"
             onError={(e) => {
-              // If the clip fails to load, hide the video layer gracefully
-              // so the text overlay still renders on a dark background.
               const el = e.currentTarget as HTMLVideoElement;
-              el.style.display = "none";
+              if (el.dataset.retried) return;
+              el.dataset.retried = "1";
+              setTimeout(() => { try { el.load(); el.play().catch(() => {}); } catch {} }, 400);
             }}
           />
         </div>
