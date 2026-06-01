@@ -375,6 +375,16 @@ export function SpectreVideoPlayer({
 
   const sizeClass = SIZE_CLASSES[size] ?? size;
 
+  // Fallback: if the clip fails to load (network error, CDN miss), silently
+  // swap to the idle clip so the UI never shows a broken video element.
+  const handleVideoError = () => {
+    const idleClips = CLIPS.idle;
+    const fallback = idleClips[Math.floor(Math.random() * idleClips.length)];
+    if (currentSrc !== fallback) {
+      setCurrentSrc(fallback);
+    }
+  };
+
   return (
     <div className={cn("relative flex items-end justify-center", sizeClass, className)} style={style}>
       {glow && (
@@ -390,6 +400,7 @@ export function SpectreVideoPlayer({
         muted
         playsInline
         onEnded={onEnded}
+        onError={handleVideoError}
         className={cn(
           "w-full h-full object-contain transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"

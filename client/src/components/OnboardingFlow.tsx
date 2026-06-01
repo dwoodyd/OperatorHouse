@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { getLoginUrl } from "@/const";
 import type { SpectreState } from "@/components/SpectreVideoPlayer";
 
 interface OnboardingFlowProps {
@@ -729,7 +730,16 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     const isLeadCTA = currentSlide.cta?.startsWith("Add your first lead");
     const finish = () => setTimeout(() => {
       onComplete();
-      if (isLeadCTA) setLocation("/leads");
+      if (isLeadCTA) {
+        // Authenticated users go straight to /leads.
+        // Unauthenticated visitors are sent to login explicitly — never
+        // let a failed protectedProcedure query trigger the global bounce.
+        if (isAuthenticated) {
+          setLocation("/leads");
+        } else {
+          window.location.href = getLoginUrl();
+        }
+      }
     }, 900);
     // Only call the protected server mutation when the user is authenticated.
     // For unauthenticated visitors the onComplete callback (VisitorIntroLayer)
@@ -778,6 +788,12 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
             loop
             playsInline
             preload="auto"
+            onError={(e) => {
+              // If the clip fails to load, hide the video layer gracefully
+              // so the text overlay still renders on a dark background.
+              const el = e.currentTarget as HTMLVideoElement;
+              el.style.display = "none";
+            }}
           />
         </div>
       )}

@@ -50,6 +50,7 @@ import JoinTeam from "./pages/JoinTeam";
 import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
+import PublicFunnel from "./pages/PublicFunnel";
 import { SpectreChatbot } from "./components/SpectreChatbot";
 import { trpc } from "./lib/trpc";
 import Apply from "./pages/Apply";
@@ -102,7 +103,7 @@ function Router() {
         <Route path="/integrations" component={Integrations} />
       <Route path="/prospecting" component={Prospecting} />
       <Route path="/join-team/:token" component={JoinTeam} />
-      <Route path="/f/:slug" component={() => <div>Funnel public page</div>} />
+      <Route path="/f/:slug" component={PublicFunnel} />
       <Route path="/audit" component={Audit} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
@@ -121,6 +122,11 @@ function Router() {
 // ── PWA post-install toast + push subscription ────────────────────────────
 function usePWAFeatures() {
   const { user } = useAuth();
+  const vapidKeyQuery = trpc.push.vapidKey.useQuery(undefined, {
+    enabled: !!user && 'serviceWorker' in navigator && 'PushManager' in window,
+    staleTime: Infinity,
+  });
+  const subscribeMutation = trpc.push.subscribe.useMutation();
 
   // 1. Post-install standalone welcome toast
   useEffect(() => {
@@ -128,52 +134,51 @@ function usePWAFeatures() {
       || (window.navigator as any).standalone === true;
     if (!isStandalone) return;
     const key = 'oh_pwa_welcomed';
-    if (localStorage.getItem(key)) return;
-    localStorage.setItem(key, '1');
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+    } catch { /* private mode */ }
     setTimeout(() => toast("You're in the House.", {
       description: "Tap the icon anytime to return.",
       duration: 5000,
     }), 1200);
   }, []);
 
-  // 2. Auto-subscribe to push notifications once user is logged in
+  // 2. Subscribe to push notifications — only after the user has already
+  //    granted permission (e.g. from Settings). We never call
+  //    Notification.requestPermission() silently here; that must be triggered
+  //    by an explicit user action to comply with browser permission UX guidelines.
   useEffect(() => {
     if (!user) return;
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    if (localStorage.getItem('oh_push_subscribed')) return;
+    const publicKey = vapidKeyQuery.data?.publicKey;
+    if (!publicKey) return;
+
+    // Only proceed if the user has already granted permission
+    if (Notification.permission !== 'granted') return;
+
+    try { if (localStorage.getItem('oh_push_subscribed')) return; } catch { /* private mode */ }
 
     (async () => {
       try {
         const reg = await navigator.serviceWorker.ready;
-        // Fetch VAPID public key
-        const res = await fetch('/api/trpc/push.vapidKey?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D', { credentials: 'include' });
-        const json = await res.json();
-        const publicKey = json?.[0]?.result?.data?.json?.publicKey;
-        if (!publicKey) return;
-
         const existing = await reg.pushManager.getSubscription();
-        if (existing) { localStorage.setItem('oh_push_subscribed', '1'); return; }
-
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
-
+        if (existing) {
+          try { localStorage.setItem('oh_push_subscribed', '1'); } catch {}
+          return;
+        }
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: publicKey,
         });
         const { endpoint, keys } = sub.toJSON() as any;
-        await fetch('/api/trpc/push.subscribe', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ "0": { json: { endpoint, p256dh: keys.p256dh, auth: keys.auth } } }),
-        });
-        localStorage.setItem('oh_push_subscribed', '1');
+        await subscribeMutation.mutateAsync({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+        try { localStorage.setItem('oh_push_subscribed', '1'); } catch {}
       } catch (e) {
         console.warn('[PWA] push subscription failed', e);
       }
     })();
-  }, [user]);
+  }, [user, vapidKeyQuery.data]);
 }
 
 // ── PWA Install Banner ────────────────────────────────────────────────────────
@@ -252,9 +257,13 @@ function AuthenticatedIntroLayer({
   _onSplashComplete: () => void;
   _onOnboardingComplete: () => void;
 }) {
-  const [splashDone, setSplashDone] = useState(() =>
-    sessionStorage.getItem("oh_splash_shown") === "true"
-  );
+  const [splashDone, setSplashDone] = useState(() => {
+    try {
+      return sessionStorage.getItem("oh_splash_shown") === "true";
+    } catch {
+      return false;
+    }
+  });
   const markIntroSeen = trpc.paypal.markIntroSeen.useMutation();
 
   const handleOnboardingComplete = () => {
@@ -297,9 +306,13 @@ function VisitorIntroLayer({
   _onSplashComplete: () => void;
   _onOnboardingComplete: () => void;
 }) {
-  const [localOnboardingDone, setLocalOnboardingDone] = useState(() =>
-    localStorage.getItem("oh_onboarding_complete") === "true"
-  );
+  const [localOnboardingDone, setLocalOnboardingDone] = useState(() => {
+    try {
+      return localStorage.getItem("oh_onboarding_complete") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("oh_onboarding_complete", "true");

@@ -22,6 +22,7 @@ import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import { integrationsRouter } from "./routers/integrations";
 import { funnelRouter } from "./routers/funnel";
+import { pushRouter } from "./routers/push";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -872,6 +873,7 @@ ${contextBlock}`;
   team: teamRouter,
   integrations: integrationsRouter,
   funnel: funnelRouter,
+  push: pushRouter,
 });
 
 export type AppRouter = typeof appRouter;

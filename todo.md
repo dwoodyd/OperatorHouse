@@ -689,3 +689,18 @@
 - [ ] /founding page — tier confirmation/change page (linked from Day-75 email)
 - [ ] Booking confirmation emails (Booking router sets confirmationSent: false but never sends)
 - [ ] Test full invite flow end-to-end: apply → approve → /invite/:code → OAuth → /billing-setup → dashboard → Specter intro
+
+## UX Audit Fixes (May 31)
+- [x] OnboardingFlow final CTA: route unauthenticated visitors to getLoginUrl() instead of /leads (prevents surprise third-party redirect)
+- [x] Stale "Q3 2025" roadmap labels replaced with "SOON" badge
+- [x] sessionStorage.getItem / localStorage.getItem wrapped in try/catch throughout App.tsx (private mode guard)
+- [x] /f/:slug public funnel renderer — replace stub `<div>Funnel public page</div>` with real PublicFunnel.tsx (hero, benefits, about, results, form sections + trackView)
+- [x] Prospecting Engine removed from CommandPalette nav (roadmap-only, not discoverable via Cmd+K)
+- [x] Automations promoted from ROADMAP section to GROWTH sidebar section (real feature with full CRUD)
+- [x] Push notification: create server/routers/push.ts (vapidKey, subscribe, unsubscribe procedures) and register in appRouter
+- [x] Replace hand-rolled fetch calls in usePWAFeatures with tRPC hooks (trpc.push.vapidKey + trpc.push.subscribe)
+- [x] Gate Notification.requestPermission() — only subscribe if permission already granted; never prompt silently
+- [x] SpectreVideoPlayer: add onError fallback — swap to idle clip on CDN miss
+- [x] OnboardingFlow full-bleed video: add onError handler — hide video layer gracefully on network failure (text overlay still renders)
+- [x] PublicFunnel: fire trackView.mutate on mount (was instantiated but never called)
+- [x] docs/env-reference.md: document all required environment variables for new contributors

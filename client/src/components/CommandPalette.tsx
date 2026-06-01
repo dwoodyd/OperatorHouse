@@ -7,7 +7,7 @@ import { useLocation } from "wouter";
 import {
   Search, LayoutDashboard, GitBranch, FileText, Archive, CheckSquare,
   Activity, MessageSquare, Phone, Mail, Mic, Users, Layers, Share2,
-  Workflow, Telescope, Receipt, CalendarDays, Globe, Shield, FileSignature,
+  Workflow, Receipt, CalendarDays, Globe, Shield, FileSignature,
   Star, Plug, BarChart3, Info, CreditCard, MessageCircle, Settings,
   ArrowRight, Command,
 } from "lucide-react";
@@ -41,7 +41,6 @@ function buildNavActions(navigate: (path: string) => void): PaletteAction[] {
     { label: "Funnel Builder",       path: "/funnels",         icon: Layers,           description: "Build lead capture funnels" },
     { label: "Social Media Agents",  path: "/social",          icon: Share2,           description: "Automate social media posting" },
     { label: "Automations",          path: "/automations",     icon: Workflow,         description: "Build workflow automations" },
-    { label: "Prospecting Engine",   path: "/prospecting",     icon: Telescope,        description: "Identify and target prospects" },
     { label: "Invoicing",            path: "/invoicing",       icon: Receipt,          description: "Create and send invoices" },
     { label: "Booking",              path: "/booking",         icon: CalendarDays,     description: "Manage appointment scheduling" },
     { label: "Client Portal",        path: "/portal",          icon: Globe,            description: "Client-facing portal" },

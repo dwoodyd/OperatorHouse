@@ -49,7 +49,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { icon: Users,  label: "CRM Suite",          path: "/crm",    business: true },
       { icon: Layers, label: "Funnel Builder",      path: "/funnels", business: true, beta: true },
-      { icon: Share2, label: "Social Media Agents", path: "/social", business: true, beta: true },
+      { icon: Share2,    label: "Social Media Agents", path: "/social",       business: true, beta: true },
+      { icon: Workflow,  label: "Automations",          path: "/automations", business: true, beta: true },
     ],
   },
   {
@@ -80,7 +81,6 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "ROADMAP",
     items: [
-      { icon: Workflow,  label: "Automations",       path: "/automations", roadmap: true },
       { icon: Telescope, label: "Prospecting Engine", path: "/prospecting", roadmap: true },
     ],
   },
@@ -325,7 +325,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 return (
                   <div
                     key={item.path}
-                    title={!isMobile && collapsed ? `${item.label} — Coming Q3 2025` : undefined}
+                    title={!isMobile && collapsed ? `${item.label} — Coming Soon` : undefined}
                     className="sidebar-item w-full text-left"
                     style={{
                       justifyContent: !isMobile && collapsed ? "center" : "flex-start",
@@ -349,7 +349,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                           borderRadius: "3px",
                           padding: "1px 4px",
                           flexShrink: 0,
-                        }}>Q3</span>
+                        }}>SOON</span>
                       </>
                     )}
                   </div>
