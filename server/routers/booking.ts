@@ -6,6 +6,54 @@ import {
   meetingTypes, bookings, availability, blockedDates, crmContacts,
 } from "../../drizzle/schema";
 import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
+import { Resend } from "resend";
+
+const _resend = new Resend(process.env.RESEND_API_KEY);
+const _FROM = process.env.EMAIL_FROM ?? "Specter <specter@mail.operatorhouse.click>";
+const _APP_URL = "https://app.operatorhouse.click";
+
+async function sendBookingConfirmation(opts: {
+  toEmail: string;
+  toName: string;
+  meetingName: string;
+  startTime: Date;
+  durationMinutes: number;
+  bookingId: number;
+}) {
+  const { toEmail, toName, meetingName, startTime, durationMinutes, bookingId } = opts;
+  const dateStr = startTime.toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric",
+  });
+  const timeStr = startTime.toLocaleTimeString("en-US", {
+    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  });
+  try {
+    await _resend.emails.send({
+      from: _FROM,
+      to: toEmail,
+      subject: `Confirmed: ${meetingName} — ${dateStr}`,
+      html: `
+        <div style="font-family:'DM Sans',Arial,sans-serif;background:#08080D;color:#E8E4D9;max-width:560px;margin:0 auto;padding:40px 32px;">
+          <p style="font-family:monospace;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(245,166,35,0.6);margin:0 0 12px;">OPERATOR HOUSE &middot; BOOKING CONFIRMED</p>
+          <h1 style="font-size:24px;font-weight:700;color:#E8E4D9;margin:0 0 8px;">${meetingName}</h1>
+          <p style="font-size:15px;color:rgba(232,228,217,0.6);margin:0 0 24px;">Hi ${toName} &mdash; your session is locked in.</p>
+          <div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:8px;padding:20px 24px;margin-bottom:28px;">
+            <p style="margin:0 0 8px;font-size:13px;color:rgba(232,228,217,0.5);font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;">Date &amp; Time</p>
+            <p style="margin:0;font-size:18px;font-weight:600;color:#F5A623;">${dateStr}</p>
+            <p style="margin:4px 0 0;font-size:14px;color:rgba(232,228,217,0.7);">${timeStr} &middot; ${durationMinutes} minutes</p>
+          </div>
+          <p style="font-size:14px;color:rgba(232,228,217,0.55);line-height:1.6;margin:0 0 28px;">Specter will be ready. Come prepared with your current pipeline state, your biggest constraint, and the one outcome you need from this session.</p>
+          <a href="${_APP_URL}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#F5A623 0%,#E8940F 100%);border-radius:6px;color:#0A0A0B;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">View Operator House &rarr;</a>
+          <p style="margin:40px 0 0;font-size:11px;color:rgba(232,228,217,0.25);font-family:monospace;">Operator House &middot; app.operatorhouse.click &middot; Booking #${bookingId}</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[Booking] Confirmation email failed:", err);
+    return false;
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function slugify(text: string): string {
@@ -402,8 +450,31 @@ export const bookingRouter = router({
         reminderSent: false,
       });
 
+      const bookingId = (result as any).insertId as number;
+
+      // Send confirmation email (fire-and-forget, non-blocking)
+      sendBookingConfirmation({
+        toEmail: input.email,
+        toName: input.name,
+        meetingName: mt.name,
+        startTime,
+        durationMinutes: mt.durationMinutes,
+        bookingId,
+      }).then((sent) => {
+        if (sent) {
+          // Mark confirmationSent = true in the background
+          getDb().then((db2) => {
+            if (!db2) return;
+            db2.update(bookings)
+              .set({ confirmationSent: true })
+              .where(eq(bookings.id, bookingId))
+              .catch(() => {});
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+
       return {
-        id: (result as any).insertId as number,
+        id: bookingId,
         startTime,
         endTime,
         meetingName: mt.name,

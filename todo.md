@@ -687,7 +687,7 @@
 - [ ] Swap PayPal sandbox credentials for live credentials before cohort 1 opens
 - [ ] Template 4 (charge confirmation) — wire to PayPal PAYMENT.SALE.COMPLETED webhook (currently logs only)
 - [ ] /founding page — tier confirmation/change page (linked from Day-75 email)
-- [ ] Booking confirmation emails (Booking router sets confirmationSent: false but never sends)
+- [x] Booking confirmation emails (Booking router sets confirmationSent: false but never sends)
 - [ ] Test full invite flow end-to-end: apply → approve → /invite/:code → OAuth → /billing-setup → dashboard → Specter intro
 
 ## UX Audit Fixes (May 31)
