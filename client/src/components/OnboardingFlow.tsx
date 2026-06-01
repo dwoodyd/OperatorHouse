@@ -698,36 +698,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     }, 380);
   }, [phase, activeSlides]);
 
-  const advance = useCallback(() => {
-    if (phase !== "idle" || showCalibration) return;
-    if (slideIdx === TOTAL - 1) { handleEnter(); return; }
-    // Trigger calibration before last slide (only on desktop 7-slide flow)
-    if (!isMobile && slideIdx === TOTAL - 2) { triggerCalibration(); return; }
-    goTo(slideIdx + 1);
-  }, [slideIdx, phase, showCalibration, goTo, TOTAL, isMobile]);
-
-  const retreat = useCallback(() => {
-    if (phase !== "idle" || showCalibration || slideIdx <= 0) return;
-    goTo(slideIdx - 1);
-  }, [slideIdx, phase, showCalibration, goTo]);
-
-  const triggerCalibration = () => {
-    setShowCalibration(true);
-    setCalStep(0);
-    [0, 1, 2, 3].forEach((_, i) => {
-      setTimeout(() => setCalStep(i + 1), 400 + i * 480);
-    });
-    setTimeout(() => {
-      setShowCalibration(false);
-      goTo(TOTAL - 1);
-    }, 2600);
-  };
-
-  const handleEnter = () => {
+  // handleEnter must be defined BEFORE advance so advance can reference it
+  // without a stale closure. Using useCallback ensures the reference is stable.
+  const handleEnter = useCallback(() => {
     if (done) return;
     setDone(true);
     setDissolving(true);
-    const isLeadCTA = currentSlide.cta?.startsWith("Add your first lead");
+    const isLastSlide = slideIdx === TOTAL - 1;
+    const isLeadCTA = isLastSlide && activeSlides[slideIdx]?.cta?.startsWith("Add your first lead");
     const finish = () => setTimeout(() => {
       onComplete();
       if (isLeadCTA) {
@@ -749,7 +727,32 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     } else {
       finish();
     }
-  };
+  }, [done, slideIdx, TOTAL, activeSlides, isAuthenticated, onComplete, setLocation, completeOnboarding]);
+
+  const triggerCalibration = useCallback(() => {
+    setShowCalibration(true);
+    setCalStep(0);
+    [0, 1, 2, 3].forEach((_, i) => {
+      setTimeout(() => setCalStep(i + 1), 400 + i * 480);
+    });
+    setTimeout(() => {
+      setShowCalibration(false);
+      goTo(TOTAL - 1);
+    }, 2600);
+  }, [goTo, TOTAL]);
+
+  const advance = useCallback(() => {
+    if (phase !== "idle" || showCalibration) return;
+    if (slideIdx === TOTAL - 1) { handleEnter(); return; }
+    // Trigger calibration before last slide (only on desktop 6-slide flow)
+    if (!isMobile && slideIdx === TOTAL - 2) { triggerCalibration(); return; }
+    goTo(slideIdx + 1);
+  }, [slideIdx, phase, showCalibration, goTo, TOTAL, isMobile, handleEnter, triggerCalibration]);
+
+  const retreat = useCallback(() => {
+    if (phase !== "idle" || showCalibration || slideIdx <= 0) return;
+    goTo(slideIdx - 1);
+  }, [slideIdx, phase, showCalibration, goTo]);
 
   const handleSkip = () => {
     if (done) return;

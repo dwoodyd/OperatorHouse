@@ -704,3 +704,7 @@
 - [x] OnboardingFlow full-bleed video: add onError handler — hide video layer gracefully on network failure (text overlay still renders)
 - [x] PublicFunnel: fire trackView.mutate on mount (was instantiated but never called)
 - [x] docs/env-reference.md: document all required environment variables for new contributors
+
+## Onboarding Flow Fixes (Jun 1)
+- [x] Fix stale closure bug in OnboardingFlow — handleEnter and triggerCalibration converted to useCallback and moved before advance so advance captures fresh references
+- [x] Fix onboarding.complete mutation — now sets needsIntro=false in DB so the intro only shows once per user

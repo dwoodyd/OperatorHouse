@@ -585,6 +585,13 @@ ${contextBlock}`;
       };
     }),
     complete: protectedProcedure.mutation(async ({ ctx }) => {
+      // Mark needsIntro = false so the onboarding never shows again for this user
+      const _db = await getDb();
+      if (_db) {
+        const { users: _users } = await import('../drizzle/schema');
+        const { eq: _eq } = await import('drizzle-orm');
+        await _db.update(_users).set({ needsIntro: false }).where(_eq(_users.id, ctx.user.id));
+      }
       await logActivity({
         userId: ctx.user.id,
         activityType: 'onboarding_completed',
