@@ -708,3 +708,17 @@
 ## Onboarding Flow Fixes (Jun 1)
 - [x] Fix stale closure bug in OnboardingFlow — handleEnter and triggerCalibration converted to useCallback and moved before advance so advance captures fresh references
 - [x] Fix onboarding.complete mutation — now sets needsIntro=false in DB so the intro only shows once per user
+
+## Security: ENV Centralization (Jun 5)
+- [x] Centralize all server-side process.env accesses into server/_core/env.ts ENV object
+- [x] Add all secrets to ENV: resendApiKey, emailFrom, vapidPublicKey, vapidPrivateKey, paypalEnv, paypalClientId, paypalClientSecret, paypalPlanOperator, paypalPlanOperatorPro, stripeSecretKey, stripeMonthlyPriceId, stripeAnnualPriceId, twilioAccountSid, twilioAuthToken, twilioPhoneNumber, vapiApiKey, linkedinClientId, linkedinClientSecret, twitterApiKey, twitterApiSecret, redisUrl
+- [x] Update server/push.ts to use ENV
+- [x] Update server/paypal.ts to use ENV
+- [x] Update server/emailCron.ts to use ENV
+- [x] Update all server/routers/*.ts files to use ENV (emailSequences, sms, voiceAgents, invoicing, booking, portal, contracts, reviews, team, funnel, push)
+- [x] Update server/routers.ts (paypal.plans, capabilities.check) to use ENV
+- [x] Add boot-time validation for all production-required vars (PUBLIC_URL, DATABASE_URL, JWT_SECRET, OAUTH_SERVER_URL, BUILT_IN_FORGE_API_URL, BUILT_IN_FORGE_API_KEY)
+- [x] Confirm no secrets in VITE_ vars (VITE_FRONTEND_FORGE_API_KEY is intentionally public like a Maps API key)
+- [x] Update docs/env-reference.md with complete variable reference and security rules
+- [x] 0 raw process.env accesses for secrets outside env.ts (confirmed by grep)
+- [x] 32/32 tests passing after changes

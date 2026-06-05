@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
@@ -186,7 +187,7 @@ export const voiceAgentsRouter = router({
         .where(and(eq(voiceAgents.id, input.agentId), eq(voiceAgents.userId, ctx.user.id))).limit(1);
       if (!agent) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const vapiKey = process.env.VAPI_API_KEY;
+      const vapiKey = ENV.vapiApiKey;
       if (!vapiKey) {
         return { success: false, message: "Vapi API key not configured. Add VAPI_API_KEY in Settings → Secrets." };
       }

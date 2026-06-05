@@ -14,11 +14,12 @@ import { Resend } from "resend";
 import { getDb } from "./db.js";
 import { users, leads, strategies, activities } from "../drizzle/schema.js";
 import { and, eq, gte, lt, isNotNull, count, sql } from "drizzle-orm";
+import { ENV } from "./_core/env.js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_SPECTER = process.env.EMAIL_FROM ?? "Specter <specter@mail.operatorhouse.click>";
+const resend = new Resend(ENV.resendApiKey);
+const FROM_SPECTER = ENV.emailFrom;
 const REPLY_TO = "dewayne@operatorhouse.click";
-const APP_URL = "https://app.operatorhouse.click";
+const APP_URL = ENV.publicUrl || "https://app.operatorhouse.click";
 
 function daysBetween(a: Date, b: Date) {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));

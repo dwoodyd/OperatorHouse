@@ -7,13 +7,14 @@
  *   push.unsubscribe — protected, removes a push subscription by endpoint
  */
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { savePushSubscription, deletePushSubscription } from "../db";
 
 export const pushRouter = router({
   /** Returns the VAPID public key so the browser can create a PushSubscription. */
   vapidKey: publicProcedure.query(() => {
-    const publicKey = process.env.VAPID_PUBLIC_KEY ?? null;
+    const publicKey = ENV.vapidPublicKey || null;
     return { publicKey };
   }),
 

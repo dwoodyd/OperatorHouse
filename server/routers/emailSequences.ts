@@ -3,6 +3,7 @@
  * Handles CRUD for sequences, steps, enrollments, and Resend email delivery.
  */
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
@@ -16,7 +17,7 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import { Resend } from "resend";
 import { TRPCError } from "@trpc/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(ENV.resendApiKey);
 
 // ── Pre-built sequence templates ──────────────────────────────────────────────
 export const BUILT_IN_TEMPLATES = [
@@ -528,7 +529,7 @@ export const emailSequencesRouter = router({
       let status: "sent" | "failed" = "sent";
       try {
         const { data, error } = await resend.emails.send({
-          from: process.env.EMAIL_FROM ?? "Operator House <ops@mail.operatorhouse.click>",
+          from: ENV.emailFrom,
           to: client.email,
           subject,
           text: body,

@@ -10,7 +10,7 @@ import { ENV } from "../_core/env";
 import { getDb } from "../db";
 import { contracts, crmContacts, portalDocuments, clientPortals } from "../../drizzle/schema";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(ENV.resendApiKey);
 const FROM = "Operator House <onboarding@resend.dev>";
 
 export const contractsRouter = router({

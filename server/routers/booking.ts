@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
@@ -8,8 +9,8 @@ import {
 import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
 import { Resend } from "resend";
 
-const _resend = new Resend(process.env.RESEND_API_KEY);
-const _FROM = process.env.EMAIL_FROM ?? "Specter <specter@mail.operatorhouse.click>";
+const _resend = new Resend(ENV.resendApiKey);
+const _FROM = ENV.emailFrom;
 const _APP_URL = "https://app.operatorhouse.click";
 
 async function sendBookingConfirmation(opts: {

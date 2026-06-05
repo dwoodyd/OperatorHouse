@@ -3,6 +3,7 @@
  * Invoice CRUD, Stripe payment links, status tracking, revenue stats
  */
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
@@ -209,13 +210,13 @@ export const invoicingRouter = router({
       if (!invoice.clientEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "No client email on invoice" });
 
       // Send via Resend
-      const RESEND_API_KEY = process.env.RESEND_API_KEY;
+      const RESEND_API_KEY = ENV.resendApiKey;
       if (RESEND_API_KEY) {
         const { Resend } = await import("resend");
         const resend = new Resend(RESEND_API_KEY);
         const lineItemsTyped = invoice.lineItems as Array<{ description: string; quantity: number; rate: number; amount: number }>;
         await resend.emails.send({
-          from: process.env.EMAIL_FROM ?? "Operator House <ops@mail.operatorhouse.click>",
+          from: ENV.emailFrom,
           to: invoice.clientEmail,
           subject: `Invoice ${invoice.invoiceNumber} from Operator House`,
           html: `
@@ -319,7 +320,7 @@ export const invoicingRouter = router({
         .where(and(eq(invoices.id, input.id), eq(invoices.userId, ctx.user.id)));
       if (!invoice) throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
 
-      const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+      const STRIPE_SECRET_KEY = ENV.stripeSecretKey;
       if (!STRIPE_SECRET_KEY) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Stripe not configured" });
       }

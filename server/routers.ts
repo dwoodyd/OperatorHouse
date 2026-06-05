@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
+import { ENV } from "./_core/env";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { TRPCError } from "@trpc/server";
@@ -645,17 +646,17 @@ ${contextBlock}`;
   paypal: router({
     /** Returns PayPal plan IDs and client ID for the frontend subscription buttons */
     plans: publicProcedure.query(() => ({
-      clientId: process.env.PAYPAL_CLIENT_ID ?? '',
+      clientId: ENV.paypalClientId,
       plans: {
         operator: {
-          planId: process.env.PAYPAL_PLAN_OPERATOR ?? '',
+          planId: ENV.paypalPlanOperator,
           label: 'Operator',
           founding: '$399/yr',
           retail: '$797/yr',
           description: 'Core Intelligence Suite — Command, Pipeline, Vault, Strategy, Analytics',
         },
         operator_pro: {
-          planId: process.env.PAYPAL_PLAN_OPERATOR_PRO ?? '',
+          planId: ENV.paypalPlanOperatorPro,
           label: 'Operator Pro',
           founding: '$99/mo',
           retail: '$197/mo',
@@ -858,12 +859,12 @@ ${contextBlock}`;
   }),
   capabilities: router({
     check: publicProcedure.query(() => ({
-      twilio: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
-      vapi: !!process.env.VAPI_API_KEY,
-      emailDispatch: !!process.env.RESEND_API_KEY,
-      stripe: !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_MONTHLY_PRICE_ID && process.env.STRIPE_ANNUAL_PRICE_ID),
-      socialLinkedIn: !!(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET),
-      socialTwitter: !!(process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET),
+      twilio: !!(ENV.twilioAccountSid && ENV.twilioAuthToken && ENV.twilioPhoneNumber),
+      vapi: !!ENV.vapiApiKey,
+      emailDispatch: !!ENV.resendApiKey,
+      stripe: !!(ENV.stripeSecretKey && ENV.stripeMonthlyPriceId && ENV.stripeAnnualPriceId),
+      socialLinkedIn: !!(ENV.linkedinClientId && ENV.linkedinClientSecret),
+      socialTwitter: !!(ENV.twitterApiKey && ENV.twitterApiSecret),
     })),
   }),
   sms: smsRouter,

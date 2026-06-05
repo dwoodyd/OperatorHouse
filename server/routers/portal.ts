@@ -7,6 +7,7 @@
  * - Public portal endpoint (token-based, no auth)
  */
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { eq, and, desc } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
@@ -23,7 +24,7 @@ import {
   invoices,
 } from "../../drizzle/schema";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(ENV.resendApiKey);
 const FROM = "Operator House <onboarding@resend.dev>";
 
 // ─── Email helpers ────────────────────────────────────────────────────────────

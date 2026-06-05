@@ -1,10 +1,11 @@
 import webpush from 'web-push';
+import { ENV } from './_core/env';
 
 // ─── Boot-time guard ──────────────────────────────────────────────────────────
 // VAPID keys must be set as environment variables. The previously committed
 // fallback keys are now considered compromised and have been rotated.
 // Generate a fresh pair with: npx web-push generate-vapid-keys
-if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+if (!ENV.vapidPublicKey || !ENV.vapidPrivateKey) {
   throw new Error(
     '[boot] VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY are required. ' +
     'Generate a new keypair with: npx web-push generate-vapid-keys'
@@ -13,8 +14,8 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 webpush.setVapidDetails(
   'mailto:hello@operatorhouse.click',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY,
+  ENV.vapidPublicKey,
+  ENV.vapidPrivateKey,
 );
 
 export async function sendPushNotification(
@@ -36,7 +37,7 @@ export async function sendPushNotification(
 }
 
 // Export the current public key so the client can subscribe with the correct key.
-// NOTE: After rotating VAPID keys, existing push subscriptions tied to the old
-// public key will return 410 on next send. The client should re-subscribe on
-// receiving a 410 response or on next page load.
-export const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+// VAPID_PUBLIC_KEY is intentionally non-secret — it is the public half of the
+// ECDH keypair and must be sent to browsers to create push subscriptions.
+// Only VAPID_PRIVATE_KEY is secret and it never leaves the server.
+export const VAPID_PUBLIC_KEY = ENV.vapidPublicKey;

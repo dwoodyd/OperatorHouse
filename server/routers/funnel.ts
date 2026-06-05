@@ -4,6 +4,7 @@
  * Admin-only: generate codes, list codes, list applications, approve/reject
  */
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
@@ -12,10 +13,10 @@ import { eq, isNull, desc } from "drizzle-orm";
 import { notifyOwner } from "../_core/notification";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(ENV.resendApiKey);
 const SPECTER_FROM = "Specter <specter@mail.operatorhouse.click>";
 const REPLY_TO = "dewayne@operatorhouse.click";
-const APP_URL = process.env.PUBLIC_URL ?? "https://app.operatorhouse.click";
+const APP_URL = ENV.publicUrl || "https://app.operatorhouse.click";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

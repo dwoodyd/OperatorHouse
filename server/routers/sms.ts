@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
@@ -113,9 +114,9 @@ export const smsRouter = router({
       if (!convo) throw new TRPCError({ code: "NOT_FOUND" });
 
       // Attempt Twilio send if credentials are available
-      const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-      const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
-      const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
+      const twilioSid = ENV.twilioAccountSid;
+      const twilioAuth = ENV.twilioAuthToken;
+      const twilioFrom = ENV.twilioPhoneNumber;
       let smsSid: string | undefined;
       let status: "sent" | "queued" = "queued";
 

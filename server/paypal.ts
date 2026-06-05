@@ -10,24 +10,25 @@
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { ENV } from "./_core/env";
 
 const PAYPAL_BASE =
-  process.env.PAYPAL_ENV === "live"
+  ENV.paypalEnv === "live"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 
-const CLIENT_ID = process.env.PAYPAL_CLIENT_ID ?? "";
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET ?? "";
+const CLIENT_ID = ENV.paypalClientId;
+const CLIENT_SECRET = ENV.paypalClientSecret;
 
 export const PLANS = {
   operator: {
-    id: process.env.PAYPAL_PLAN_OPERATOR ?? "",
+    id: ENV.paypalPlanOperator,
     label: "Operator",
     founding: "$399/yr",
     retail: "$797/yr",
   },
   operator_pro: {
-    id: process.env.PAYPAL_PLAN_OPERATOR_PRO ?? "",
+    id: ENV.paypalPlanOperatorPro,
     label: "Operator Pro",
     founding: "$99/mo",
     retail: "$197/mo",
