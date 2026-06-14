@@ -563,7 +563,11 @@ ${contextBlock}`;
   }),
 
   onboarding: router({
-    topLead: protectedProcedure.query(async ({ ctx }) => {
+    // publicProcedure so unauthenticated visitors never trigger the global
+    // redirectToLoginIfUnauthorized handler in main.tsx while the onboarding
+    // is still playing. Returns null / no-ops silently when there is no session.
+    topLead: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return null;
       const allLeads = await getLeads(ctx.user.id);
       if (!allLeads.length) return null;
       const top = allLeads
@@ -585,7 +589,10 @@ ${contextBlock}`;
         clientName,
       };
     }),
-    complete: protectedProcedure.mutation(async ({ ctx }) => {
+    complete: publicProcedure.mutation(async ({ ctx }) => {
+      // No-op for unauthenticated visitors — the onboarding still completes
+      // visually; DB writes and notifications only happen for real users.
+      if (!ctx.user) return { success: true };
       // Mark needsIntro = false so the onboarding never shows again for this user
       const _db = await getDb();
       if (_db) {

@@ -722,3 +722,7 @@
 - [x] Update docs/env-reference.md with complete variable reference and security rules
 - [x] 0 raw process.env accesses for secrets outside env.ts (confirmed by grep)
 - [x] 32/32 tests passing after changes
+
+## Confirmed Root-Cause Fixes (Jun 14)
+- [x] Fix Vite error overlay: replaced broken %VITE_ANALYTICS_ENDPOINT%/umami static tag in index.html with safe runtime injection script that only fires when both env vars are actually set
+- [x] Fix onboarding 401 redirect: converted onboarding.topLead and onboarding.complete from protectedProcedure to publicProcedure with safe null/no-op fallbacks for unauthenticated visitors — eliminates the "Please login" 401 that triggered the global redirect handler mid-onboarding
