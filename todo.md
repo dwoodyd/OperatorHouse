@@ -770,3 +770,12 @@
 - [x] Delete OHSymbol.tsx (no longer imported anywhere)
 - [x] Fixes 2-5 confirmed intact: Specter chat prompt, briefing prompt, vault templates, lead audit tone guidance
 - [x] 0 TypeScript errors confirmed
+
+## Media Proxy Fix (Jun 18)
+- [x] Diagnosed root cause: storageProxy.ts was issuing 307 redirects to presigned CloudFront URLs that expire after 60 minutes. Browsers cache the redirect target, so after expiry all /manus-storage/ assets return 403.
+- [x] Rewrote storageProxy.ts to stream file bytes directly: gets fresh presigned URL from Forge API, fetches the file, forwards Content-Type/Content-Length/Content-Range/Accept-Ranges/Last-Modified headers, streams response body via ReadableStream reader. Range requests (video seeking) fully supported — returns 206 with Content-Range header.
+- [x] Set Cache-Control: public, max-age=3300 (55 min) so browsers cache the bytes but re-fetch before the presigned URL would expire.
+- [x] Verified: /manus-storage/spector_friendly_welcome_6fb4122e.png returns 200 image/png 285244 bytes. /manus-storage/SpectorInvitingSmiling_92a14245.mp4 returns 200 video/mp4 2710066 bytes. Range request returns 206 video/mp4.
+- [x] All existing /manus-storage/ paths in OnboardingFlow.tsx, SpectreChatbot.tsx, SpectreVideoPlayer.tsx, SpectreWidget.tsx unchanged — they now work permanently.
+- [x] Sidebar logo (AppLayout.tsx) uses d2xsxph8kpxj0f.cloudfront.net URL which returns 200 directly — not a presigned URL, no expiry issue.
+- [x] 0 TypeScript errors confirmed
