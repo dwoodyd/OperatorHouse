@@ -51,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
       { icon: Layers, label: "Funnel Builder",      path: "/funnels", business: true, beta: true },
       { icon: Share2,    label: "Social Media Agents", path: "/social",       business: true, beta: true },
       { icon: Workflow,  label: "Automations",          path: "/automations", business: true, beta: true },
+      { icon: Telescope, label: "Prospecting HQ",         path: "/prospecting", pro: true },
     ],
   },
   {
@@ -78,12 +79,7 @@ const NAV_SECTIONS: NavSection[] = [
       { icon: CreditCard,label: "Pricing",          path: "/pricing" },
     ],
   },
-  {
-    title: "ROADMAP",
-    items: [
-      { icon: Telescope, label: "Prospecting Engine", path: "/prospecting", roadmap: true },
-    ],
-  },
+
 ];
 
 interface AppLayoutProps {

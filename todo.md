@@ -726,3 +726,14 @@
 ## Confirmed Root-Cause Fixes (Jun 14)
 - [x] Fix Vite error overlay: replaced broken %VITE_ANALYTICS_ENDPOINT%/umami static tag in index.html with safe runtime injection script that only fires when both env vars are actually set
 - [x] Fix onboarding 401 redirect: converted onboarding.topLead and onboarding.complete from protectedProcedure to publicProcedure with safe null/no-op fallbacks for unauthenticated visitors — eliminates the "Please login" 401 that triggered the global redirect handler mid-onboarding
+
+## Prospecting Module Integration (Jun 18)
+- [x] Add prospecting_leads table to drizzle/schema.ts (id, userId, name, type, company, phone, email, value, stage, notes, source, createdAt, updatedAt)
+- [x] Run pnpm db:push to migrate schema (created via direct SQL)
+- [x] Build server/routers/prospecting.ts (list, create, moveStage, update, delete, stats procedures)
+- [x] Register prospecting router in server/routers.ts appRouter
+- [x] Build client/src/pages/Prospecting.tsx with Pipeline kanban, Lead Finder, and Outreach Scripts tabs
+- [x] Wire /prospecting route in App.tsx (already wired)
+- [x] Promote Prospecting from ROADMAP to GROWTH section in AppLayout sidebar
+- [x] Add Prospecting to CommandPalette nav actions (removed from roadmap, now in GROWTH)
+- [ ] Write vitest tests for prospecting procedures (deferred)

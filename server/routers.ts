@@ -24,6 +24,7 @@ import { automationsRouter } from "./routers/automations";
 import { integrationsRouter } from "./routers/integrations";
 import { funnelRouter } from "./routers/funnel";
 import { pushRouter } from "./routers/push";
+import { prospectingRouter } from "./routers/prospecting";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -889,6 +890,7 @@ ${contextBlock}`;
   integrations: integrationsRouter,
   funnel: funnelRouter,
   push: pushRouter,
+  prospecting: prospectingRouter,
 });
 
 export type AppRouter = typeof appRouter;

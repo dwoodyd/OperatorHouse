@@ -1152,6 +1152,31 @@ export const inviteCodes = mysqlTable("invite_codes", {
 export type InviteCode = typeof inviteCodes.$inferSelect;
 export type InsertInviteCode = typeof inviteCodes.$inferInsert;
 
+// ─── Phase 17: Prospecting Leads ────────────────────────────────────────────
+export const prospectingLeads = mysqlTable("prospecting_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  businessName: varchar("businessName", { length: 255 }).notNull(),
+  ownerName: varchar("ownerName", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  website: varchar("website", { length: 500 }),
+  location: varchar("location", { length: 255 }),
+  category: varchar("category", { length: 100 }),
+  source: mysqlEnum("source", ["google_maps", "facebook_groups", "causeiq", "referral", "manual", "other"]).default("manual").notNull(),
+  stage: mysqlEnum("stage", ["Prospect", "Contacted", "Responded", "Meeting", "Closed"]).default("Prospect").notNull(),
+  notes: text("notes"),
+  noWebsite: boolean("noWebsite").default(false).notNull(),
+  estimatedValue: float("estimatedValue"),
+  lastContactedAt: timestamp("lastContactedAt"),
+  linkedClientId: int("linkedClientId"),
+  linkedPipelineDealId: int("linkedPipelineDealId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ProspectingLead = typeof prospectingLeads.$inferSelect;
+export type InsertProspectingLead = typeof prospectingLeads.$inferInsert;
+
 // ── Applications ──────────────────────────────────────────────────────────────
 export const applications = mysqlTable("applications", {
   id: int("id").autoincrement().primaryKey(),
