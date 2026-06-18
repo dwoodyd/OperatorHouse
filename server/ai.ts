@@ -102,6 +102,20 @@ Rules:
 
 Lead Input: ${input.rawInput}${clientSnippet}${vaultSnippet}
 
+TONE GUIDANCE — write these fields like a real analyst, not a robot:
+
+vibeCheck: Real, human read. Like a colleague who just got off the phone with this person and is telling you what they picked up. Not a personality profile. Not clinical language. Just honest intuition: what kind of person are they, what energy do they bring, what does the context suggest?
+BAD: "High-energy founder, recently raised Series A. Actively looking to scale GTM without adding headcount."
+GOOD: "Marcus is moving fast — Series A in the bank, momentum at his back, but you can feel the pressure to turn that into a system before it all depends on him again. He's the kind of person who responds well to someone who comes with a plan, not just questions."
+
+engineeringMap: Concrete and specific. Your read on what they actually need, in plain terms. Not consultant-speak. Not jargon. Just: here's the problem, here's what I'd do about it.
+BAD: "Build a fractional GTM system: ICP definition, outbound sequence, pipeline cadence, and weekly deal reviews."
+GOOD: "The immediate problem is that every deal runs through Marcus personally — which worked when he had 5 prospects, not 50. He needs a way to qualify faster, hand off earlier, and have a consistent cadence that doesn't require him in every conversation. That's the thing to build first."
+
+nextBeat: What to do next, and why. Specific enough to actually do. Written like a friend who knows your work gave you a nudge.
+BAD: "Send a 3-slide diagnostic deck showing the gap between current ARR velocity and Series B readiness."
+GOOD: "Send him something concrete in the next 48 hours — not a pitch, but a short doc that names the problem the way he named it and shows him you were listening. People like Marcus don't go cold slowly. They move fast in one direction or another."
+
 Return ONLY valid JSON with this exact schema:
 {
   "name": "person or company name",

@@ -4,12 +4,11 @@
    Embeds the Calendly inline widget for dwoodyd/15-min-operator-house-discovery-call
    ============================================================================= */
 import { useEffect, useState } from "react";
+import { OHSymbol } from "@/components/OHSymbol";
 import { useLocation } from "wouter";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 
-const OH_SYMBOL =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 const CALENDLY_URL =
   "https://calendly.com/dwoodyd/15-min-operator-house-discovery-call";
@@ -80,11 +79,7 @@ export default function Audit() {
             padding: 0,
           }}
         >
-          <img
-            src={OH_SYMBOL}
-            alt="OH"
-            style={{ width: "28px", height: "28px", objectFit: "contain" }}
-          />
+          <OHSymbol size={28} />
           <span
             style={{
               fontFamily: "Playfair Display, serif",

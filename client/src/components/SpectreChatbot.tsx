@@ -259,11 +259,7 @@ export function SpectreChatbot() {
                       marginTop: "2px",
                     }}
                   >
-                    <img
-                      src="/manus-storage/spector_friendly_welcome_6fb4122e.png"
-                      alt="Specter"
-                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-                    />
+                    <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%'}}><rect width="120" height="120" rx="12" fill="#0a0a0a"/><circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/><text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text></svg>
                   </div>
                 )}
                 <div
@@ -307,11 +303,7 @@ export function SpectreChatbot() {
                     marginTop: "2px",
                   }}
                 >
-                  <img
-                    src="/manus-storage/spector_friendly_welcome_6fb4122e.png"
-                    alt="Specter"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-                  />
+                  <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%'}}><rect width="120" height="120" rx="12" fill="#0a0a0a"/><circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/><text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text></svg>
                 </div>
                 <div
                   style={{

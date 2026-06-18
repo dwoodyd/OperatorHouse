@@ -4,14 +4,13 @@
    subscription with 90-day trial. No charge during beta.
    ============================================================================= */
 import { useState, useEffect, useRef } from "react";
+import { OHSymbol } from "@/components/OHSymbol";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, Shield } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-const OH_SYMBOL =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 declare global {
   interface Window {
@@ -134,7 +133,7 @@ export default function BillingSetup() {
     <div style={pageStyle}>
       {/* Nav */}
       <nav style={navStyle}>
-        <img src={OH_SYMBOL} alt="Operator House" style={{ height: 32, width: 32 }} />
+        <OHSymbol size={32} />
         <span style={{ fontFamily: "Fira Code, monospace", fontSize: 11, letterSpacing: "0.15em", color: "rgba(245,166,35,0.7)", textTransform: "uppercase" }}>
           Operator House
         </span>

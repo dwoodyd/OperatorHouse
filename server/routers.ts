@@ -461,7 +461,22 @@ export const appRouter = router({
         const daysSince = (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
         return daysSince > 7;
       });
-      const prompt = `You are Specter — an AI strategist for ${ctx.user.name ?? 'the user'}. Active leads: ${leads.length}. Pipeline: ${activeDeals.length} active (${staleDeals.length} stale >7d). Recent: ${activities.slice(0,5).map((a) => a.summary ?? '').join('; ')}. Generate a crisp login briefing. Return JSON: { situation: string, priority: string, ghostNote: string }`;
+      const recentActivity = activities.slice(0, 5).map((a) => a.summary ?? '').filter(Boolean).join('; ') || 'No recent activity logged';
+      const prompt = `You are Specter — the intelligence engine for ${ctx.user.name ?? 'this operator'}. They just logged in and need a fast read on where things stand.
+
+Business snapshot:
+- Active leads: ${leads.length}
+- Pipeline: ${activeDeals.length} active deals, ${staleDeals.length} have gone quiet (no activity in 7+ days)
+- Recent activity: ${recentActivity}
+
+Write a login briefing in the voice of a trusted adviser who genuinely cares about how this operator is doing. Be honest, be warm, be specific. Don't write like a report — write like someone who knows their business and wants to help them win today.
+
+Return JSON:
+{
+  situation: "A real, grounded 2-3 sentence read of where things actually stand — what's moving, what's stuck, what's worth paying attention to.",
+  priority: "The single most important move they should make today. Concrete and specific — not 'review your pipeline' but 'reach back out to [deal] before it goes cold.'",
+  ghostNote: "A quiet, personal observation — something you noticed that they might have overlooked. Written with care, not alarm. Like a colleague pulling them aside after a meeting."
+}`;
       const response = await withAiTimeout(
         () => invokeLLM({
           messages: [{ role: 'user', content: prompt }],
@@ -531,9 +546,15 @@ export const appRouter = router({
           activeDeals.length > 0 ? `Top deals: ${activeDeals.slice(0, 3).map(d => `${d.title} (${d.stage}, $${(d.value ?? 0).toLocaleString()})`).join('; ')}` : '',
         ].filter(Boolean).join('\n');
 
-        const systemPrompt = `You are Specter — the AI worker powering Operator House, the command center for ${ctx.user.name ?? 'this operator'}.
+        const systemPrompt = `You are Specter — the intelligence engine inside Operator House, built to help ${ctx.user.name ?? 'this operator'} find the right clients, say the right things, and close real work.
 
-You have full context on their business. Be direct, strategic, and actionable. No filler. Respond in markdown.
+You know this operator's business: their leads, pipeline, and what they've built in the Vault. Use that context to give advice that actually fits — not generic tips, but moves that make sense for where they are right now.
+
+When asked to draft an outreach message, first contact email, or any communication to a potential client — write it like a real human who did their homework. People can feel automation from a mile away. The goal is for the prospect to feel like they were specifically thought of, not like they landed in a drip sequence. Write warm, write curious, write with confidence — not salesy, not stiff, not fake urgent. No buzzwords. No filler.
+
+Be direct. Be honest. Be genuinely useful.
+
+Respond in markdown.
 
 ## Live Context
 ${contextBlock}`;
@@ -624,11 +645,87 @@ ${contextBlock}`;
       }
       // Vault: 5 starter items
       await Promise.all([
-        createVaultItem({ userId: uid, type: 'framework', title: 'The 3-Layer Discovery Framework', textContent: 'Layer 1 - Surface: What does the client say they need?\nLayer 2 - Structural: What does their business model actually require?\nLayer 3 - Legacy: What do they want to be known for in 5 years?\n\nUse this in every first call. The gap between Layer 1 and Layer 3 is your engagement scope.' }),
-        createVaultItem({ userId: uid, type: 'template', title: 'Proposal Email - Fractional Engagement', textContent: 'Subject: Proposal - [Client Name] x [Your Name]\n\nHi [First Name],\n\nBased on our conversation, here is how I would structure our engagement:\n\nScope: [3-line summary]\nDeliverables: [bullet list]\nInvestment: $[X]/month, 3-month minimum\nStart date: [Date]\n\nLet me know if you want to adjust scope before I send the agreement.' }),
-        createVaultItem({ userId: uid, type: 'case_study', title: 'Case Study: 40% Pipeline Velocity Increase', textContent: 'Client: Mid-market B2B SaaS (ARR $2M)\nChallenge: Deals stalling at Proposal stage for 60+ days\nIntervention: Rebuilt proposal process with decision-maker mapping and objection pre-emption\nResult: Average deal cycle dropped from 74 days to 44 days over one quarter\nKey insight: The bottleneck was not pricing - it was internal champion enablement.' }),
-        createVaultItem({ userId: uid, type: 'research', title: 'Fractional Market Sizing 2025', textContent: 'The fractional executive market is estimated at $25B+ globally as of 2025, growing at 18% YoY. Key drivers: post-2023 hiring freezes, AI-augmented productivity making solo operators viable at enterprise scope, and the shift from project-based consulting to embedded fractional roles.' }),
-        createVaultItem({ userId: uid, type: 'note', title: 'My Positioning Statement (Edit This)', textContent: 'I help [target client type] who are struggling with [core problem] to [achieve outcome] - without [common alternative they hate].\n\nExample: I help Series A SaaS founders who are struggling with inconsistent revenue to build a repeatable sales motion - without hiring a full-time VP of Sales before they are ready.' }),
+        createVaultItem({ userId: uid, type: 'template', title: 'First Contact Email — Businesses Without a Website', textContent: `Use this template when reaching out to a local business that doesn't have a website. Personalize every bracket before sending.
+
+Subject: Quick thought about [Business Name]
+
+Hi [First Name],
+
+I came across [Business Name] while looking into [type of business] in [City], and I wanted to reach out.
+
+I noticed you don't have a website yet — or the one you have might not be doing much for you. I build websites for small businesses, and I've seen how much of a difference it makes when someone can actually find you online and know what to expect before they walk through the door.
+
+I'm not going to pitch you anything in this message. I just thought it was worth a conversation.
+
+If you're open to a quick 15-minute call this week, I'd love to hear where you're at and whether there's something I can actually help with.
+
+Either way, keep doing what you're doing — [something specific you noticed about the business].
+
+[Your Name]
+
+Tips: The last line before your name should be something real and specific to them. Keep the subject line simple — plain subject lines feel like a person, not marketing. Don't send more than 3 follow-ups.` }),
+        createVaultItem({ userId: uid, type: 'template', title: 'Proposal Email — After First Conversation', textContent: `Use this after you've had an initial call and you're putting a proposal in front of someone.
+
+Subject: Here's what I'm thinking — [Client Name]
+
+Hi [First Name],
+
+Really appreciated the time last [day]. I've been thinking about what you shared, and I want to put something concrete in front of you.
+
+Here's how I'd structure our work together:
+
+What we're solving: [2-3 sentences describing the specific problem in their own language]
+
+What that looks like:
+- [Deliverable 1 — specific, not generic]
+- [Deliverable 2]
+- [Deliverable 3]
+
+Timeline: [X weeks / months]
+Investment: $[X] total / $[X] per month
+
+I want this to feel right before we get into paperwork. If something needs adjusting — the scope, the framing, the timeline — just say the word.
+
+If it does feel right, I can have the agreement over to you within 24 hours.
+
+[Your Name]` }),
+        createVaultItem({ userId: uid, type: 'framework', title: 'The 3-Layer Discovery Framework', textContent: `Use this framework on every first call. It keeps you from jumping to solutions before you understand what someone actually needs.
+
+LAYER 1 — What They Say They Need (the surface)
+Ask: "What's going on that brought you here?" or "What are you trying to solve?"
+Listen for: The symptom. The thing that's bothering them enough to reach out.
+
+LAYER 2 — What Their Business Actually Needs (the structure)
+Ask: "How does that affect things day-to-day?" or "What happens if this doesn't get fixed?"
+Listen for: The operational gap. The workflow that's breaking.
+
+LAYER 3 — What They're Building Toward (the legacy)
+Ask: "Where do you want to be in a few years?" or "What does success actually look like for you?"
+Listen for: The bigger vision. What they're trying to create, not just fix.
+
+HOW TO USE IT: The gap between Layer 1 and Layer 3 is your engagement scope. When you respond to all three layers, your proposal feels like it was built specifically for them — because it was.` }),
+        createVaultItem({ userId: uid, type: 'case_study', title: 'Case Study: The 40-Day Deal Cycle', textContent: `Client: Mid-market B2B SaaS (~$2M ARR). Challenge: Deals dying at the Proposal stage — average 74-day close cycle.
+
+THE SITUATION: They had a solid product and qualified buyers. Prospects were getting to "send me the proposal" — and then disappearing. The easy diagnosis would've been pricing. It wasn't pricing.
+
+WHAT WE FOUND: Their proposals were landing in front of the right person — but that person had to sell the decision internally. And nobody was helping them do that.
+
+WHAT WE BUILT: A "champion enablement kit" for every proposal — a one-page document designed to be shared internally. It explained the problem in plain language, made the ROI concrete, and answered the questions a budget holder would ask. We also started mapping decision-making structure before sending anything.
+
+THE RESULT: Average deal cycle dropped from 74 days to 44 days in one quarter. Close rate improved.
+
+THE LESSON: Sometimes you're not losing deals because of your offer. You're losing them because your champion can't get internal buy-in. Give them the words, and you win.` }),
+        createVaultItem({ userId: uid, type: 'note', title: 'My Positioning Statement (Fill This In)', textContent: `Before you reach out to anyone, you need to be able to answer: "Who do you help, and what changes for them when you do?"
+
+THE FORMULA: I help [specific type of person or business] who [are dealing with a specific situation] get to [the outcome they actually want] — without [the thing they're afraid of or tired of trying].
+
+YOUR DRAFT: I help _______ who _______ get to _______ — without _______.
+
+EXAMPLES:
+"I help small service businesses that rely on word of mouth finally get consistent leads from their website — without paying for ads they can't track."
+"I help established consultants who are always busy but never earning what they're worth raise their rates — without losing the clients they already have."
+
+HOW TO TEST IT: Put your draft in front of someone who fits your description and ask: "Does this sound like you?" The right positioning statement will sound exactly right to the people you want to work with.` }),
       ]);
       // Leads: 3 seeded audits
       await Promise.all([

@@ -737,3 +737,10 @@
 - [x] Promote Prospecting from ROADMAP to GROWTH section in AppLayout sidebar
 - [x] Add Prospecting to CommandPalette nav actions (removed from roadmap, now in GROWTH)
 - [ ] Write vitest tests for prospecting procedures (deferred)
+
+## 5-Fix Batch (Jun 18 — Inherited Session)
+- [x] Fix 1: Replace all broken onboarding media (OHSymbol SVG component, Specter SVG, animated CSS video fallbacks)
+- [x] Fix 2: Rewrite Specter chat system prompt (operator.chat procedure) — warm, human, context-aware
+- [x] Fix 3: Rewrite briefing prompt (briefings.generate procedure) — trusted adviser voice, JSON return
+- [x] Fix 4: Replace vault seed templates with 5 real-world templates (First Contact Email, Proposal Email, 3-Layer Discovery, 40-Day Deal Cycle Case Study, Positioning Statement)
+- [x] Fix 5: Add lead audit tone guidance to runLeadAudit in server/ai.ts (vibeCheck/engineeringMap/nextBeat tone examples before JSON schema)

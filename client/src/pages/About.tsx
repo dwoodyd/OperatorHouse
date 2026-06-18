@@ -8,6 +8,7 @@ import {
   ArrowRight, Zap, Shield, Brain, ChevronRight,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { OHSymbol } from "@/components/OHSymbol";
 
 /* ── Module data ─────────────────────────────────────────────────────────── */
 const MODULES = [
@@ -161,11 +162,7 @@ export default function About() {
             background: "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,166,35,0.08) 0%, transparent 70%)",
           }} />
 
-          <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
-            alt="Operator House"
-            style={{ width: "72px", height: "72px", objectFit: "contain", margin: "0 auto 20px", display: "block", position: "relative" }}
-          />
+          <OHSymbol size={72} />
           <h1
             className="text-amber-gradient"
             style={{

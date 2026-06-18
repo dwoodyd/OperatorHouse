@@ -4,6 +4,7 @@
    Manus OAuth. After OAuth completes, the code is marked as redeemed.
    ============================================================================= */
 import { useState, useEffect } from "react";
+import { OHSymbol } from "@/components/OHSymbol";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle, Loader2, Key } from "lucide-react";
@@ -11,8 +12,6 @@ import { Link, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-const OH_SYMBOL =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 export default function Redeem() {
   const [code, setCode] = useState("");
@@ -94,7 +93,7 @@ export default function Redeem() {
       <nav style={navStyle}>
         <Link href="/">
           <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-            <img src={OH_SYMBOL} alt="OH" style={{ width: "28px", height: "28px", objectFit: "contain" }} />
+            <OHSymbol size={28} />
             <span style={{ fontFamily: "Playfair Display, serif", fontSize: "15px", fontWeight: 700, color: "#E8E4D9" }}>
               Operator House
             </span>

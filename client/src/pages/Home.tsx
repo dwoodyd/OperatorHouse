@@ -3,6 +3,7 @@
    Pre-login marketing page. Authenticated users are redirected to /dashboard.
    ============================================================================= */
 import { useEffect, useState } from "react";
+import { OHSymbol } from "@/components/OHSymbol";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
@@ -10,7 +11,6 @@ import { Search, GitBranch, FileText, Archive, BarChart3, CheckSquare, ArrowRigh
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 
-const OH_SYMBOL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 const FEATURES = [
   { icon: Search,      color: "#F5A623", name: "Lead Intelligence",    desc: "AI-powered prospect audits — intent score, pain points, and your exact next move." },
@@ -58,7 +58,7 @@ export default function Home() {
         borderBottom: "1px solid rgba(245,166,35,0.1)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <img src={OH_SYMBOL} alt="OH" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
+          <OHSymbol size={32} />
           <span style={{ fontFamily: "Playfair Display, serif", fontSize: "16px", fontWeight: 700, color: "#E8E4D9" }}>
             Operator House
           </span>
@@ -112,7 +112,7 @@ export default function Home() {
           {!spectreHidden && <SpectreVideoPlayer state="happy_greeting" size="2xl" glow />}
         </div>
 
-        <img src={OH_SYMBOL} alt="Operator House" style={{ width: "88px", height: "88px", objectFit: "contain", marginBottom: "28px", position: "relative" }} />
+        <OHSymbol size={88} />
 
         <div style={{
           fontFamily: "Fira Code, monospace", fontSize: "10px",
@@ -324,7 +324,7 @@ export default function Home() {
         display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <img src={OH_SYMBOL} alt="OH" style={{ width: "20px", height: "20px", objectFit: "contain", opacity: 0.6 }} />
+          <OHSymbol size={20} />
           <span style={{ fontSize: "12px", color: "rgba(232,228,217,0.3)", fontFamily: "Fira Code, monospace" }}>
             Operator House © {new Date().getFullYear()}
           </span>
