@@ -4,7 +4,6 @@
    Dark centered layout, OH symbol prominent, Stripe checkout wired.
    ============================================================================= */
 import { useState } from "react";
-import { OHSymbol } from "@/components/OHSymbol";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -14,6 +13,8 @@ import { ChevronLeft, Loader2 } from "lucide-react";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 
+const OH_SYMBOL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 const OUTCOMES = [
   { label: "Arrive prepared.", desc: "Every client meeting starts with a full AI briefing — context, stage, next move." },
@@ -85,7 +86,7 @@ export default function Pricing() {
         >
           <ChevronLeft size={14} /> Back
         </button>
-        <OHSymbol size={24} />
+        <img src={OH_SYMBOL} alt="Operator House" style={{ width: 24, height: 24, objectFit: "contain", opacity: 0.7 }} draggable={false} />
         {isAuthenticated ? (
           <button onClick={() => setLocation("/dashboard")} style={{ background: "none", border: "none", color: "#d4a853", fontSize: 13, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
             Dashboard →
@@ -108,7 +109,7 @@ export default function Pricing() {
               background: "radial-gradient(circle, rgba(212,168,83,0.15) 0%, transparent 70%)",
               pointerEvents: "none",
             }} />
-            <OHSymbol size={64} />
+            <img src={OH_SYMBOL} alt="" style={{ width: 64, height: 64, objectFit: "contain", display: "block", position: "relative" }} draggable={false} />
           </div>
         </div>
 

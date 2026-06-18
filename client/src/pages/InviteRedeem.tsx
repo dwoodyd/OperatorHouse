@@ -4,7 +4,6 @@
    through Manus OAuth. After OAuth, code is redeemed and user goes to /billing-setup.
    ============================================================================= */
 import { useEffect, useState } from "react";
-import { OHSymbol } from "@/components/OHSymbol";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -12,6 +11,8 @@ import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 
+const OH_SYMBOL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 export default function InviteRedeem() {
   const { code: rawCode } = useParams<{ code: string }>();
@@ -83,7 +84,7 @@ export default function InviteRedeem() {
     <div style={pageStyle}>
       {/* Nav */}
       <nav style={navStyle}>
-        <OHSymbol size={32} />
+        <img src={OH_SYMBOL} alt="Operator House" style={{ height: 32, width: 32 }} />
         <span style={{ fontFamily: "Fira Code, monospace", fontSize: 11, letterSpacing: "0.15em", color: "rgba(245,166,35,0.7)", textTransform: "uppercase" }}>
           Operator House
         </span>

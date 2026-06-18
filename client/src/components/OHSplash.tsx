@@ -10,8 +10,9 @@
    5. Welcome Moment fades out → onComplete fires (4800–5300ms)
    ============================================================================= */
 import React, { useEffect, useState } from "react";
-import { OHSymbol } from "@/components/OHSymbol";
 
+const OH_SYMBOL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 function getGreeting(name?: string | null) {
   const who = name ? name.split(" ")[0] : "Specter";
@@ -109,7 +110,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
           transition: "opacity 600ms ease, transform 600ms cubic-bezier(0.34,1.2,0.64,1)",
           overflow: "hidden",
         }}>
-          <OHSymbol size={200} />
+          <img src={OH_SYMBOL} alt="Operator House" style={{ width: 200, height: 200, objectFit: "contain", display: "block" }} draggable={false} />
           <svg viewBox="0 0 200 200" style={{ position: "absolute", inset: 0, width: 200, height: 200, overflow: "visible", pointerEvents: "none" }}>
             <defs>
               <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -185,7 +186,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
             transform: welcomeIn ? "translateY(0) scale(1)" : "translateY(12px) scale(0.95)",
             transition: "opacity 700ms ease 100ms, transform 700ms cubic-bezier(0.34,1.1,0.64,1) 100ms",
           }}>
-            <OHSymbol size={72} />
+            <img src={OH_SYMBOL} alt="Operator House" style={{ width: 72, height: 72, objectFit: "contain", display: "block" }} draggable={false} />
           </div>
 
           {/* Greeting */}

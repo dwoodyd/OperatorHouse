@@ -756,3 +756,17 @@
 - [x] SpectreChatbot: Input dims and placeholder updates to "Specter is responding…" during wait
 - [x] Both: All new messages enter with fade-in + slide-up animation (chatbot-msg-in / cl-msg-in keyframes)
 - [x] 0 TypeScript errors confirmed
+
+## Fix 1 Revert (Jun 18)
+- [x] Revert OnboardingFlow.tsx: restore original <video> element (key, ref, src, autoPlay, muted, loop, playsInline, onError retry) — remove animated CSS div placeholders
+- [x] Revert SpectreChatbot.tsx: restore original <img src="/manus-storage/spector_friendly_welcome_6fb4122e.png"> in both message avatar and typing indicator avatar — remove inline SVGs
+- [x] Revert AppLayout.tsx: restore original <img src="https://d2xsxph8kpxj0f.cloudfront.net/...oh-symbol-gold_7639fe83.webp"> — remove OHSymbol component
+- [x] Revert OHSplash.tsx: restore original <img src={OH_SYMBOL}> (200px and 72px) — remove OHSymbol component
+- [x] Revert FirstMission.tsx: restore original <img src={OH_SYMBOL}> (28px) — remove OHSymbol component
+- [x] Revert Home.tsx: restore original <img src={OH_SYMBOL}> (32px, 88px, 20px) — remove OHSymbol component
+- [x] Revert About.tsx: restore original <img src="...oh-symbol-gold_7639fe83.webp"> (72px) — remove OHSymbol component
+- [x] Revert Pricing.tsx: restore original <img src={OH_SYMBOL}> (24px, 64px) — remove OHSymbol component
+- [x] Revert Apply.tsx, Audit.tsx, BillingSetup.tsx, InviteRedeem.tsx, Redeem.tsx: restore original <img src={OH_SYMBOL}> — remove OHSymbol component
+- [x] Delete OHSymbol.tsx (no longer imported anywhere)
+- [x] Fixes 2-5 confirmed intact: Specter chat prompt, briefing prompt, vault templates, lead audit tone guidance
+- [x] 0 TypeScript errors confirmed

@@ -5,11 +5,12 @@
    the operator into the House.
    ============================================================================= */
 import { useState } from "react";
-import { OHSymbol } from "@/components/OHSymbol";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ArrowRight, Loader2 } from "lucide-react";
 
+const OH_SYMBOL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 interface FirstMissionProps {
   onComplete: () => void;
@@ -119,7 +120,7 @@ export default function FirstMission({ onComplete }: FirstMissionProps) {
 
       {/* OH symbol */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <OHSymbol size={28} />
+        <img src={OH_SYMBOL} alt="" style={{ width: 28, height: 28, objectFit: "contain", opacity: 0.8 }} draggable={false} />
         <span style={{
           fontFamily: "Fira Code, monospace", fontSize: 10,
           letterSpacing: "0.22em", textTransform: "uppercase",

@@ -3,12 +3,13 @@
    Public page. No auth required. Matches brand identity of Home.tsx.
    ============================================================================= */
 import { useState } from "react";
-import { OHSymbol } from "@/components/OHSymbol";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 
+const OH_SYMBOL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp";
 
 export default function Apply() {
   const [form, setForm] = useState({ name: "", email: "", reason: "" });
@@ -58,7 +59,7 @@ export default function Apply() {
       >
         <Link href="/">
           <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-            <OHSymbol size={28} />
+            <img src={OH_SYMBOL} alt="OH" style={{ width: "28px", height: "28px", objectFit: "contain" }} />
             <span
               style={{
                 fontFamily: "Playfair Display, serif",

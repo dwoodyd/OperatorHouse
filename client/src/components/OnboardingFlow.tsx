@@ -777,27 +777,22 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
-          {/* Animated fallback — replaces broken /manus-storage/ video clips */}
-          {currentSlide.clip === "ethereal_reveal" ? (
-            <div style={{width:'100%',height:'100%',background:'#0a0a0a',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
-              <style>{`@keyframes oh-pulse{0%,100%{opacity:0.8}50%{opacity:0.4}} @keyframes oh-ring{0%,100%{transform:scale(0.9);opacity:0.15}50%{transform:scale(1.15);opacity:0.35}} @keyframes oh-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`}</style>
-              <div style={{position:'absolute',width:'120px',height:'120px',borderRadius:'50%',border:'1px solid #C9A84C',animation:'oh-ring 3s ease-in-out infinite'}} />
-              <div style={{position:'absolute',width:'160px',height:'160px',borderRadius:'50%',border:'1px solid #C9A84C',animation:'oh-ring 3s ease-in-out infinite 0.5s'}} />
-              <div style={{fontSize:'64px',color:'#C9A84C',fontFamily:'serif',fontWeight:'bold',animation:'oh-drift 4s ease-in-out infinite',position:'relative',zIndex:1}}>S</div>
-            </div>
-          ) : (
-            <div style={{width:'100%',height:'100%',background:'#0a0a0a',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
-              <style>{`@keyframes oh-scan{0%{left:-100%}100%{left:100%}} @keyframes oh-node{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}`}</style>
-              <svg width="80%" height="60%" viewBox="0 0 300 120" style={{position:'absolute',top:'20%',left:'10%',opacity:0.6}}>
-                <line x1="50" y1="60" x2="250" y2="60" stroke="#C9A84C" strokeWidth="1" strokeDasharray="4 3"/>
-                <circle cx="50" cy="60" r="6" fill="#C9A84C" style={{animation:'oh-node 2s ease-in-out infinite 0s'}}/>
-                <circle cx="110" cy="60" r="6" fill="#C9A84C" style={{animation:'oh-node 2s ease-in-out infinite 0.4s'}}/>
-                <circle cx="170" cy="60" r="6" fill="#C9A84C" style={{animation:'oh-node 2s ease-in-out infinite 0.8s'}}/>
-                <circle cx="230" cy="60" r="6" fill="#C9A84C" style={{animation:'oh-node 2s ease-in-out infinite 1.2s'}}/>
-              </svg>
-              <div style={{position:'absolute',top:0,bottom:0,width:'30px',background:'linear-gradient(90deg,transparent,rgba(201,168,76,0.15),transparent)',animation:'oh-scan 2.5s linear infinite'}} />
-            </div>
-          )}
+          <video
+            key={currentSlide.id}
+            ref={videoRef}
+            src={CLIP_URLS[currentSlide.clip]}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            onError={(e) => {
+              const el = e.currentTarget as HTMLVideoElement;
+              if (el.dataset.retried) return;
+              el.dataset.retried = "1";
+              setTimeout(() => { try { el.load(); el.play().catch(() => {}); } catch {} }, 400);
+            }}
+          />
         </div>
       )}
 
