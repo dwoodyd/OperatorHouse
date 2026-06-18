@@ -744,3 +744,15 @@
 - [x] Fix 3: Rewrite briefing prompt (briefings.generate procedure) — trusted adviser voice, JSON return
 - [x] Fix 4: Replace vault seed templates with 5 real-world templates (First Contact Email, Proposal Email, 3-Layer Discovery, 40-Day Deal Cycle Case Study, Positioning Statement)
 - [x] Fix 5: Add lead audit tone guidance to runLeadAudit in server/ai.ts (vibeCheck/engineeringMap/nextBeat tone examples before JSON schema)
+
+## Typing Animation & Loading States (Jun 18)
+- [x] CommandLine: Replace plain spinner with rich TypingIndicator component — three-dot bounce + cycling contextual phrases (Specter is thinking… / Pulling context… / Reading your pipeline… / Connecting the dots… / Crafting a response… / Analyzing your data… / Almost there…) with fade transition between phrases
+- [x] CommandLine: Status dot in header turns amber and label reads "Specter · Thinking" while waiting for response
+- [x] CommandLine: Input placeholder changes to "Specter is responding…" and dims to 50% opacity during wait
+- [x] CommandLine: Send button shows amber spinner during streaming; new messages fade-in with translateY animation
+- [x] SpectreChatbot: Replace plain three-dot indicator with ChatTypingIndicator — same cycling phrases with fade, amber dot bounce, avatar pulse ring
+- [x] SpectreChatbot: Header status label switches to "Thinking…" in brighter amber while waiting
+- [x] SpectreChatbot: Avatar button glows amber ring when Specter is typing (even when panel is closed)
+- [x] SpectreChatbot: Input dims and placeholder updates to "Specter is responding…" during wait
+- [x] Both: All new messages enter with fade-in + slide-up animation (chatbot-msg-in / cl-msg-in keyframes)
+- [x] 0 TypeScript errors confirmed

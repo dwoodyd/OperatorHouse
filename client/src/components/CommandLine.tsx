@@ -24,6 +24,93 @@ interface CommandLineProps {
   onClose: () => void;
 }
 
+// Cycling phrases Specter shows while thinking
+const THINKING_PHRASES = [
+  "Specter is thinking…",
+  "Pulling context…",
+  "Reading your pipeline…",
+  "Connecting the dots…",
+  "Crafting a response…",
+  "Analyzing your data…",
+  "Almost there…",
+];
+
+function TypingIndicator() {
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    // Cycle through phrases every 2.2 s with a brief fade-out/in
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setPhraseIdx((i) => (i + 1) % THINKING_PHRASES.length);
+        setVisible(true);
+      }, 300);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex justify-start items-start gap-2.5" style={{ animation: 'cl-fade-in 200ms ease' }}>
+      {/* Specter avatar — pulsing amber ring while thinking */}
+      <div
+        className="flex-shrink-0 flex items-center justify-center relative"
+        style={{
+          width: '22px', height: '22px', borderRadius: '5px',
+          background: 'linear-gradient(135deg, rgba(245,166,35,0.22) 0%, rgba(245,166,35,0.07) 100%)',
+          border: '1px solid var(--border-amber)',
+          animation: 'cl-avatar-pulse 1.8s ease-in-out infinite',
+        }}
+      >
+        <Sparkles size={10} style={{ color: 'var(--amber)' }} />
+      </div>
+
+      {/* Bubble */}
+      <div style={{
+        padding: '11px 14px',
+        borderRadius: '3px 12px 12px 12px',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid var(--border-subtle)',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        minWidth: '180px',
+      }}>
+        {/* Three-dot bounce */}
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {[0, 160, 320].map((delay) => (
+            <span
+              key={delay}
+              style={{
+                width: '5px', height: '5px',
+                borderRadius: '50%',
+                background: 'var(--amber)',
+                display: 'inline-block',
+                opacity: 0.7,
+                animation: `cl-dot-bounce 1.2s ease-in-out ${delay}ms infinite`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Cycling phrase */}
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+            fontFamily: 'Fira Code, monospace',
+            letterSpacing: '0.04em',
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 280ms ease',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {THINKING_PHRASES[phraseIdx]}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function CommandLine({ open, onClose }: CommandLineProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,7 +145,6 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
       const errMsg = err.message?.includes('timed out')
         ? 'Request timed out — Specter is thinking hard. Try again.'
         : err.message || 'Specter is temporarily unavailable.';
-      // Show error inline in the chat thread so it is always visible
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== 'streaming-placeholder'),
         {
@@ -68,7 +154,6 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
           timestamp: new Date(),
         },
       ]);
-      // Restore last message so user can retry without retyping
       setInput(lastSentRef.current);
       toast.error(errMsg, { duration: 5000 });
     },
@@ -132,6 +217,34 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
 
   return (
     <>
+      {/* Keyframes */}
+      <style>{`
+        @keyframes cl-dot-bounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+          40% { transform: translateY(-5px); opacity: 1; }
+        }
+        @keyframes cl-avatar-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0); }
+          50% { box-shadow: 0 0 0 4px rgba(245,166,35,0.18); }
+        }
+        @keyframes cl-fade-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cl-msg-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes statusPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+      `}</style>
+
       {/* Backdrop */}
       {open && (
         <div
@@ -187,18 +300,21 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
               <div style={{
                 position: 'absolute', top: '-3px', right: '-3px',
                 width: '7px', height: '7px', borderRadius: '50%',
-                background: '#4ADE80',
-                boxShadow: '0 0 6px rgba(74,222,128,0.8)',
+                background: isStreaming ? 'var(--amber)' : '#4ADE80',
+                boxShadow: isStreaming
+                  ? '0 0 6px rgba(245,166,35,0.8)'
+                  : '0 0 6px rgba(74,222,128,0.8)',
                 border: '1.5px solid rgba(6,6,10,0.99)',
                 animation: 'statusPulse 2.5s ease-in-out infinite',
+                transition: 'background 400ms, box-shadow 400ms',
               }} />
             </div>
             <div>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 Command Line
               </div>
-              <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '9px', letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '1px' }}>
-                Specter · Active
+              <div style={{ fontFamily: 'Fira Code, monospace', fontSize: '9px', letterSpacing: '0.12em', color: isStreaming ? 'var(--amber)' : 'var(--text-muted)', textTransform: 'uppercase', marginTop: '1px', transition: 'color 300ms' }}>
+                {isStreaming ? 'Specter · Thinking' : 'Specter · Active'}
               </div>
             </div>
           </div>
@@ -241,7 +357,11 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
           style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--border-subtle) transparent' }}
         >
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div
+              key={msg.id}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              style={{ animation: 'cl-msg-in 220ms ease' }}
+            >
               {msg.role === 'assistant' && (
                 <div
                   className="flex-shrink-0 flex items-center justify-center mr-2.5 mt-0.5"
@@ -302,33 +422,9 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
             </div>
           ))}
 
-          {/* Streaming indicator */}
-          {isStreaming && (
-            <div className="flex justify-start">
-              <div
-                className="flex-shrink-0 flex items-center justify-center mr-2.5"
-                style={{
-                  width: '22px', height: '22px', borderRadius: '5px',
-                  background: 'linear-gradient(135deg, rgba(245,166,35,0.18) 0%, rgba(245,166,35,0.05) 100%)',
-                  border: '1px solid var(--border-amber)',
-                }}
-              >
-                <Sparkles size={10} style={{ color: 'var(--amber)' }} />
-              </div>
-              <div style={{
-                padding: '12px 14px',
-                borderRadius: '3px 12px 12px 12px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid var(--border-subtle)',
-                display: 'flex', alignItems: 'center', gap: '6px',
-              }}>
-                <Loader2 size={12} className="animate-spin" style={{ color: 'var(--amber)' }} />
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'Fira Code, monospace', letterSpacing: '0.05em' }}>
-                  Specter thinking...
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Rich typing indicator */}
+          {isStreaming && <TypingIndicator />}
+
           <div ref={bottomRef} style={{ height: '24px' }} />
         </div>
 
@@ -395,7 +491,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Specter anything…"
+              placeholder={isStreaming ? "Specter is responding…" : "Ask Specter anything…"}
               rows={1}
               disabled={isStreaming}
               style={{
@@ -410,6 +506,8 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
                 lineHeight: 1.5,
                 maxHeight: '100px',
                 overflowY: 'auto',
+                opacity: isStreaming ? 0.5 : 1,
+                transition: 'opacity 200ms',
               }}
               onInput={(e) => {
                 const el = e.currentTarget;
@@ -433,7 +531,7 @@ export default function CommandLine({ open, onClose }: CommandLineProps) {
               }}
             >
               {isStreaming
-                ? <Loader2 size={13} className="animate-spin" />
+                ? <Loader2 size={13} className="animate-spin" style={{ color: 'var(--amber)' }} />
                 : <Send size={13} />
               }
             </button>

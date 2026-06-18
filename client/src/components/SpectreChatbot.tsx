@@ -31,6 +31,109 @@ const WELCOME_MSG: ChatMessage = {
     "Welcome to Operator House. I'm Specter — your intelligence operator. Ask me anything about your pipeline, leads, or strategy, or just say hello.",
 };
 
+// Cycling phrases while Specter thinks
+const THINKING_PHRASES = [
+  "Specter is thinking…",
+  "Pulling context…",
+  "Reading your data…",
+  "Connecting the dots…",
+  "Crafting a response…",
+];
+
+function ChatTypingIndicator() {
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setPhraseIdx((i) => (i + 1) % THINKING_PHRASES.length);
+        setVisible(true);
+      }, 280);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "8px",
+        alignItems: "flex-start",
+        animation: "chatbot-fade-in 200ms ease",
+      }}
+    >
+      {/* Specter avatar — pulsing while thinking */}
+      <div
+        style={{
+          width: "22px",
+          height: "22px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          flexShrink: 0,
+          background: "#000",
+          border: "1px solid rgba(201,160,74,0.3)",
+          marginTop: "2px",
+          animation: "chatbot-avatar-pulse 1.8s ease-in-out infinite",
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
+          <rect width="120" height="120" rx="12" fill="#0a0a0a" />
+          <circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4" />
+          <text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text>
+        </svg>
+      </div>
+
+      {/* Bubble with dots + cycling label */}
+      <div
+        style={{
+          padding: "10px 14px",
+          borderRadius: "4px 12px 12px 12px",
+          background: "rgba(242,234,214,0.05)",
+          border: "1px solid rgba(242,234,214,0.07)",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          minWidth: "170px",
+        }}
+      >
+        {/* Three-dot bounce */}
+        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+          {[0, 160, 320].map((delay) => (
+            <span
+              key={delay}
+              style={{
+                width: "5px",
+                height: "5px",
+                borderRadius: "50%",
+                background: "rgba(201,160,74,0.8)",
+                display: "inline-block",
+                animation: `chatbot-bounce 1.2s ease-in-out ${delay}ms infinite`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Cycling phrase */}
+        <span
+          style={{
+            fontSize: "11px",
+            color: "rgba(201,160,74,0.6)",
+            fontFamily: "'Inter', sans-serif",
+            letterSpacing: "0.03em",
+            opacity: visible ? 1 : 0,
+            transition: "opacity 260ms ease",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {THINKING_PHRASES[phraseIdx]}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function SpectreChatbot() {
   const { spectreChatbotEnabled } = useSpectre();
   const [open, setOpen] = useState(false);
@@ -194,8 +297,18 @@ export function SpectreChatbot() {
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 500, color: "#f2ead6", lineHeight: 1, margin: 0 }}>
                 Specter
               </p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "10px", color: "rgba(201,160,74,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "3px 0 0 0" }}>
-                Operator House
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "10px",
+                  color: isTyping ? "rgba(201,160,74,0.9)" : "rgba(201,160,74,0.7)",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  margin: "3px 0 0 0",
+                  transition: "color 300ms",
+                }}
+              >
+                {isTyping ? "Thinking…" : "Operator House"}
               </p>
             </div>
             {/* Close button */}
@@ -244,6 +357,7 @@ export function SpectreChatbot() {
                   gap: "8px",
                   flexDirection: msg.role === "user" ? "row-reverse" : "row",
                   alignItems: "flex-start",
+                  animation: "chatbot-msg-in 220ms ease",
                 }}
               >
                 {msg.role === "assistant" && (
@@ -259,7 +373,11 @@ export function SpectreChatbot() {
                       marginTop: "2px",
                     }}
                   >
-                    <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%'}}><rect width="120" height="120" rx="12" fill="#0a0a0a"/><circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/><text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text></svg>
+                    <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
+                      <rect width="120" height="120" rx="12" fill="#0a0a0a" />
+                      <circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4" />
+                      <text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text>
+                    </svg>
                   </div>
                 )}
                 <div
@@ -288,49 +406,9 @@ export function SpectreChatbot() {
               </div>
             ))}
 
-            {/* Typing indicator */}
-            {isTyping && (
-              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                <div
-                  style={{
-                    width: "22px",
-                    height: "22px",
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    background: "#000",
-                    border: "1px solid rgba(201,160,74,0.3)",
-                    marginTop: "2px",
-                  }}
-                >
-                  <svg width="22" height="22" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%'}}><rect width="120" height="120" rx="12" fill="#0a0a0a"/><circle cx="60" cy="60" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/><text x="60" y="68" fontFamily="serif" fontSize="36" fontWeight="bold" fill="#C9A84C" textAnchor="middle">S</text></svg>
-                </div>
-                <div
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: "4px 12px 12px 12px",
-                    background: "rgba(242,234,214,0.05)",
-                    border: "1px solid rgba(242,234,214,0.07)",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "4px", alignItems: "center", height: "14px" }}>
-                    {[0, 150, 300].map((delay) => (
-                      <span
-                        key={delay}
-                        style={{
-                          width: "5px",
-                          height: "5px",
-                          borderRadius: "50%",
-                          background: "rgba(201,160,74,0.6)",
-                          display: "inline-block",
-                          animation: `chatbot-bounce 1.2s ease-in-out ${delay}ms infinite`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Rich typing indicator */}
+            {isTyping && <ChatTypingIndicator />}
+
             <div ref={bottomRef} />
           </div>
 
@@ -350,8 +428,9 @@ export function SpectreChatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Specter anything..."
+              placeholder={isTyping ? "Specter is responding…" : "Ask Specter anything..."}
               rows={1}
+              disabled={isTyping}
               style={{
                 flex: 1,
                 resize: "none",
@@ -365,7 +444,8 @@ export function SpectreChatbot() {
                 outline: "none",
                 maxHeight: "80px",
                 lineHeight: 1.5,
-                transition: "border-color 0.2s",
+                transition: "border-color 0.2s, opacity 0.2s",
+                opacity: isTyping ? 0.5 : 1,
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(201,160,74,0.4)"; }}
               onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(242,234,214,0.1)"; }}
@@ -411,9 +491,11 @@ export function SpectreChatbot() {
           background: "#0a0908",
           boxShadow: open
             ? "0 0 0 2px rgba(201,160,74,0.6), 0 8px 24px rgba(0,0,0,0.5)"
+            : isTyping
+            ? "0 0 0 2px rgba(201,160,74,0.5), 0 0 16px rgba(201,160,74,0.25), 0 8px 24px rgba(0,0,0,0.4)"
             : "0 0 0 2px rgba(201,160,74,0.25), 0 8px 24px rgba(0,0,0,0.4)",
           transform: open ? "scale(0.95)" : "scale(1)",
-          transition: "box-shadow 0.2s, transform 0.2s",
+          transition: "box-shadow 0.3s, transform 0.2s",
           cursor: "pointer",
           border: "none",
           padding: 0,
@@ -428,11 +510,23 @@ export function SpectreChatbot() {
         />
       </button>
 
-      {/* Bounce keyframes injected inline */}
+      {/* Keyframes */}
       <style>{`
         @keyframes chatbot-bounce {
           0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
-          40% { transform: translateY(-4px); opacity: 1; }
+          40% { transform: translateY(-5px); opacity: 1; }
+        }
+        @keyframes chatbot-avatar-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(201,160,74,0); }
+          50% { box-shadow: 0 0 0 4px rgba(201,160,74,0.2); }
+        }
+        @keyframes chatbot-fade-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes chatbot-msg-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
