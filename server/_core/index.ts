@@ -21,6 +21,10 @@ const ALLOWED_ORIGINS = [
   "https://www.operatorhouse.click",
   "https://operatorhousehq.manus.space",
   "https://ghostdesk-uyrvyz2b.manus.space",
+  // Production subdomains
+  "https://portal.operatorhouse.click",
+  "https://app.operatorhouse.click",
+  "https://book.operatorhouse.click",
 ];
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -50,7 +54,33 @@ async function startServer() {
   app.use(
     helmet({
       // Allow inline scripts/styles needed by Vite HMR in dev
-      contentSecurityPolicy: process.env.NODE_ENV === "production",
+      contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          // Allow images from self, data URIs, and CloudFront CDN distributions
+          imgSrc: [
+            "'self'",
+            "data:",
+            "blob:",
+            "https://d2xsxph8kpxj0f.cloudfront.net",
+            "https://d36hbw14aib5lz.cloudfront.net",
+          ],
+          // Allow media (video/audio) from self and CloudFront
+          mediaSrc: [
+            "'self'",
+            "blob:",
+            "https://d2xsxph8kpxj0f.cloudfront.net",
+            "https://d36hbw14aib5lz.cloudfront.net",
+          ],
+          connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          upgradeInsecureRequests: [],
+        },
+      } : false,
     })
   );
 

@@ -239,7 +239,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           style={{ width: "48px", height: "48px", flexShrink: 0 }}
         >
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
+            src="/manus-storage/oh-symbol-gold_7639fe83.webp"
             alt="Operator House"
             style={{ width: "48px", height: "48px", objectFit: "contain", display: "block" }}
           />
