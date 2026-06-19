@@ -314,9 +314,25 @@ function VisitorIntroLayer({
     }
   });
 
+  // Track whether the visitor splash has been shown this session
+  const [visitorSplashDone, setVisitorSplashDone] = useState(() => {
+    try {
+      return sessionStorage.getItem("oh_visitor_splash_shown") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleVisitorSplashComplete = () => {
+    try { sessionStorage.setItem("oh_visitor_splash_shown", "true"); } catch { /* ignore */ }
+    setVisitorSplashDone(true);
+    _onSplashComplete();
+  };
+
   const handleOnboardingComplete = () => {
     localStorage.setItem("oh_onboarding_complete", "true");
     setLocalOnboardingDone(true);
+    _onOnboardingComplete();
   };
 
   if (_replayPhase === "splash") {
@@ -326,7 +342,11 @@ function VisitorIntroLayer({
     return <OnboardingFlow onComplete={_onOnboardingComplete} isReplay />;
   }
 
+  // New visitor: show splash first, then onboarding
   if (!localOnboardingDone) {
+    if (!visitorSplashDone) {
+      return <OHSplash onComplete={handleVisitorSplashComplete} />;
+    }
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
   return null;

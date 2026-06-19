@@ -1,3 +1,5 @@
+import { pipeline } from "node:stream/promises";
+import { Readable } from "node:stream";
 import type { Express } from "express";
 import { ENV } from "./env";
 
@@ -11,7 +13,31 @@ import { ENV } from "./env";
  * which returns a 403 after expiry. Streaming the bytes through this proxy
  * means the browser always sees a stable /manus-storage/<key> URL that
  * never expires.
+ *
+ * Video seeking support:
+ * Range headers are forwarded to the upstream presigned URL so browsers
+ * can seek within videos without re-downloading the full file.
+ * Accept-Ranges: bytes is always set so browsers know seeking is supported.
  */
+
+/** Infer MIME type from file extension as a fallback */
+function inferContentType(key: string): string {
+  const ext = key.split(".").pop()?.toLowerCase() ?? "";
+  switch (ext) {
+    case "mp4":  return "video/mp4";
+    case "webm": return "video/webm";
+    case "mov":  return "video/quicktime";
+    case "png":  return "image/png";
+    case "jpg":
+    case "jpeg": return "image/jpeg";
+    case "webp": return "image/webp";
+    case "gif":  return "image/gif";
+    case "svg":  return "image/svg+xml";
+    case "pdf":  return "application/pdf";
+    default:     return "application/octet-stream";
+  }
+}
+
 export function registerStorageProxy(app: Express) {
   app.get("/manus-storage/*", async (req, res) => {
     const key = (req.params as Record<string, string>)[0];
@@ -46,51 +72,55 @@ export function registerStorageProxy(app: Express) {
       }
 
       // Step 2: forward Range header if present (needed for video seeking)
-      const headers: Record<string, string> = {};
+      const reqHeaders: Record<string, string> = {};
       if (req.headers.range) {
-        headers["Range"] = req.headers.range;
+        reqHeaders["Range"] = req.headers.range;
       }
 
       // Step 3: fetch the actual file from the presigned URL
-      const fileResp = await fetch(url, { headers });
+      const fileResp = await fetch(url, { headers: reqHeaders });
       if (!fileResp.ok && fileResp.status !== 206) {
         console.error(`[StorageProxy] file fetch error: ${fileResp.status} for key=${key}`);
         res.status(fileResp.status).send("File not found");
         return;
       }
 
-      // Step 4: forward relevant response headers to the client
-      const contentType = fileResp.headers.get("content-type");
+      // Step 4: set response headers
+      // Content-Type: use upstream value if present, otherwise infer from extension
+      const upstreamContentType = fileResp.headers.get("content-type");
+      const contentType =
+        upstreamContentType && !upstreamContentType.startsWith("application/octet-stream")
+          ? upstreamContentType
+          : inferContentType(key);
+      res.setHeader("Content-Type", contentType);
+
+      // Always advertise byte-range support so browsers can seek in videos
+      res.setHeader("Accept-Ranges", "bytes");
+
       const contentLength = fileResp.headers.get("content-length");
       const contentRange = fileResp.headers.get("content-range");
-      const acceptRanges = fileResp.headers.get("accept-ranges");
       const lastModified = fileResp.headers.get("last-modified");
-
-      if (contentType) res.setHeader("Content-Type", contentType);
       if (contentLength) res.setHeader("Content-Length", contentLength);
       if (contentRange) res.setHeader("Content-Range", contentRange);
-      if (acceptRanges) res.setHeader("Accept-Ranges", acceptRanges);
       if (lastModified) res.setHeader("Last-Modified", lastModified);
 
       // Cache for 55 minutes (just under the 60-minute presigned URL TTL)
       res.setHeader("Cache-Control", "public, max-age=3300");
       res.status(fileResp.status);
 
-      // Step 5: stream the body
+      // Step 5: stream the body using Node.js pipeline for reliability
       if (fileResp.body) {
-        const reader = fileResp.body.getReader();
-        const pump = async () => {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            if (!res.writableEnded) res.write(value);
+        try {
+          const nodeStream = Readable.fromWeb(fileResp.body as import("stream/web").ReadableStream);
+          await pipeline(nodeStream, res);
+        } catch (streamErr: unknown) {
+          // Client disconnected mid-stream — not an error worth logging loudly
+          const msg = streamErr instanceof Error ? streamErr.message : String(streamErr);
+          if (!msg.includes("ERR_STREAM_DESTROYED") && !msg.includes("aborted")) {
+            console.error("[StorageProxy] stream error:", streamErr);
           }
           if (!res.writableEnded) res.end();
-        };
-        pump().catch((err) => {
-          console.error("[StorageProxy] stream error:", err);
-          if (!res.writableEnded) res.end();
-        });
+        }
       } else {
         res.end();
       }
