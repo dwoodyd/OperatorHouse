@@ -356,7 +356,26 @@ function IntroLayer() {
   const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
   const { user, loading: authLoading } = useAuth();
 
-  // Wait for auth to resolve before deciding which layer to render
+  // Check localStorage immediately — no auth wait needed
+  const onboardingAlreadyDone = (() => {
+    try { return localStorage.getItem("oh_onboarding_complete") === "true"; } catch { return false; }
+  })();
+
+  // If onboarding is not done yet, show VisitorIntroLayer immediately — don't wait for auth.
+  // This ensures new visitors see the splash + onboarding the instant the page loads.
+  // Once auth resolves and we have a logged-in user with needsIntro=true,
+  // AuthenticatedIntroLayer handles the DB-persisted flag via markIntroSeen.
+  if (!onboardingAlreadyDone && !user) {
+    return (
+      <VisitorIntroLayer
+        _replayPhase={_replayPhase}
+        _onSplashComplete={_onSplashComplete}
+        _onOnboardingComplete={_onOnboardingComplete}
+      />
+    );
+  }
+
+  // Auth still loading but onboarding is done — nothing to show yet
   if (authLoading) return null;
 
   if (user) {
@@ -370,7 +389,7 @@ function IntroLayer() {
     );
   }
 
-  // Unauthenticated visitor — no protected mutations
+  // Unauthenticated visitor who already completed onboarding
   return (
     <VisitorIntroLayer
       _replayPhase={_replayPhase}
