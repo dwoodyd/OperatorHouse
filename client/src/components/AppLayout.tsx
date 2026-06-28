@@ -169,75 +169,31 @@ function ReplayIntroSidebarButton() {
   );
 }
 
-export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
-  const [location] = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [commandLineOpen, setCommandLineOpen] = useState(false);
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [logoError, setLogoError] = useState(false);
-  const [svgError, setSvgError] = useState(false);
-  // bellOpen state is now managed inside NotificationBell component
-  const { user, logout } = useAuth();
-  const [, setLocation] = useLocation();
+// ─── SidebarContent extracted as a top-level component to prevent remount on parent re-render ───
+interface SidebarContentProps {
+  isMobile?: boolean;
+  collapsed: boolean;
+  location: string;
+  isPro: boolean;
+  user: { name?: string | null; role?: string } | null | undefined;
+  initials: string;
+  onCloseMobile: () => void;
+  onNavigatePricing: () => void;
+  onSignOut: () => void;
+}
 
-  // Fetch subscription tier for Pro gating
-  const { data: subData } = trpc.subscription.getMyTier.useQuery(undefined, {
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-  });
-  // hasFullAccess is true for founding members (isFounding) OR operator_pro subscribers.
-  // Founding members get full-platform access permanently, independent of tier.
-  const isPro = subData?.hasFullAccess ?? false;
-
-  // Listen for oh:open-specter custom event dispatched by the Command Palette
-  useEffect(() => {
-    const handler = () => setCommandLineOpen(true);
-    window.addEventListener('oh:open-specter', handler);
-    return () => window.removeEventListener('oh:open-specter', handler);
-  }, []);
-
-  // Close mobile drawer on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location]);
-
-  // Close mobile drawer on resize to desktop
-  useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 768) setMobileOpen(false);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  // Auto-collapse sidebar on tablet (768–1024px)
-  useEffect(() => {
-    const checkTablet = () => {
-      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
-        setCollapsed(true);
-      } else if (window.innerWidth >= 1024) {
-        setCollapsed(false);
-      }
-    };
-    checkTablet();
-    window.addEventListener("resize", checkTablet);
-    return () => window.removeEventListener("resize", checkTablet);
-  }, []);
-
-  const initials = user?.name
-    ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "OH";
-
-  const handleLogoError = useCallback(() => {
-    setLogoError(true);
-  }, []);
-
-  const handleSvgError = useCallback(() => {
-    setSvgError(true);
-  }, []);
-
-  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+function SidebarContent({
+  isMobile = false,
+  collapsed,
+  location,
+  isPro,
+  user,
+  initials,
+  onCloseMobile,
+  onNavigatePricing,
+  onSignOut,
+}: SidebarContentProps) {
+  return (
     <>
       {/* Logo */}
       <div
@@ -284,7 +240,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         )}
         {isMobile && (
           <button
-            onClick={() => setMobileOpen(false)}
+            onClick={onCloseMobile}
             aria-label="Close navigation menu"
             style={{
               marginLeft: "auto",
@@ -366,7 +322,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                 return (
                   <button
                     key={item.path}
-                    onClick={() => setLocation("/pricing")}
+                    onClick={onNavigatePricing}
                     title={!isMobile && collapsed ? `${item.label} — Operator Pro` : undefined}
                     className="sidebar-item w-full text-left"
                     style={{
@@ -522,7 +478,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
 
         {/* Sign Out button */}
         <button
-          onClick={() => setConfirmSignOut(true)}
+          onClick={onSignOut}
           aria-label="Sign out"
           className="sidebar-item w-full"
           style={{
@@ -545,27 +501,113 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
         )}
         {/* Collapse toggle — desktop only */}
         {!isMobile && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="sidebar-item w-full mt-0.5"
-            style={{ justifyContent: collapsed ? "center" : "flex-start" }}
-          >
-            {collapsed ? (
-              <ChevronRight size={14} style={{ color: "var(--text-muted)" }} />
-            ) : (
-              <>
-                <ChevronLeft size={14} style={{ color: "var(--text-muted)" }} />
-                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  Collapse
-                </span>
-              </>
-            )}
-          </button>
+          <CollapseToggle collapsed={collapsed} />
         )}
       </div>
     </>
   );
+}
+
+// Collapse toggle needs access to setCollapsed — pass via context or keep as inner component
+// Using a simple wrapper that receives the toggle fn as prop
+function CollapseToggle({ collapsed }: { collapsed: boolean }) {
+  // This is rendered inside AppLayout which provides the toggle via a custom event
+  const handleClick = () => {
+    window.dispatchEvent(new CustomEvent("oh:toggle-sidebar"));
+  };
+  return (
+    <button
+      onClick={handleClick}
+      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      className="sidebar-item w-full mt-0.5"
+      style={{ justifyContent: collapsed ? "center" : "flex-start" }}
+    >
+      {collapsed ? (
+        <ChevronRight size={14} style={{ color: "var(--text-muted)" }} />
+      ) : (
+        <>
+          <ChevronLeft size={14} style={{ color: "var(--text-muted)" }} />
+          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            Collapse
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
+export default function AppLayout({ children, title, subtitle }: AppLayoutProps) {
+  const [location] = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [commandLineOpen, setCommandLineOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Fetch subscription tier for Pro gating
+  const { data: subData } = trpc.subscription.getMyTier.useQuery(undefined, {
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isPro = subData?.hasFullAccess ?? false;
+
+  // Listen for oh:open-specter custom event dispatched by the Command Palette
+  useEffect(() => {
+    const handler = () => setCommandLineOpen(true);
+    window.addEventListener('oh:open-specter', handler);
+    return () => window.removeEventListener('oh:open-specter', handler);
+  }, []);
+
+  // Listen for sidebar collapse toggle from CollapseToggle child
+  useEffect(() => {
+    const handler = () => setCollapsed(prev => !prev);
+    window.addEventListener('oh:toggle-sidebar', handler);
+    return () => window.removeEventListener('oh:toggle-sidebar', handler);
+  }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
+
+  // Close mobile drawer on resize to desktop
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Auto-collapse sidebar on tablet (768–1024px)
+  useEffect(() => {
+    const checkTablet = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setCollapsed(false);
+      }
+    };
+    checkTablet();
+    window.addEventListener("resize", checkTablet);
+    return () => window.removeEventListener("resize", checkTablet);
+  }, []);
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "OH";
+
+  const sidebarProps: SidebarContentProps = {
+    collapsed,
+    location,
+    isPro,
+    user,
+    initials,
+    onCloseMobile: () => setMobileOpen(false),
+    onNavigatePricing: () => setLocation("/pricing"),
+    onSignOut: () => setConfirmSignOut(true),
+  };
 
   return (
     <div
@@ -600,7 +642,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           boxShadow: "4px 0 32px rgba(0,0,0,0.35)",
         }}
       >
-        <SidebarContent isMobile={false} />
+        <SidebarContent isMobile={false} {...sidebarProps} />
       </aside>
 
       {/* ── Mobile Overlay Drawer ─────────────────────────────────────────── */}
@@ -627,7 +669,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
               animation: "slideInLeft 200ms cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            <SidebarContent isMobile={true} />
+            <SidebarContent isMobile={true} {...sidebarProps} />
           </aside>
         </>
       )}
