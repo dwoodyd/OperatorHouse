@@ -303,22 +303,25 @@ export function SpectreVideoPlayer({
     const clips = CLIPS[state] ?? CLIPS.idle;
     const newSrc = clips[Math.floor(Math.random() * clips.length)];
 
-    if (newSrc === currentSrc) {
-      // Same clip — just restart it
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(() => {});
+    // Use functional update to avoid stale closure issues
+    setCurrentSrc(prevSrc => {
+      if (newSrc === prevSrc) {
+        // Same clip — just restart it
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(() => {});
+        }
+        return prevSrc;
       }
-      return;
-    }
 
-    // Reset error state on state change
-    setHasError(false);
-    setIsLoading(false);
-    setRetryCount(0);
-    setVisible(true);
-    setCurrentSrc(newSrc);
-  }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+      // Reset error state on state change
+      setHasError(false);
+      setIsLoading(false);
+      setRetryCount(0);
+      setVisible(true);
+      return newSrc;
+    });
+  }, [state]);
 
   // When src changes, play the video
   useEffect(() => {
@@ -399,6 +402,7 @@ export function SpectreVideoPlayer({
       )}
       
       <video
+        key={currentSrc}
         ref={videoRef}
         src={currentSrc}
         loop={loop}
