@@ -100,12 +100,12 @@ function OperatorHouseLogo({ size = 48 }: { size?: number }) {
       aria-label="Operator House Logo"
     >
       <defs>
-        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="oh-logo-gold" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#c9a04a" />
           <stop offset="50%" stopColor="#f5a623" />
           <stop offset="100%" stopColor="#d4a843" />
         </linearGradient>
-        <linearGradient id="goldGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="oh-logo-gold-dark" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#8b6914" />
           <stop offset="50%" stopColor="#c9a04a" />
           <stop offset="100%" stopColor="#a0822d" />
@@ -114,20 +114,20 @@ function OperatorHouseLogo({ size = 48 }: { size?: number }) {
       {/* House frame */}
       <path
         d="M50 5 L95 40 L85 40 L85 90 L15 90 L15 40 L5 40 Z"
-        stroke="url(#goldGradient)"
+        stroke="url(#oh-logo-gold)"
         strokeWidth="3"
         fill="none"
       />
       {/* Inner house details */}
       <path
         d="M25 90 L25 50 L40 50 L40 90"
-        stroke="url(#goldGradientDark)"
+        stroke="url(#oh-logo-gold-dark)"
         strokeWidth="2"
         fill="none"
       />
       <path
         d="M60 90 L60 50 L75 50 L75 90"
-        stroke="url(#goldGradientDark)"
+        stroke="url(#oh-logo-gold-dark)"
         strokeWidth="2"
         fill="none"
       />
@@ -137,7 +137,7 @@ function OperatorHouseLogo({ size = 48 }: { size?: number }) {
         y1="60"
         x2="70"
         y2="60"
-        stroke="url(#goldGradient)"
+        stroke="url(#oh-logo-gold)"
         strokeWidth="2"
       />
       {/* Central element - keyhole/circle representing the operator */}
@@ -145,7 +145,7 @@ function OperatorHouseLogo({ size = 48 }: { size?: number }) {
         cx="50"
         cy="35"
         r="12"
-        stroke="url(#goldGradient)"
+        stroke="url(#oh-logo-gold)"
         strokeWidth="2"
         fill="none"
       />
@@ -153,9 +153,66 @@ function OperatorHouseLogo({ size = 48 }: { size?: number }) {
         cx="50"
         cy="35"
         r="4"
-        fill="url(#goldGradient)"
+        fill="url(#oh-logo-gold)"
       />
     </svg>
+  );
+}
+
+// CSS-only geometric fallback if SVG fails (renders a simple house shape)
+function OperatorHouseLogoFallback({ size = 48 }: { size?: number }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      aria-label="Operator House Logo"
+    >
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          border: '3px solid #c9a04a',
+          borderRadius: '4px 4px 0 0',
+          borderBottom: 'none',
+          position: 'relative',
+          background: 'linear-gradient(135deg, rgba(201,160,74,0.1) 0%, transparent 100%)',
+        }}
+      >
+        {/* Roof triangle */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '-25%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: `${size * 0.4}px solid transparent`,
+            borderRight: `${size * 0.4}px solid transparent`,
+            borderBottom: `${size * 0.35}px solid #c9a04a`,
+          }}
+        />
+        {/* Center dot */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '35%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: size * 0.15,
+            height: size * 0.15,
+            background: '#f5a623',
+            borderRadius: '50%',
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -243,6 +300,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [commandLineOpen, setCommandLineOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [svgError, setSvgError] = useState(false);
   // bellOpen state is now managed inside NotificationBell component
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
@@ -299,6 +357,10 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     setLogoError(true);
   }, []);
 
+  const handleSvgError = useCallback(() => {
+    setSvgError(true);
+  }, []);
+
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <>
       {/* Logo */}
@@ -315,7 +377,13 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           style={{ width: "48px", height: "48px", flexShrink: 0 }}
         >
           {logoError ? (
-            <OperatorHouseLogo size={48} />
+            svgError ? (
+              <OperatorHouseLogoFallback size={48} />
+            ) : (
+              <div onError={handleSvgError}>
+                <OperatorHouseLogo size={48} />
+              </div>
+            )
           ) : (
             <img
               src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"

@@ -17,7 +17,8 @@ import { cn } from "@/lib/utils";
 // Each entry maps a semantic state to one or more CDN URLs.
 // When multiple clips share a state, one is chosen at random on each transition.
 
-const BASE = "/manus-storage";
+// Video base URL from env var, defaults to empty (videos at root)
+const VIDEO_BASE_URL = import.meta.env.VITE_VIDEO_BASE_URL || "";
 
 export type SpectreState =
   | "idle"              // calm breathing — default sidebar widget
@@ -72,215 +73,152 @@ export type SpectreState =
 
 const CLIPS: Record<SpectreState, string[]> = {
   idle: [
-    `${BASE}/hf_20260503_000541_7cfe329e-91e6-41d4-8584-f98f722ef3da_6c095791.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260503_000541_7cfe329e-91e6-41d4-8584-f98f722ef3da_6c095791.mp4`,
   ],
   idle_neutral: [
-    `${BASE}/hf_20260503_003626_b5c13543-ddb2-40ee-b19d-2c2371d16946_0308c250.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260503_003626_b5c13543-ddb2-40ee-b19d-2c2371d16946_0308c250.mp4`,
   ],
   idle_hologram: [
-    `${BASE}/hf_20260502_211341_4ac80b83-1c05-4b01-a6ad-3da9c4301f83_b88dac25.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_211341_4ac80b83-1c05-4b01-a6ad-3da9c4301f83_b88dac25.mp4`,
   ],
   idle_holding: [
-    `${BASE}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_d7c6ce08.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_d7c6ce08.mp4`,
   ],
   welcoming: [
-    // NOTE: hf_20260503_002137 (welcoming_1) removed — completely headless clip
-    `${BASE}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_22eb71c6.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_22eb71c6.mp4`,
   ],
   presenting: [
-    `${BASE}/hf_20260502_203849_a8f8de64-ff0e-4ff9-b10a-bd9fa90f8fcf_2c81370b.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_203849_a8f8de64-ff0e-4ff9-b10a-bd9fa90f8fcf_2c81370b.mp4`,
   ],
   pointing: [
-    `${BASE}/hf_20260502_210103_006c0c69-eee5-42c3-a844-f5a0263262c5_545601c0.mp4`,
-    `${BASE}/hf_20260502_210127_8bb3cdfb-c6e5-46f2-b125-708e661ce5b4_9b2a1832.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_210103_006c0c69-eee5-42c3-a844-f5a0263262c5_545601c0.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_210127_8bb3cdfb-c6e5-46f2-b125-708e661ce5b4_9b2a1832.mp4`,
   ],
   thinking: [
-    `${BASE}/hf_20260502_235500_5e9803e2-9521-491c-963b-0239e50e2721_f5031812.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_235500_5e9803e2-9521-491c-963b-0239e50e2721_f5031812.mp4`,
   ],
   typing: [
-    `${BASE}/hf_20260502_210704_d39721a7-dbc8-47cc-84a1-6c7c64371d80_f84ef751.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_210704_d39721a7-dbc8-47cc-84a1-6c7c64371d80_f84ef751.mp4`,
   ],
   thoughtful: [
-    `${BASE}/hf_20260503_003219_517286cd-52ec-44c7-b00a-12ec1ee7807a_4d573ab3.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260503_003219_517286cd-52ec-44c7-b00a-12ec1ee7807a_4d573ab3.mp4`,
   ],
   cast: [
-    `${BASE}/hf_20260502_204413_0386e184-d326-433f-8ef6-2c6a23476aa0_3be547a5.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_204413_0386e184-d326-433f-8ef6-2c6a23476aa0_3be547a5.mp4`,
   ],
   hologram: [
-    `${BASE}/hf_20260503_004223_02f6a896-5e88-4d9e-9b2d-2a82dc1d39c6_5769b801.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260503_004223_02f6a896-5e88-4d9e-9b2d-2a82dc1d39c6_5769b801.mp4`,
   ],
   hand_on_heart: [
-    `${BASE}/hf_20260502_211821_a0046d06-816a-4584-8da1-ed990b173964_2729c527.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_211821_a0046d06-816a-4584-8da1-ed990b173964_2729c527.mp4`,
   ],
   bow: [
-    `${BASE}/hf_20260502_205345_137b645e-3e27-46d2-b134-769ec6f03a25_6f86149d.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_205345_137b645e-3e27-46d2-b134-769ec6f03a25_6f86149d.mp4`,
   ],
   wave: [
-    `${BASE}/hf_20260502_214102_5c78de5f-a0aa-42de-a9a5-4605e13569e4_d6f014e7.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_214102_5c78de5f-a0aa-42de-a9a5-4605e13569e4_d6f014e7.mp4`,
   ],
   determined: [
-    `${BASE}/hf_20260502_234831_90ab3ebb-1d16-4ea3-b6b8-38a0f1c057f9_745f7c13.mp4`,
+    `${VIDEO_BASE_URL}/hf_20260502_234831_90ab3ebb-1d16-4ea3-b6b8-38a0f1c057f9_745f7c13.mp4`,
   ],
   triumph: [
-    `${BASE}/mp__3d1f90ea.mp4`,
-    `${BASE}/mp_1_new_bcbd7f39.mp4`,
+    `${VIDEO_BASE_URL}/mp__3d1f90ea.mp4`,
+    `${VIDEO_BASE_URL}/mp_1_new_bcbd7f39.mp4`,
   ],
   power_up: [
-    `${BASE}/Restrained_triumph_The_charac_6a346f6b.mp4`,
+    `${VIDEO_BASE_URL}/Restrained_triumph_The_charac_6a346f6b.mp4`,
   ],
-  // ── Pleasant onboarding clips ──
   welcome_pleasant: [
-    `${BASE}/specter_welcome_pleasant_51c6fad6.mp4`,
+    `${VIDEO_BASE_URL}/specter_welcome_pleasant_51c6fad6.mp4`,
   ],
   offering_pleasant: [
-    `${BASE}/specter_offering_pleasant_26f0d8dc.mp4`,
+    `${VIDEO_BASE_URL}/specter_offering_pleasant_26f0d8dc.mp4`,
   ],
   inviting_pleasant: [
-    `${BASE}/specter_inviting_pleasant_049a7dd1.mp4`,
+    `${VIDEO_BASE_URL}/specter_inviting_pleasant_049a7dd1.mp4`,
   ],
   search_hologram: [
-    `${BASE}/specter_search_hologram_8e32bcda.mp4`,
+    `${VIDEO_BASE_URL}/specter_search_hologram_8e32bcda.mp4`,
   ],
   gear_hologram: [
-    `${BASE}/specter_gear_hologram_e6735037.mp4`,
+    `${VIDEO_BASE_URL}/specter_gear_hologram_e6735037.mp4`,
   ],
   sincere_pleasant: [
-    `${BASE}/specter_sincere_pleasant_fd64bd09.mp4`,
+    `${VIDEO_BASE_URL}/specter_sincere_pleasant_fd64bd09.mp4`,
   ],
   bow_pleasant: [
-    `${BASE}/specter_bow_nobg_1ec3bba7.webm`,
+    `${VIDEO_BASE_URL}/specter_bow_nobg_1ec3bba7.webm`,
   ],
   vault_lock: [
-    `${BASE}/specter_vault_lock_16e573ea.mp4`,
+    `${VIDEO_BASE_URL}/specter_vault_lock_16e573ea.mp4`,
   ],
-  // ── New pleasant clips (batch 2) ──
   inviting_smiling: [
-    `${BASE}/SpectorInvitingSmiling_92a14245.mp4`,
+    `${VIDEO_BASE_URL}/SpectorInvitingSmiling_92a14245.mp4`,
   ],
   talking: [
-    `${BASE}/SpectorTalking_c166a610.mp4`,
+    `${VIDEO_BASE_URL}/SpectorTalking_c166a610.mp4`,
   ],
   this_way: [
-    `${BASE}/SpectorThisWay_32888b15.mp4`,
+    `${VIDEO_BASE_URL}/SpectorThisWay_32888b15.mp4`,
   ],
   heart_to_yours: [
-    `${BASE}/SpectorHearttoYours_c1a0c2c6.mp4`,
+    `${VIDEO_BASE_URL}/SpectorHearttoYours_c1a0c2c6.mp4`,
   ],
   bowing: [
-    `${BASE}/specter_bowing_cropped_39485b8b.mp4`,
+    `${VIDEO_BASE_URL}/specter_bowing_cropped_39485b8b.mp4`,
   ],
   celebration: [
-    `${BASE}/SpectorCelebration_195be803.mp4`,
+    `${VIDEO_BASE_URL}/SpectorCelebration_195be803.mp4`,
   ],
   approval: [
-    `${BASE}/SpectorApproval_fdf9628b.mp4`,
+    `${VIDEO_BASE_URL}/SpectorApproval_fdf9628b.mp4`,
   ],
   approval_nod: [
-    `${BASE}/SpectorApprovalNod_78496d10.mp4`,
+    `${VIDEO_BASE_URL}/SpectorApprovalNod_78496d10.mp4`,
   ],
   happy: [
-    `${BASE}/SpectorHappy_b40303f1.mp4`,
+    `${VIDEO_BASE_URL}/SpectorHappy_b40303f1.mp4`,
   ],
   happy_greeting: [
-    `${BASE}/SpectorHappyGreeting_2857a01f.mp4`,
+    `${VIDEO_BASE_URL}/SpectorHappyGreeting_2857a01f.mp4`,
   ],
   gesturing: [
-    `${BASE}/SpectorGesturing_e1ab809c.mp4`,
+    `${VIDEO_BASE_URL}/SpectorGesturing_e1ab809c.mp4`,
   ],
   flipping_magic: [
-    `${BASE}/SpectorFlippingMagic_f55402cd.mp4`,
+    `${VIDEO_BASE_URL}/SpectorFlippingMagic_f55402cd.mp4`,
   ],
   digital_trails: [
-    `${BASE}/SpectorDigitalTrails_a375c572.mp4`,
+    `${VIDEO_BASE_URL}/SpectorDigitalTrails_a375c572.mp4`,
   ],
   idol_breathing: [
-    `${BASE}/SpectorIdolBreathing_ef95ba2b.mp4`,
+    `${VIDEO_BASE_URL}/SpectorIdolBreathing_ef95ba2b.mp4`,
   ],
   majorly_confused: [
-    `${BASE}/SpectorMajorlyConfused_27f15ceb.mp4`,
+    `${VIDEO_BASE_URL}/SpectorMajorlyConfused_27f15ceb.mp4`,
   ],
   waiting_confused: [
-    `${BASE}/SpectorWaitingConfused_305f40fa.mp4`,
+    `${VIDEO_BASE_URL}/SpectorWaitingConfused_305f40fa.mp4`,
   ],
   waiting: [
-    `${BASE}/SpectorWaiting2_3d7b5780.mp4`,
+    `${VIDEO_BASE_URL}/SpectorWaiting2_3d7b5780.mp4`,
   ],
   ui_loading: [
-    `${BASE}/SpectorUILoading_85cd0594.mp4`,
+    `${VIDEO_BASE_URL}/SpectorUILoading_85cd0594.mp4`,
   ],
   data_video: [
-    `${BASE}/specter_datavideo_cropped_e63779d0.mp4`,
+    `${VIDEO_BASE_URL}/specter_datavideo_cropped_e63779d0.mp4`,
   ],
   ethereal_reveal: [
-    `${BASE}/specter_ethereal_reveal_ac7f994c.mp4`,
+    `${VIDEO_BASE_URL}/specter_ethereal_reveal_ac7f994c.mp4`,
   ],
   holographic_typing: [
-    `${BASE}/specter_holographic_typing_7d89d984.mp4`,
+    `${VIDEO_BASE_URL}/specter_holographic_typing_7d89d984.mp4`,
   ],
 };
 
-// ─── Poster/Still image registry ─────────────────────────────────────────────
-// High-quality PNG stills for use as poster frames while videos load
-const POSTERS: Partial<Record<SpectreState, string>> = {
-  idle:        `${BASE}/gest_idle_c42825f6.png`,
-  welcoming:   `${BASE}/gest_greeting_c6b0cd78.png`,
-  presenting:  `${BASE}/gest_presenting_815af494.png`,
-  inviting_smiling: `${BASE}/gest_inviting_e161c876.png`,
-  thinking:    `${BASE}/gest_listening_d0fea5d1.png`,
-  typing:      `${BASE}/gest_typing_eb787c7b.png`,
-  determined:  `${BASE}/gest_confirming_1880203b.png`,
-  triumph:     `${BASE}/gest_celebrating_1eea94d3.png`,
-  pointing:    `${BASE}/gest_pointing_d7f58446.png`,
-  bow:         `${BASE}/gest_bow_d0e618c9.png`,
-};
-
-// ─── Still image registry ─────────────────────────────────────────────────────
-// High-quality PNG stills for use as poster frames, companion images, or
-// fallback display when video cannot autoplay.
-export const SPECTER_STILLS = {
-  // ── Gesture stills (updated batch) ──
-  idle:        `${BASE}/gest_idle_c42825f6.png`,
-  greeting:    `${BASE}/gest_greeting_c6b0cd78.png`,
-  presenting:  `${BASE}/gest_presenting_815af494.png`,
-  inviting:    `${BASE}/gest_inviting_e161c876.png`,
-  listening:   `${BASE}/gest_listening_d0fea5d1.png`,
-  scanning:    `${BASE}/gest_scanning_c055b483.png`,
-  typing:      `${BASE}/gest_typing_eb787c7b.png`,
-  confirming:  `${BASE}/gest_confirming_1880203b.png`,
-  celebrating: `${BASE}/gest_celebrating_1eea94d3.png`,
-  pointing:    `${BASE}/gest_pointing_d7f58446.png`,
-  bow:         `${BASE}/gest_bow_d0e618c9.png`,
-  // ── Friendly portrait stills ──
-  friendly_welcome:     `${BASE}/spector_friendly_welcome_6fb4122e.png`,
-  friendly_presenting:  `${BASE}/spector_friendly_presenting_af8b9442.png`,
-  friendly_guiding:     `${BASE}/spector_friendly_guiding_8ef24d6c.png`,
-  friendly_encouraging: `${BASE}/spector_friendly_encouraging_14cb61f7.png`,
-  // ── Expression stills ──
-  exp_welcoming:   `${BASE}/exp_welcoming_35d7e27b.png`,
-  exp_observant:   `${BASE}/exp_observant_64f45328.png`,
-  exp_thinking:    `${BASE}/exp_thinking_561b0feb.png`,
-  exp_focused:     `${BASE}/exp_focused_285aad1f.png`,
-  exp_caution:     `${BASE}/exp_caution_c66deceb.png`,
-  exp_success:     `${BASE}/exp_success_e79504f9.png`,
-  exp_curious:     `${BASE}/exp_curious_239930b6.png`,
-  exp_celebratory: `${BASE}/exp_celebratory_0a11aec2.png`,
-  // ── Shadow / silhouette stills ──
-  shadow_front:   `${BASE}/shadow_front_neutral_91def304.png`,
-  shadow_back:    `${BASE}/shadow_back_view_12c6789d.png`,
-  shadow_side:    `${BASE}/shadow_side_view_c8d6b153.png`,
-  shadow_bust:    `${BASE}/shadow_bust_portrait_af325453.png`,
-  shadow_icon:    `${BASE}/shadow_icon_bust_b24f766d.png`,
-  // ── UI context stills (updated batch) ──
-  ui_loading:           `${BASE}/ui_loading_f7b07d2e.png`,
-  ui_onboarding:        `${BASE}/ui_onboarding_1e4ac58d.png`,
-  ui_recommendation:    `${BASE}/ui_recommendation_ad92c6d7.png`,
-  ui_warning:           `${BASE}/ui_warning_dad19743.png`,
-  ui_completion:        `${BASE}/ui_completion_15993a96.png`,
-  ui_dashboard:         `${BASE}/ui_dashboard_reveal_311329f0.png`,
-  ui_dashboard_clean:   `${BASE}/ui_dashboard_reveal_clean_f2b0be67.png`,
-  ui_searching:         `${BASE}/ui_searching_3e406119.png`,
-  ui_secure:            `${BASE}/ui_secure_78bb5fd2.png`,
-} as const;
+// Note: Poster/still image registry removed — assets don't exist in production.
+// Using CSS gradient placeholders instead for loading/error states.
 
 // ─── Blend mode registry ────────────────────────────────────────────────────────
 // Clips with dark/black backgrounds use 'screen' to blend out the bg.
@@ -339,8 +277,6 @@ interface SpectreVideoPlayerProps {
   style?: React.CSSProperties;
   /** Show a subtle dark radial glow beneath the character */
   glow?: boolean;
-  /** Show fallback still image on video error */
-  fallbackToStill?: boolean;
 }
 
 export function SpectreVideoPlayer({
@@ -351,7 +287,6 @@ export function SpectreVideoPlayer({
   className,
   style,
   glow = false,
-  fallbackToStill = true,
 }: SpectreVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [currentSrc, setCurrentSrc] = useState<string>(() => {
@@ -362,9 +297,6 @@ export function SpectreVideoPlayer({
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-
-  // Get poster for current state
-  const posterSrc = POSTERS[state] ?? POSTERS.idle;
 
   // When state changes, crossfade to the new clip
   useEffect(() => {
@@ -404,7 +336,7 @@ export function SpectreVideoPlayer({
 
   const sizeClass = SIZE_CLASSES[size] ?? size;
 
-  // Handle video errors with retry logic and fallback
+  // Handle video errors with retry logic and graceful fallback
   const handleVideoError = useCallback(() => {
     console.warn(`Video failed to load: ${currentSrc}`);
     
@@ -418,22 +350,11 @@ export function SpectreVideoPlayer({
         }
       }, 400 * (retryCount + 1));
     } else {
-      // Max retries reached, show fallback
+      // Max retries reached — show error state with CSS placeholder
       setHasError(true);
       setIsLoading(false);
-      
-      // Try to fall back to idle state if not already idle
-      if (state !== "idle" && fallbackToStill) {
-        const idleClips = CLIPS.idle;
-        const fallback = idleClips[Math.floor(Math.random() * idleClips.length)];
-        if (currentSrc !== fallback) {
-          setCurrentSrc(fallback);
-          setHasError(false);
-          setRetryCount(0);
-        }
-      }
     }
-  }, [currentSrc, retryCount, state, fallbackToStill]);
+  }, [currentSrc, retryCount]);
 
   const handleLoadedData = useCallback(() => {
     setIsLoading(false);
@@ -455,27 +376,37 @@ export function SpectreVideoPlayer({
       {/* Loading placeholder with shimmer */}
       {isLoading && !hasError && (
         <div 
-          className="absolute inset-0 rounded-lg animate-pulse"
+          className="absolute inset-0 rounded-lg"
           style={{ 
             background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%)",
             backgroundSize: "200% 200%",
+            animation: "specter-shimmer 2s ease-in-out infinite",
           }}
         />
       )}
       
-      {/* Fallback still image on error */}
-      {hasError && fallbackToStill && posterSrc && (
-        <img
-          src={posterSrc}
-          alt="Specter"
-          className="absolute inset-0 w-full h-full object-contain opacity-80"
-        />
+      {/* Error state — CSS gradient placeholder */}
+      {hasError && (
+        <div 
+          className="absolute inset-0 rounded-lg flex items-center justify-center"
+          style={{ 
+            background: "linear-gradient(135deg, #0d0d12 0%, #1a1a24 50%, #0d0d12 100%)",
+          }}
+        >
+          {/* Subtle glow effect */}
+          <div 
+            className="absolute w-1/2 h-1/2 rounded-full opacity-30"
+            style={{ 
+              background: "radial-gradient(circle, rgba(201,160,74,0.3) 0%, transparent 70%)",
+              animation: "specter-pulse 3s ease-in-out infinite",
+            }}
+          />
+        </div>
       )}
       
       <video
         ref={videoRef}
         src={currentSrc}
-        poster={posterSrc}
         loop={loop}
         muted
         playsInline
@@ -490,9 +421,22 @@ export function SpectreVideoPlayer({
         )}
         style={{ 
           mixBlendMode: (BLEND_MODES[state] ?? "screen") as React.CSSProperties["mixBlendMode"],
-          display: hasError && !posterSrc ? "none" : "block"
+          display: hasError ? "none" : "block"
         }}
       />
+      
+      {/* Keyframe animations */}
+      <style>{`
+        @keyframes specter-shimmer {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes specter-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.3; }
+          50% { transform: scale(1.1); opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
