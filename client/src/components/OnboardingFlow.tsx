@@ -855,22 +855,15 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
-          {/* Show placeholder when video fails to load */}
-          {videoError && (
-            <div className="oh3-video-placeholder">
-              <div className="oh3-video-placeholder-glow" />
-            </div>
-          )}
           <video
-            key={currentSlide.id}
             ref={videoRef}
             src={CLIP_URLS[currentSlide.clip]}
+            autoPlay
             muted
             loop
             playsInline
             preload="auto"
             onError={handleVideoError}
-            style={{ opacity: videoError ? 0 : 1 }}
           />
         </div>
       )}

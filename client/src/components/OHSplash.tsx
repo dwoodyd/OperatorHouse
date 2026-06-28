@@ -11,72 +11,7 @@
    ============================================================================= */
 import React, { useEffect, useState } from "react";
 
-// SVG logo component - never breaks
-function OperatorHouseLogo({ size = 200 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Operator House Logo"
-    >
-      <defs>
-        <linearGradient id="oh-logo-gold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#c9a04a" />
-          <stop offset="50%" stopColor="#f5a623" />
-          <stop offset="100%" stopColor="#d4a843" />
-        </linearGradient>
-        <linearGradient id="oh-logo-gold-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8b6914" />
-          <stop offset="50%" stopColor="#c9a04a" />
-          <stop offset="100%" stopColor="#a0822d" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M50 5 L95 40 L85 40 L85 90 L15 90 L15 40 L5 40 Z"
-        stroke="url(#oh-logo-gold)"
-        strokeWidth="3"
-        fill="none"
-      />
-      <path
-        d="M25 90 L25 50 L40 50 L40 90"
-        stroke="url(#oh-logo-gold-dark)"
-        strokeWidth="2"
-        fill="none"
-      />
-      <path
-        d="M60 90 L60 50 L75 50 L75 90"
-        stroke="url(#oh-logo-gold-dark)"
-        strokeWidth="2"
-        fill="none"
-      />
-      <line
-        x1="30"
-        y1="60"
-        x2="70"
-        y2="60"
-        stroke="url(#oh-logo-gold)"
-        strokeWidth="2"
-      />
-      <circle
-        cx="50"
-        cy="35"
-        r="12"
-        stroke="url(#oh-logo-gold)"
-        strokeWidth="2"
-        fill="none"
-      />
-      <circle
-        cx="50"
-        cy="35"
-        r="4"
-        fill="url(#oh-logo-gold)"
-      />
-    </svg>
-  );
-}
+const OH_LOGO = "/oh-logo.webp";
 
 function getGreeting(name?: string | null) {
   const who = name ? name.split(" ")[0] : "Specter";
@@ -174,7 +109,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
           transition: "opacity 600ms ease, transform 600ms cubic-bezier(0.34,1.2,0.64,1)",
           overflow: "hidden",
         }}>
-          <OperatorHouseLogo size={200} />
+          <img src={OH_LOGO} alt="Operator House" style={{ width: 200, height: 200, objectFit: "contain", display: "block" }} draggable={false} />
           <svg viewBox="0 0 200 200" style={{ position: "absolute", inset: 0, width: 200, height: 200, overflow: "visible", pointerEvents: "none" }}>
             <defs>
               <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -250,7 +185,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
             transform: welcomeIn ? "translateY(0) scale(1)" : "translateY(12px) scale(0.95)",
             transition: "opacity 700ms ease 100ms, transform 700ms cubic-bezier(0.34,1.1,0.64,1) 100ms",
           }}>
-            <OperatorHouseLogo size={72} />
+            <img src={OH_LOGO} alt="Operator House" style={{ width: 72, height: 72, objectFit: "contain", display: "block" }} draggable={false} />
           </div>
 
           {/* Greeting */}
