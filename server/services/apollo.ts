@@ -55,15 +55,15 @@ export class ApolloApiError extends Error {
 async function apolloFetch(
   apiKey: string,
   endpoint: string,
-  options?: RequestInit & { body?: object }
+  options?: { method?: string; headers?: Record<string, string>; body?: Record<string, unknown> }
 ): Promise<any> {
   const url = new URL(endpoint, APOLLO_BASE_URL);
   const res = await fetch(url.toString(), {
-    ...options,
+    method: options?.method ?? "GET",
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-cache",
-      ...(options?.headers || {}),
+      ...(options?.headers ?? {}),
     },
     body: options?.body ? JSON.stringify(options.body) : undefined,
   });

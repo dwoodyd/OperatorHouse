@@ -23,19 +23,19 @@ const resend = new Resend(ENV.resendApiKey);
 // ── Soul Engineer AI Services Email Templates ───────────────────────────────
 export const SOUL_ENGINEER_TEMPLATES = [
   {
-    name: "AI Services — Initial Outreach",
+    name: "AI Services -- Initial Outreach",
     description: "First contact for Soul Engineer AI consulting and automation services.",
     triggerType: "manual" as const,
     steps: [
       {
         stepOrder: 1,
         delayDays: 0,
-        subjectTemplate: "Your team's time — {{clientName}}",
+        subjectTemplate: "Your team's time -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I was looking at what {{companyName}} is building and had a specific thought.
 
-Most leaders I work with aren't short on talent. They're short on *time* — drowning in repetitive work that keeps smart people busy but doesn't move the business forward.
+Most leaders I work with aren't short on talent. They're short on *time* -- drowning in repetitive work that keeps smart people busy but doesn't move the business forward.
 
 I help high-capacity leaders reclaim 10+ hours a week by building AI systems that handle the work nobody should be doing manually.
 
@@ -43,16 +43,16 @@ Not templates. Not chatbots. Actual systems that run your operations.
 
 Worth a 15-minute conversation about where your team is losing the most time?
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer
 
-P.S. — If this isn't the right time, just reply "later" and I'll check back in a few months. No drip sequences, no automated follow-ups. I write every email myself.`,
+P.S. -- If this isn't the right time, just reply "later" and I'll check back in a few months. No drip sequences, no automated follow-ups. I write every email myself.`,
         sendTimePreference: "morning" as const,
       },
     ],
   },
   {
-    name: "AI Services — 3-Touch Follow-Up",
+    name: "AI Services -- 3-Touch Follow-Up",
     description: "Gentle follow-up sequence for AI services prospects who didn't respond.",
     triggerType: "manual" as const,
     steps: [
@@ -64,7 +64,7 @@ P.S. — If this isn't the right time, just reply "later" and I'll check back in
 
 I came across {{companyName}} and wanted to reach out directly.
 
-I work with leaders who are tired of watching their best people spend half their week on work that could be automated. Not the creative, strategic work — the repetitive operational tasks that drain energy and kill momentum.
+I work with leaders who are tired of watching their best people spend half their week on work that could be automated. Not the creative, strategic work -- the repetitive operational tasks that drain energy and kill momentum.
 
 Last quarter I helped a client automate their entire client onboarding process. What used to take 12 hours a week now happens in the background while their team focuses on high-value work.
 
@@ -72,14 +72,14 @@ The result: they closed 40% more deals with the same headcount.
 
 Curious if there's something similar hiding in your workflow?
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 2,
         delayDays: 4,
-        subjectTemplate: "The cost of "we'll automate that someday"",
+        subjectTemplate: "The cost of \"we'll automate that someday\"",
         bodyTemplate: `Hi {{clientName}},
 
 Following up on my note from a few days ago.
@@ -92,54 +92,54 @@ The leaders who win aren't the ones who work harder. They're the ones who build 
 
 If you're curious what that could look like for {{companyName}}, I'm happy to spend 15 minutes showing you a specific workflow we could automate.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 3,
         delayDays: 7,
-        subjectTemplate: "Leaving the door open — {{clientName}}",
+        subjectTemplate: "Leaving the door open -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 This will be my last note for now.
 
 I know timing is everything. If you're heads-down on other priorities, that makes complete sense.
 
-I'll leave the door open. If you ever find yourself thinking "there has to be a better way to handle this," — I'm here.
+I'll leave the door open. If you ever find yourself thinking "there has to be a better way to handle this," -- I'm here.
 
 Best of luck with everything you're building.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer
 
-P.S. — If you change your mind, just reply to any of these emails. They all come straight to me.`,
+P.S. -- If you change your mind, just reply to any of these emails. They all come straight to me.`,
         sendTimePreference: "afternoon" as const,
       },
     ],
   },
   {
-    name: "AI Services — Value-Add Nurture",
+    name: "AI Services -- Value-Add Nurture",
     description: "Provide ongoing value to warm prospects who aren't ready to buy yet.",
     triggerType: "manual" as const,
     steps: [
       {
         stepOrder: 1,
         delayDays: 0,
-        subjectTemplate: "A framework that might help — {{clientName}}",
+        subjectTemplate: "A framework that might help -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 You came up in a conversation recently and I thought of you.
 
-I've been refining a framework I call the "3-Layer Operations Audit" — a way to identify which parts of your workflow are actually worth automating (and which ones aren't).
+I've been refining a framework I call the "3-Layer Operations Audit" -- a way to identify which parts of your workflow are actually worth automating (and which ones aren't).
 
 Most people automate the wrong things first. They build elaborate systems for edge cases while the core work still happens manually.
 
 This framework helps you find the 20% of work that's eating 80% of your team's time.
 
-Happy to send it over if you're interested. No pitch attached — just a tool I've found useful.
+Happy to send it over if you're interested. No pitch attached -- just a tool I've found useful.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
@@ -161,39 +161,39 @@ Small, complete wins beat big, unfinished projects every time.
 
 If you're ever ready to pick that first workflow, I'm here.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
     ],
   },
   {
-    name: "AI Services — Breakup / Last Chance",
+    name: "AI Services -- Breakup / Last Chance",
     description: "Final outreach to prospects who have gone cold.",
     triggerType: "deal_stale" as const,
     steps: [
       {
         stepOrder: 1,
         delayDays: 0,
-        subjectTemplate: "Should I close your file? — {{clientName}}",
+        subjectTemplate: "Should I close your file? -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I haven't heard back from you, so I'm assuming timing or priorities have shifted.
 
-Totally understand — I've been there.
+Totally understand -- I've been there.
 
 I'm going to close your file for now and stop following up. If things change and you want to revisit automating some of {{companyName}}'s workflows, just reply to this email.
 
 Either way, I hope the work you're doing is meaningful and the team is thriving.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "afternoon" as const,
       },
       {
         stepOrder: 2,
         delayDays: 30,
-        subjectTemplate: "One question before I go — {{clientName}}",
+        subjectTemplate: "One question before I go -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I'm tidying up my pipeline and saw we never connected.
@@ -206,25 +206,25 @@ Quick question: what was the main thing holding you back? Was it:
 - Already working with someone else
 - Just not interested
 
-No wrong answers — I'm genuinely curious. It helps me understand what people actually need vs. what I think they need.
+No wrong answers -- I'm genuinely curious. It helps me understand what people actually need vs. what I think they need.
 
 Thanks either way.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
     ],
   },
   {
-    name: "AI Services — Post-Strategy Proposal",
+    name: "AI Services -- Post-Strategy Proposal",
     description: "Follow-up sequence after delivering a strategy or proposal.",
     triggerType: "manual" as const,
     steps: [
       {
         stepOrder: 1,
         delayDays: 0,
-        subjectTemplate: "The strategy we discussed — {{clientName}}",
+        subjectTemplate: "The strategy we discussed -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 As promised, here's the strategy we mapped out.
@@ -243,16 +243,16 @@ Investment: {{investment}}
 
 This isn't a generic proposal. It's built specifically for your situation, your constraints, and your goals.
 
-Questions? Concerns? Something not landing right? Just reply — I'm here.
+Questions? Concerns? Something not landing right? Just reply -- I'm here.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 2,
         delayDays: 3,
-        subjectTemplate: "One thing I forgot to mention — {{clientName}}",
+        subjectTemplate: "One thing I forgot to mention -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I was thinking about our conversation and realized I didn't mention something that might matter.
@@ -263,17 +263,17 @@ Not a game-changer, but it does shift how I'd think about prioritizing the work.
 
 Worth a quick chat to talk through it?
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 3,
         delayDays: 7,
-        subjectTemplate: "Checking in — {{clientName}}",
+        subjectTemplate: "Checking in -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
-Just checking in on the strategy I sent over. I know these decisions take time — especially when they involve changing how your team works.
+Just checking in on the strategy I sent over. I know these decisions take time -- especially when they involve changing how your team works.
 
 A few questions that often come up at this stage:
 
@@ -281,16 +281,16 @@ A few questions that often come up at this stage:
 - Are there specific concerns about timeline or budget I can address?
 - Is there a smaller pilot project we could start with to prove the concept?
 
-No pressure — just want to make sure I'm being helpful, not pushy.
+No pressure -- just want to make sure I'm being helpful, not pushy.
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "afternoon" as const,
       },
       {
         stepOrder: 4,
         delayDays: 14,
-        subjectTemplate: "Still evaluating? — {{clientName}}",
+        subjectTemplate: "Still evaluating? -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I know you're probably evaluating options or waiting for the right moment to move forward.
@@ -301,29 +301,29 @@ Every week of delay is another week your best people spend on tasks that don't r
 
 That said, I never want to rush a decision that needs careful thought. If now isn't the right time, I understand completely.
 
-Just let me know where you're at — even if the answer is "not yet."
+Just let me know where you're at -- even if the answer is "not yet."
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 5,
         delayDays: 21,
-        subjectTemplate: "Final note — {{clientName}}",
+        subjectTemplate: "Final note -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 This will be my last follow-up on the strategy proposal.
 
 If the timing isn't right or the fit isn't there, no hard feelings at all. These decisions are complex and personal.
 
-I'll leave the door open. If anything changes — if a new project emerges, if priorities shift, if you just want to pick my brain — feel free to reach out anytime.
+I'll leave the door open. If anything changes -- if a new project emerges, if priorities shift, if you just want to pick my brain -- feel free to reach out anytime.
 
 I hope {{companyName}} keeps thriving, and that you find the right solutions for whatever you're facing.
 
 All the best,
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer`,
         sendTimePreference: "afternoon" as const,
       },
@@ -334,7 +334,7 @@ Soul Engineer`,
 // ── Original Pre-built sequence templates (kept for compatibility) ────────────
 export const BUILT_IN_TEMPLATES = [
   {
-    name: "Cold Outreach — 3-Touch",
+    name: "Cold Outreach -- 3-Touch",
     description: "A concise 3-email sequence for reaching out to new prospects.",
     triggerType: "manual" as const,
     steps: [
@@ -348,7 +348,7 @@ I came across your work and wanted to reach out directly. I help operators like 
 
 Would a 15-minute call this week make sense?
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
@@ -357,32 +357,32 @@ Would a 15-minute call this week make sense?
         subjectTemplate: "Re: Quick question about {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
-Just following up on my last note. I know your time is valuable — I'll keep this brief.
+Just following up on my last note. I know your time is valuable -- I'll keep this brief.
 
 We've helped operators in similar positions increase close rates by 30%+ in 60 days.
 
 Worth a quick chat?
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 3,
         delayDays: 7,
-        subjectTemplate: "Last note — {{clientName}}",
+        subjectTemplate: "Last note -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I'll leave the door open. If the timing isn't right, no hard feelings.
 
 If anything changes, you know where to find me.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "afternoon" as const,
       },
     ],
   },
   {
-    name: "Deal Follow-Up — 5-Touch",
+    name: "Deal Follow-Up -- 5-Touch",
     description: "Keep warm prospects engaged after an initial meeting.",
     triggerType: "manual" as const,
     steps: [
@@ -398,7 +398,7 @@ It was great speaking with you. As promised, here's a quick summary of what we d
 
 Looking forward to moving this forward.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
@@ -407,24 +407,24 @@ Looking forward to moving this forward.
         subjectTemplate: "One thing I forgot to mention, {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
-I wanted to share one more thing that's relevant to what we discussed — [insert value point].
+I wanted to share one more thing that's relevant to what we discussed -- [insert value point].
 
 Does this change anything for you?
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 3,
         delayDays: 5,
-        subjectTemplate: "Checking in — {{clientName}}",
+        subjectTemplate: "Checking in -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 Just checking in to see if you had a chance to review what we discussed.
 
 Any questions I can answer?
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "afternoon" as const,
       },
       {
@@ -437,26 +437,26 @@ I know decisions like this take time. I'm here whenever you're ready.
 
 In the meantime, here's a quick resource that might help: [insert link].
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 5,
         delayDays: 21,
-        subjectTemplate: "Final check-in — {{clientName}}",
+        subjectTemplate: "Final check-in -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 This will be my last follow-up for now. If the timing isn't right, I completely understand.
 
 Feel free to reach out whenever the time is right.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "afternoon" as const,
       },
     ],
   },
   {
-    name: "Re-Engagement — 2-Touch",
+    name: "Re-Engagement -- 2-Touch",
     description: "Win back clients who have gone quiet.",
     triggerType: "deal_stale" as const,
     steps: [
@@ -468,22 +468,22 @@ Feel free to reach out whenever the time is right.
 
 It's been a while since we last connected. I wanted to check in and see if anything has changed on your end.
 
-We've made some updates that might be relevant to you — happy to share.
+We've made some updates that might be relevant to you -- happy to share.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 2,
         delayDays: 7,
-        subjectTemplate: "One last thought — {{clientName}}",
+        subjectTemplate: "One last thought -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 I'll keep this short. If you're still exploring options, I'd love to reconnect.
 
-If not, no worries at all — I wish you the best.
+If not, no worries at all -- I wish you the best.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "afternoon" as const,
       },
     ],
@@ -508,7 +508,7 @@ Here's what happens next:
 
 Your dedicated point of contact is {{senderName}}. Don't hesitate to reach out.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
@@ -521,20 +521,20 @@ Just checking in to make sure everything is going smoothly.
 
 Any questions or concerns? I'm here.
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "morning" as const,
       },
       {
         stepOrder: 3,
         delayDays: 14,
-        subjectTemplate: "Two weeks in — {{clientName}}",
+        subjectTemplate: "Two weeks in -- {{clientName}}",
         bodyTemplate: `Hi {{clientName}},
 
 It's been two weeks! I'd love to hear how things are going and whether there's anything we can improve.
 
 Would a quick 10-minute call work this week?
 
-— {{senderName}}`,
+-- {{senderName}}`,
         sendTimePreference: "afternoon" as const,
       },
     ],
@@ -988,7 +988,7 @@ export const emailSequencesRouter = router({
           result = await resend.emails.send({
             from: ENV.emailFrom,
             to: input.toEmail,
-            subject: "Operator House — Resend Test (Text)",
+            subject: "Operator House -- Resend Test (Text)",
             text: `Hi there,
 
 This is a test email from Operator House's Resend integration.
@@ -1000,13 +1000,13 @@ Test details:
 - Timestamp: ${new Date().toISOString()}
 - Type: Plain text
 
-— Operator House / SoulOps`,
+-- Operator House / SoulOps`,
           });
         } else if (input.testType === "html") {
           result = await resend.emails.send({
             from: ENV.emailFrom,
             to: input.toEmail,
-            subject: "Operator House — Resend Test (HTML)",
+            subject: "Operator House -- Resend Test (HTML)",
             html: `<!DOCTYPE html>
 <html>
 <head>
@@ -1028,7 +1028,7 @@ Test details:
   </ul>
   
   <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 12px;">
-    — Operator House / SoulOps
+    -- Operator House / SoulOps
   </p>
 </body>
 </html>`,
@@ -1038,12 +1038,12 @@ Test details:
           result = await resend.emails.send({
             from: ENV.emailFrom,
             to: input.toEmail,
-            subject: "Your team's time — Test Recipient",
+            subject: "Your team's time -- Test Recipient",
             text: `Hi Test Recipient,
 
 I was looking at what your company is building and had a specific thought.
 
-Most leaders I work with aren't short on talent. They're short on *time* — drowning in repetitive work that keeps smart people busy but doesn't move the business forward.
+Most leaders I work with aren't short on talent. They're short on *time* -- drowning in repetitive work that keeps smart people busy but doesn't move the business forward.
 
 I help high-capacity leaders reclaim 10+ hours a week by building AI systems that handle the work nobody should be doing manually.
 
@@ -1051,10 +1051,10 @@ Not templates. Not chatbots. Actual systems that run your operations.
 
 Worth a 15-minute conversation about where your team is losing the most time?
 
-— DeWayne Woods
+-- DeWayne Woods
 Soul Engineer
 
-P.S. — If this isn't the right time, just reply "later" and I'll check back in a few months. No drip sequences, no automated follow-ups. I write every email myself.
+P.S. -- If this isn't the right time, just reply "later" and I'll check back in a few months. No drip sequences, no automated follow-ups. I write every email myself.
 
 ---
 This is a TEST EMAIL from the Soul Engineer template library.`,

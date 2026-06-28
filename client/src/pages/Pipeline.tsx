@@ -71,6 +71,9 @@ export default function Pipeline() {
     onError: () => toast.error("Failed to create deal"),
   });
 
+  // Auto-enroll in email sequences when stage changes
+  const triggerPipelineEnroll = trpc.emailSequences.autoEnrollOnPipelineChange.useMutation();
+
   // Optimistic update: stage change via drag-and-drop
   const updateDeal = trpc.pipeline.update.useMutation({
     onMutate: async (vars) => {
@@ -130,7 +133,13 @@ export default function Pipeline() {
 
   const handleDrop = (stage: Stage) => {
     if (dragId == null) return;
+    const deal = deals?.find((d) => d.id === dragId);
+    const fromStage = deal?.stage ?? "Discovery";
     updateDeal.mutate({ id: dragId, stage });
+    // Auto-enroll in matching email sequences for this stage transition
+    if (deal?.clientId) {
+      triggerPipelineEnroll.mutate({ clientId: deal.clientId, fromStage, toStage: stage });
+    }
     if (stage === "Closed") {
       setShowTriumph(true);
       setTimeout(() => setShowTriumph(false), 4500);
