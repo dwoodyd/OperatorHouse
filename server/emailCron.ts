@@ -347,11 +347,166 @@ export async function runEmailCronJob() {
   console.log(`[EmailCron] Job complete. Processed ${foundingMembers.length} founding members.`);
 }
 
+/**
+ * Process scheduled email sequences
+ * Sends emails that are due based on delayDays and lastEmailSentAt
+ */
+async function processScheduledSequences() {
+  const db = await getDb();
+  if (!db) {
+    console.error('[EmailCron] No DB connection for sequence processing');
+    return;
+  }
+
+  const now = new Date();
+  const {
+    emailSequences,
+    emailSequenceSteps,
+    emailSequenceEnrollments,
+    emailSends,
+    clients,
+  } = await import("../drizzle/schema.js");
+  const { eq, and, asc } = await import("drizzle-orm");
+
+  // Get all active enrollments
+  const enrollments = await db
+    .select({
+      enrollment: emailSequenceEnrollments,
+      sequence: emailSequences,
+      client: clients,
+    })
+    .from(emailSequenceEnrollments)
+    .leftJoin(emailSequences, eq(emailSequenceEnrollments.sequenceId, emailSequences.id))
+    .leftJoin(clients, eq(emailSequenceEnrollments.clientId, clients.id))
+    .where(
+      and(
+        eq(emailSequenceEnrollments.status, "active"),
+        eq(emailSequences.status, "active")
+      )
+    );
+
+  let sentCount = 0;
+  let errorCount = 0;
+
+  for (const { enrollment, sequence, client } of enrollments) {
+    if (!enrollment || !sequence || !client) continue;
+
+    try {
+      // Get steps for this sequence
+      const steps = await db
+        .select()
+        .from(emailSequenceSteps)
+        .where(eq(emailSequenceSteps.sequenceId, enrollment.sequenceId))
+        .orderBy(asc(emailSequenceSteps.stepOrder));
+
+      const nextStepIndex = enrollment.currentStep;
+      if (nextStepIndex >= steps.length) {
+        // Sequence complete
+        await db
+          .update(emailSequenceEnrollments)
+          .set({ status: "completed" })
+          .where(eq(emailSequenceEnrollments.id, enrollment.id));
+        continue;
+      }
+
+      const step = steps[nextStepIndex];
+
+      // Check if enough time has passed
+      if (enrollment.lastEmailSentAt) {
+        const lastSent = new Date(enrollment.lastEmailSentAt);
+        const hoursSinceLastEmail = (now.getTime() - lastSent.getTime()) / (1000 * 60 * 60);
+        const requiredHours = step.delayDays * 24;
+
+        if (hoursSinceLastEmail < requiredHours) {
+          continue; // Not time yet
+        }
+      }
+
+      // Check send time preference
+      const hour = now.getUTCHours();
+      const isMorning = hour >= 12 && hour <= 16; // 8am-12pm ET (roughly)
+      const isAfternoon = hour >= 17 && hour <= 21; // 1pm-5pm ET (roughly)
+
+      if (step.sendTimePreference === "morning" && !isMorning) continue;
+      if (step.sendTimePreference === "afternoon" && !isAfternoon) continue;
+
+      // Send the email
+      if (!client.email) {
+        console.log(`[EmailCron] Client ${client.id} has no email, skipping`);
+        continue;
+      }
+
+      // Interpolate templates
+      const vars = {
+        clientName: client.name ?? "there",
+        senderName: "DeWayne Woods",
+        clientEmail: client.email,
+        companyName: client.company ?? "your company",
+      };
+
+      const interpolate = (template: string, vars: Record<string, string>) =>
+        template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+
+      const subject = interpolate(step.subjectTemplate, vars);
+      const body = interpolate(step.bodyTemplate, vars);
+
+      // Send via Resend
+      const { data, error } = await resend.emails.send({
+        from: FROM_SPECTER,
+        to: client.email,
+        subject,
+        text: body,
+      });
+
+      if (error) throw new Error(error.message);
+
+      // Log the send
+      await db.insert(emailSends).values({
+        enrollmentId: enrollment.id,
+        stepId: step.id,
+        userId: enrollment.userId,
+        subject,
+        body,
+        toEmail: client.email,
+        resendId: data?.id,
+        status: "sent",
+        sentAt: new Date(),
+      });
+
+      // Advance enrollment
+      await db
+        .update(emailSequenceEnrollments)
+        .set({
+          currentStep: nextStepIndex + 1,
+          lastEmailSentAt: new Date(),
+          status: nextStepIndex + 1 >= steps.length ? "completed" : "active",
+        })
+        .where(eq(emailSequenceEnrollments.id, enrollment.id));
+
+      sentCount++;
+      console.log(`[EmailCron] Sent sequence email to ${client.email}: ${subject}`);
+    } catch (err) {
+      errorCount++;
+      console.error(`[EmailCron] Error processing enrollment ${enrollment.id}:`, err);
+    }
+  }
+
+  console.log(`[EmailCron] Sequence processing complete. Sent: ${sentCount}, Errors: ${errorCount}`);
+}
+
 /** Start the daily cron — runs at 8:00 AM UTC every day */
 export function startEmailCron() {
+  // Main daily job for onboarding emails
   cron.schedule("0 8 * * *", async () => {
     console.log("[EmailCron] Daily job starting...");
     await runEmailCronJob();
   });
-  console.log("[EmailCron] Scheduled daily at 08:00 UTC");
+
+  // Sequence processing runs hourly to check for emails due
+  cron.schedule("0 * * * *", async () => {
+    console.log("[EmailCron] Sequence processing starting...");
+    await processScheduledSequences();
+  });
+
+  console.log("[EmailCron] Scheduled: daily onboarding at 08:00 UTC, sequences hourly");
 }

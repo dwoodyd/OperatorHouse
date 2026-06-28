@@ -67,6 +67,9 @@ export const ENV = {
 
   // ── Redis (rate limiting) ──────────────────────────────────────────────────
   redisUrl: process.env.REDIS_URL ?? "",
+
+  // ── Apollo.io (B2B lead search) ─────────────────────────────────────────────
+  apolloApiKey: process.env.APOLLO_API_KEY ?? "",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

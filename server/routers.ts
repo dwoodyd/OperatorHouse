@@ -22,6 +22,7 @@ import { contractsRouter } from './routers/contracts';
 import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import { integrationsRouter } from "./routers/integrations";
+import { apolloRouter } from "./routers/apollo";
 import { funnelRouter } from "./routers/funnel";
 import { pushRouter } from "./routers/push";
 import { prospectingRouter } from "./routers/prospecting";
@@ -274,10 +275,18 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
+        
+        // Get the deal before update to check for stage change
+        const deals = await getPipelineDeals(ctx.user.id);
+        const existingDeal = deals.find(d => d.id === id);
+        const oldStage = existingDeal?.stage;
+        const clientId = existingDeal?.clientId;
+        
         await updateDeal(id, ctx.user.id, data);
+        
         if (data.stage) {
           await logActivity({ userId: ctx.user.id, activityType: "deal_stage_changed", summary: `Deal moved to ${data.stage}` });
-          const dealTitle = data.title ?? `Deal #${id}`;
+          const dealTitle = data.title ?? existingDeal?.title ?? `Deal #${id}`;
           createNotification({
             userId: ctx.user.id,
             type: 'deal_moved',
@@ -285,6 +294,20 @@ export const appRouter = router({
             body: dealTitle !== `Deal #${id}` ? dealTitle : undefined,
             metadata: { dealId: id, stage: data.stage, title: dealTitle },
           }).catch(() => {});
+          
+          // Trigger email sequence enrollment on stage change
+          if (clientId && oldStage && oldStage !== data.stage) {
+            const { handlePipelineStageChange } = await import('./routers/emailSequences');
+            handlePipelineStageChange(ctx.user.id, clientId, oldStage, data.stage)
+              .then((result: { enrolled: number[] }) => {
+                if (result.enrolled.length > 0) {
+                  console.log(`[Pipeline] Auto-enrolled client ${clientId} in ${result.enrolled.length} email sequences`);
+                }
+              })
+              .catch((err: Error) => {
+                console.error('[Pipeline] Failed to auto-enroll in email sequences:', err);
+              });
+          }
         }
         return { success: true };
       }),
@@ -988,6 +1011,7 @@ HOW TO TEST IT: Put your draft in front of someone who fits your description and
   funnel: funnelRouter,
   push: pushRouter,
   prospecting: prospectingRouter,
+  apollo: apolloRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -14,8 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   Plug, Key, Download, RefreshCw, CheckCircle, XCircle, Clock,
-  Copy, Eye, EyeOff, Trash2, Plus, Zap, Calendar, BookOpen, CreditCard, Slack
+  Copy, Eye, EyeOff, Trash2, Plus, Zap, Calendar, BookOpen, CreditCard, Slack, Rocket,
 } from "lucide-react";
+import { useLocation } from "wouter";
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 const PROVIDER_ICONS: Record<string, React.ReactNode> = {
@@ -24,6 +25,7 @@ const PROVIDER_ICONS: Record<string, React.ReactNode> = {
   quickbooks: <BookOpen className="w-6 h-6 text-green-600" />,
   zapier: <Zap className="w-6 h-6 text-orange-500" />,
   stripe: <CreditCard className="w-6 h-6 text-purple-600" />,
+  apollo: <Rocket className="w-6 h-6 text-[#f5c842]" />,
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -48,6 +50,7 @@ interface Integration {
 
 // ── Integration Card ──────────────────────────────────────────────────────────
 function IntegrationCard({ integration, onConfigure }: { integration: Integration; onConfigure: (i: Integration) => void }) {
+  const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const toggle = trpc.integrations.toggleIntegration.useMutation({
     onSuccess: () => utils.integrations.listIntegrations.invalidate(),
@@ -100,6 +103,12 @@ function IntegrationCard({ integration, onConfigure }: { integration: Integratio
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4">{integration.description}</p>
         <div className="flex gap-2">
+          {integration.provider === "apollo" && integration.isEnabled && (
+            <Button size="sm" variant="default" className="bg-[#f5c842] text-black hover:bg-[#f5c842]/90"
+              onClick={() => navigate("/apollo")}>
+              <Rocket className="w-3 h-3 mr-1" /> Search Leads
+            </Button>
+          )}
           <Button size="sm" variant="outline" onClick={() => onConfigure(integration)}>
             {integration.configId ? "Edit Config" : "Configure"}
           </Button>

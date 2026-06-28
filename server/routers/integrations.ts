@@ -155,6 +155,7 @@ export const integrationsRouter = router({
       { provider: "quickbooks", label: "QuickBooks", description: "Export paid invoices to QuickBooks-compatible CSV for accounting.", icon: "quickbooks", fields: [{ key: "companyName", label: "Company Name", type: "text", placeholder: "Acme Corp" }] },
       { provider: "zapier", label: "Zapier", description: "Trigger Zapier zaps from Operator House events via webhook.", icon: "zapier", fields: [{ key: "webhookUrl", label: "Zapier Webhook URL", type: "url", placeholder: "https://hooks.zapier.com/hooks/catch/..." }] },
       { provider: "stripe_connect", label: "Stripe Connect", description: "Accept payments directly from clients via Stripe-powered invoices.", icon: "stripe", fields: [{ key: "publishableKey", label: "Publishable Key", type: "text", placeholder: "pk_live_..." }, { key: "secretKey", label: "Secret Key", type: "password", placeholder: "sk_live_..." }] },
+      { provider: "apollo", label: "Apollo.io", description: "Search millions of B2B contacts and companies. Filter by title, industry, location, and technology.", icon: "apollo", fields: [{ key: "apiKey", label: "Apollo API Key", type: "password", placeholder: "api_key_..." }] },
     ];
 
     return catalog.map(c => {
@@ -240,6 +241,12 @@ export const integrationsRouter = router({
             body: JSON.stringify({ event: "test", source: "operator_house", timestamp: new Date().toISOString() }),
           });
           if (!res.ok) throw new Error(`Zapier returned ${res.status}`);
+        } else if (input.provider === "apollo") {
+          const { testApiKey } = await import("../services/apollo");
+          if (!config.apiKey) throw new Error("Missing Apollo API key");
+          const result = await testApiKey(config.apiKey);
+          if (!result.valid) throw new Error(result.message);
+          message = result.message;
         } else {
           message = "Configuration saved — live sync will activate on next event";
         }

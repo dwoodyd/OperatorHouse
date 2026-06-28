@@ -18,8 +18,9 @@ import { toast } from "sonner";
 import {
   Plus, Search, MapPin, Globe, Phone, Mail, User,
   ChevronRight, Copy, Check, ExternalLink, Target, Telescope,
-  MessageSquare, BookOpen,
+  MessageSquare, BookOpen, Rocket,
 } from "lucide-react";
+import { useLocation } from "wouter";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STAGES = ["Prospect", "Contacted", "Responded", "Meeting", "Closed"] as const;
@@ -366,6 +367,7 @@ function CopyButton({ text }: { text: string }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Prospecting() {
+  const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -414,9 +416,14 @@ export default function Prospecting() {
               <p className="text-zinc-500 text-xs">Find, track, and close your next clients</p>
             </div>
           </div>
-          <Button onClick={() => setAddOpen(true)} className="bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm">
-            <Plus className="w-4 h-4 mr-1" /> Add Lead
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/apollo")} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm">
+              <Rocket className="w-4 h-4 mr-1 text-[#f5c842]" /> Apollo Search
+            </Button>
+            <Button onClick={() => setAddOpen(true)} className="bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm">
+              <Plus className="w-4 h-4 mr-1" /> Add Lead
+            </Button>
+          </div>
         </div>
 
         {/* Stats bar */}

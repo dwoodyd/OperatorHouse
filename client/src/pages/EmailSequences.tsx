@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   Mail, Plus, Trash2, Play, Pause, ChevronRight, Users, Send,
   Clock, Zap, BookOpen, Settings2, CheckCircle2, XCircle, Loader2,
+  TestTube, Sparkles,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -127,9 +128,12 @@ export default function EmailSequences() {
   const [showCreate, setShowCreate] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showEnroll, setShowEnroll] = useState(false);
+  const [showTest, setShowTest] = useState(false);
   const [newName, setNewName] = useState("");
   const [newTrigger, setNewTrigger] = useState<TriggerType>("manual");
   const [enrollClientId, setEnrollClientId] = useState<string>("");
+  const [testEmail, setTestEmail] = useState("");
+  const [testType, setTestType] = useState<"text" | "html" | "template">("text");
 
   // Mutations
   const createSeq = trpc.emailSequences.create.useMutation({
@@ -201,6 +205,15 @@ export default function EmailSequences() {
     },
   });
 
+  const testSend = trpc.emailSequences.testSend.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Test email sent! Message ID: ${data.messageId}`);
+      setShowTest(false);
+      setTestEmail("");
+    },
+    onError: (e) => toast.error(`Test failed: ${e.message}`),
+  });
+
   const handleAddStep = () => {
     if (!selectedId || !selected) return;
     addStep.mutate({
@@ -235,6 +248,14 @@ export default function EmailSequences() {
               <p className="text-xs text-muted-foreground mt-0.5">{sequences?.length ?? 0} sequences</p>
             </div>
             <div className="flex gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowTest(true)}>
+                    <TestTube className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Test Resend email</TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowTemplates(true)}>
@@ -505,36 +526,74 @@ export default function EmailSequences() {
 
       {/* ── Template Picker Dialog ── */}
       <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-amber-400" /> Pre-Built Templates
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 py-2 max-h-96 overflow-y-auto">
-            {templates?.map((tpl) => (
-              <div
-                key={tpl.index}
-                className="p-4 rounded-lg border border-border hover:border-amber-500/40 bg-card/50 cursor-pointer transition-colors"
-                onClick={() => seedTemplate.mutate({ templateIndex: tpl.index })}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-sm">{tpl.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
+          <div className="space-y-6 py-2">
+            {/* Soul Engineer Templates */}
+            <div>
+              <h3 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Soul Engineer AI Services
+              </h3>
+              <div className="space-y-2">
+                {templates?.filter(t => t.isSoulEngineer).map((tpl) => (
+                  <div
+                    key={tpl.index}
+                    className="p-4 rounded-lg border border-amber-500/20 hover:border-amber-500/50 bg-amber-500/5 cursor-pointer transition-colors"
+                    onClick={() => seedTemplate.mutate({ templateIndex: tpl.index })}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-sm">{tpl.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-xs">{tpl.stepCount} steps</Badge>
+                        <Badge className="text-xs bg-amber-500/20 text-amber-400 border-amber-500/30">
+                          {TRIGGER_LABELS[tpl.triggerType as TriggerType]}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 mt-3 text-amber-400 text-xs">
+                      <ChevronRight className="w-3.5 h-3.5" /> Load this template
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <Badge variant="outline" className="text-xs">{tpl.stepCount} steps</Badge>
-                    <Badge className="text-xs bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
-                      {TRIGGER_LABELS[tpl.triggerType as TriggerType]}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 mt-3 text-amber-400 text-xs">
-                  <ChevronRight className="w-3.5 h-3.5" /> Load this template
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* General Templates */}
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">General Sequences</h3>
+              <div className="space-y-2">
+                {templates?.filter(t => !t.isSoulEngineer).map((tpl) => (
+                  <div
+                    key={tpl.index}
+                    className="p-4 rounded-lg border border-border hover:border-amber-500/40 bg-card/50 cursor-pointer transition-colors"
+                    onClick={() => seedTemplate.mutate({ templateIndex: tpl.index })}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-sm">{tpl.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-xs">{tpl.stepCount} steps</Badge>
+                        <Badge className="text-xs bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+                          {TRIGGER_LABELS[tpl.triggerType as TriggerType]}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 mt-3 text-amber-400 text-xs">
+                      <ChevronRight className="w-3.5 h-3.5" /> Load this template
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -564,6 +623,55 @@ export default function EmailSequences() {
               disabled={!enrollClientId || enroll.isPending}
             >
               {enroll.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enroll"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Test Email Dialog ── */}
+      <Dialog open={showTest} onOpenChange={setShowTest}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TestTube className="w-4 h-4 text-amber-400" /> Test Resend Email
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Recipient Email</label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Test Type</label>
+              <Select value={testType} onValueChange={(v) => setTestType(v as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Plain Text Email</SelectItem>
+                  <SelectItem value="html">HTML Formatted Email</SelectItem>
+                  <SelectItem value="template">Soul Engineer Template</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
+              {testType === "text" && "Sends a simple plain text email to verify basic delivery."}
+              {testType === "html" && "Sends an HTML formatted email to verify rich content delivery."}
+              {testType === "template" && "Sends a sample Soul Engineer AI services outreach email."}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTest(false)}>Cancel</Button>
+            <Button
+              onClick={() => testSend.mutate({ toEmail: testEmail, testType })}
+              disabled={!testEmail || testSend.isPending}
+            >
+              {testSend.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Test"}
             </Button>
           </DialogFooter>
         </DialogContent>
