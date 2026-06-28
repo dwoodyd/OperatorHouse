@@ -719,20 +719,26 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     setVideoError(true);
   }, []);
 
-  // Explicitly play video when slide changes (browser autoplay is unreliable)
+  // Play video once it's loaded (triggered by onLoadedData event)
+  const handleVideoLoaded = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.warn("Video play failed:", err);
+        setVideoError(true);
+      });
+    }
+  }, []);
+
+  // Backup: try to play when video element is available (for cached videos)
   useEffect(() => {
     if (videoRef.current && !currentSlide.noVideo) {
-      videoRef.current.load();
-      const playPromise = videoRef.current.play();
-      if (playPromise) {
-        playPromise.catch((err) => {
-          console.warn("Video autoplay blocked:", err);
-          // Show placeholder if autoplay fails
-          setVideoError(true);
-        });
-      }
+      // Small delay to ensure element is ready
+      const timer = setTimeout(() => {
+        videoRef.current?.play().catch(() => {});
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [slideIdx, currentSlide.noVideo, currentSlide.id]);
+  }, [currentSlide.clip, currentSlide.noVideo]);
 
   // handleEnter must be defined BEFORE advance so advance can reference it
   // without a stale closure. Using useCallback ensures the reference is stable.
@@ -856,6 +862,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
           <video
+            key={currentSlide.clip}
             ref={videoRef}
             src={CLIP_URLS[currentSlide.clip]}
             autoPlay
@@ -864,6 +871,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
             playsInline
             preload="auto"
             onError={handleVideoError}
+            onLoadedData={handleVideoLoaded}
           />
         </div>
       )}
