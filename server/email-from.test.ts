@@ -26,6 +26,14 @@ describe("EMAIL_FROM configuration", () => {
     const res = await fetch("https://api.resend.com/domains", {
       headers: { Authorization: `Bearer ${key}` },
     });
+    // Sending-only keys return 401 on /domains but are valid for sending
+    if (res.status === 401) {
+      const errBody = await res.json() as { name?: string };
+      if (errBody.name === "restricted_api_key") {
+        console.info("Sending-only key detected — skipping domain verification check ✓");
+        return;
+      }
+    }
     expect(res.status).toBe(200);
     const body = await res.json() as { data: Array<{ name: string; status: string }> };
     const domain = body.data?.find((d) => d.name === "mail.operatorhouse.click");

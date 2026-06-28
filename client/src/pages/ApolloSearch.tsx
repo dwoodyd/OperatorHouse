@@ -50,8 +50,8 @@ interface ApolloLead {
 export default function ApolloSearch() {
   const [q, setQ] = useState("");
   const [title, setTitle] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [companySize, setCompanySize] = useState("");
+  const [industry, setIndustry] = useState("all");
+  const [companySize, setCompanySize] = useState("all");
   const [location, setLocation] = useState("");
   const [technology, setTechnology] = useState("");
   const [page, setPage] = useState(1);
@@ -59,7 +59,7 @@ export default function ApolloSearch() {
   const [importingIds, setImportingIds] = useState<Set<string>>(new Set());
 
   const searchQuery = trpc.apollo.search.useQuery(
-    { q, title, industry, companySize, location, technology, page, limit: 20 },
+    { q, title, industry: industry === "all" ? "" : industry, companySize: companySize === "all" ? "" : companySize, location, technology, page, limit: 20 },
     { enabled: hasSearched }
   );
 
@@ -191,7 +191,7 @@ export default function ApolloSearch() {
                     <SelectValue placeholder="Any industry" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-[#333]">
-                    <SelectItem value="" className="text-[#e5e5e5]">Any industry</SelectItem>
+                    <SelectItem value="all" className="text-[#e5e5e5]">Any industry</SelectItem>
                     {INDUSTRIES.map(i => (
                       <SelectItem key={i} value={i} className="text-[#e5e5e5]">{i}</SelectItem>
                     ))}
@@ -205,7 +205,7 @@ export default function ApolloSearch() {
                     <SelectValue placeholder="Any size" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-[#333]">
-                    <SelectItem value="" className="text-[#e5e5e5]">Any size</SelectItem>
+                    <SelectItem value="all" className="text-[#e5e5e5]">Any size</SelectItem>
                     {COMPANY_SIZES.map(s => (
                       <SelectItem key={s.value} value={s.value} className="text-[#e5e5e5]">{s.label} employees</SelectItem>
                     ))}

@@ -19,7 +19,15 @@ describe("Resend API key validation", () => {
     const res = await fetch("https://api.resend.com/domains", {
       headers: { Authorization: `Bearer ${key}` },
     });
-    // 200 = valid key, 401 = invalid key
+    // 200 = full-access key (can list domains)
+    // 401 with "restricted_api_key" = sending-only key — valid for email delivery
+    if (res.status === 401) {
+      const body = await res.json() as { name?: string };
+      if (body.name === "restricted_api_key") {
+        console.info("RESEND_API_KEY is a sending-only key — valid for email delivery ✓");
+        return;
+      }
+    }
     expect(res.status, `Resend API returned ${res.status} — key may be invalid`).toBe(200);
   });
 });

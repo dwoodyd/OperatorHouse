@@ -79,7 +79,7 @@ Soul Engineer`,
       {
         stepOrder: 2,
         delayDays: 4,
-        subjectTemplate: "The cost of \"we'll automate that someday\"",
+        subjectTemplate: `The cost of "we'll automate that someday"`,
         bodyTemplate: `Hi {{clientName}},
 
 Following up on my note from a few days ago.
