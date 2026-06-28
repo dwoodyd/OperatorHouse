@@ -39,6 +39,8 @@ interface SlideData {
   textDelay?: number;
   /** Show on mobile (collapsed 3-slide flow). Default true. */
   mobile?: boolean;
+  /** Poster image for video loading state */
+  poster?: string;
 }
 
 const SLIDES: SlideData[] = [
@@ -66,6 +68,7 @@ const SLIDES: SlideData[] = [
     cta: "What does Specter actually do? →",
     textDelay: 500,
     mobile: false,
+    poster: "/assets/specter-poster-inviting.png",
   },
   // Screen 3 — Intelligence Layer
   {
@@ -78,6 +81,7 @@ const SLIDES: SlideData[] = [
     cta: "And the deals already in motion? →",
     textDelay: 400,
     mobile: true, // middle slide in the 3-slide mobile flow
+    poster: "/assets/specter-poster-talking.png",
   },
   // Screen 4 — Pipeline (ethereal reveal video)
   {
@@ -90,6 +94,7 @@ const SLIDES: SlideData[] = [
     cta: "How does Specter sound like me? →",
     textDelay: 400,
     mobile: false,
+    poster: "/assets/specter-poster-ethereal.png",
   },
   // Screen 5 — The Vault (holographic typing video)
   {
@@ -101,6 +106,7 @@ const SLIDES: SlideData[] = [
     body: "Your frameworks, your scripts, your case studies, your voice. Specter reads the Vault before generating anything — so the output sounds like you, not like AI. Your knowledge compounds.",
     textDelay: 400,
     mobile: false,
+    poster: "/assets/specter-poster-vault.png",
   },
   // Screen 6 — Strategy + first action
   {
@@ -113,6 +119,7 @@ const SLIDES: SlideData[] = [
     cta: "Add your first lead →",
     textDelay: 500,
     mobile: true,
+    poster: "/assets/specter-poster-cast.png",
   },
 ];
 
@@ -527,6 +534,20 @@ const CSS = `
     opacity: 0;
   }
 
+  /* ── Video loading state ── */
+  .oh3-video-loading {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0a0f 0%, #151520 50%, #0a0a0f 100%);
+    background-size: 200% 200%;
+    animation: oh3-shimmer 2s ease-in-out infinite;
+  }
+  @keyframes oh3-shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
   /* ── Animations ── */
   @keyframes oh3-fade-in {
     from { opacity: 0; }
@@ -592,9 +613,15 @@ const CSS = `
 
 export default function OnboardingFlow({ onComplete, isReplay = false, isAuthenticated = false }: OnboardingFlowProps) {
   const [, setLocation] = useLocation();
-  // Detect mobile to use collapsed 3-slide flow
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+  
+  // FIX #1: Move window.innerWidth to useEffect to prevent SSR/hydration mismatch
+  const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  
   useEffect(() => {
+    setIsClient(true);
+    setIsMobile(window.innerWidth <= 640);
+    
     const handler = () => setIsMobile(window.innerWidth <= 640);
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
@@ -613,6 +640,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const [videoFading, setVideoFading] = useState(false);
   const [done, setDone] = useState(false);
   const [nextTapped, setNextTapped] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   // Only wire the protected mutation when the user is authenticated.
@@ -622,14 +650,26 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
 
   const currentSlide = activeSlides[slideIdx];
 
-  // Inject CSS once
+  // Inject CSS once with proper cleanup
   useEffect(() => {
+    if (typeof document === "undefined") return;
+    
     const el = document.createElement("style");
     el.textContent = CSS;
     document.head.appendChild(el);
     styleRef.current = el;
-    return () => { el.remove(); };
+    
+    return () => {
+      if (styleRef.current && document.head.contains(styleRef.current)) {
+        styleRef.current.remove();
+      }
+    };
   }, []);
+
+  // Reset video error state when slide changes
+  useEffect(() => {
+    setVideoError(false);
+  }, [slideIdx]);
 
   // Activate text after slide enters
   useEffect(() => {
@@ -649,7 +689,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       timers.push(setTimeout(() => setHeadlineVisible(i + 1), i * 110));
     });
     return () => timers.forEach(clearTimeout);
-  }, [textActive, slideIdx]);
+  }, [textActive, slideIdx, headlineWords.length]);
 
   // Body + controls appear after headline is done
   const headlineDuration = headlineWords.length * 110;
@@ -661,36 +701,24 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     return () => clearTimeout(t);
   }, [textActive, slideIdx, headlineDuration]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") advance();
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") retreat();
-      if (e.key === "Escape") handleSkip();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  });
-
-  // Touch swipe
-  const touchStartX = useRef(0);
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const dx = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(dx) > 44) { dx > 0 ? advance() : retreat(); }
-  };
-
-  const goTo = useCallback((target: number) => {
-    if (phase !== "idle") return;
-    setPhase("exiting");
-    setVideoFading(true);
-    setTimeout(() => {
-      setSlideIdx(target);
-      setPhase("entering");
-      setVideoFading(false);
-      setTimeout(() => setPhase("idle"), 600);
-    }, 380);
-  }, [phase, activeSlides]);
+  // Handle video errors with fallback
+  const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const el = e.currentTarget;
+    console.warn(`Video failed to load: ${el.src}`);
+    
+    // Try to retry once
+    if (!el.dataset.retried) {
+      el.dataset.retried = "1";
+      setTimeout(() => {
+        try {
+          el.load();
+          el.play().catch(() => {});
+        } catch {}
+      }, 400);
+    } else {
+      setVideoError(true);
+    }
+  }, []);
 
   // handleEnter must be defined BEFORE advance so advance can reference it
   // without a stale closure. Using useCallback ensures the reference is stable.
@@ -723,6 +751,18 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     }
   }, [done, slideIdx, TOTAL, activeSlides, isAuthenticated, onComplete, setLocation, completeOnboarding]);
 
+  const goTo = useCallback((target: number) => {
+    if (phase !== "idle") return;
+    setPhase("exiting");
+    setVideoFading(true);
+    setTimeout(() => {
+      setSlideIdx(target);
+      setPhase("entering");
+      setVideoFading(false);
+      setTimeout(() => setPhase("idle"), 600);
+    }, 380);
+  }, [phase]);
+
   const triggerCalibration = useCallback(() => {
     setShowCalibration(true);
     setCalStep(0);
@@ -748,7 +788,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     goTo(slideIdx - 1);
   }, [slideIdx, phase, showCalibration, goTo]);
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     if (done) return;
     setDone(true);
     if (isAuthenticated) {
@@ -756,6 +796,25 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     } else {
       onComplete();
     }
+  }, [done, isAuthenticated, completeOnboarding, onComplete]);
+
+  // FIX #2: Keyboard event listener with proper dependencies to avoid stale closure
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") advance();
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") retreat();
+      if (e.key === "Escape") handleSkip();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [advance, retreat, handleSkip]);
+
+  // Touch swipe
+  const touchStartX = useRef(0);
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 44) { dx > 0 ? advance() : retreat(); }
   };
 
   const CAL_ITEMS = [
@@ -766,6 +825,11 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   ];
 
   const slideNum = slideIdx + 1;
+  
+  // Don't render until client-side hydration is complete
+  if (!isClient) {
+    return <div className="oh3-root" style={{ background: "#060504" }} />;
+  }
 
   return (
     <div
@@ -777,21 +841,22 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
+          {/* Show loading state while video loads or on error */}
+          {(videoError || !currentSlide.clip) && (
+            <div className="oh3-video-loading" />
+          )}
           <video
             key={currentSlide.id}
             ref={videoRef}
             src={CLIP_URLS[currentSlide.clip]}
+            poster={currentSlide.poster}
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
-            onError={(e) => {
-              const el = e.currentTarget as HTMLVideoElement;
-              if (el.dataset.retried) return;
-              el.dataset.retried = "1";
-              setTimeout(() => { try { el.load(); el.play().catch(() => {}); } catch {} }, 400);
-            }}
+            onError={handleVideoError}
+            style={{ opacity: videoError ? 0 : 1 }}
           />
         </div>
       )}

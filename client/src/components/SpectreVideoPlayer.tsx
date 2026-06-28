@@ -10,7 +10,7 @@
  *   <SpectreVideoPlayer state="processing" size="lg" className="..." />
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 // ─── Clip registry ────────────────────────────────────────────────────────────
@@ -219,6 +219,21 @@ const CLIPS: Record<SpectreState, string[]> = {
   ],
 };
 
+// ─── Poster/Still image registry ─────────────────────────────────────────────
+// High-quality PNG stills for use as poster frames while videos load
+const POSTERS: Partial<Record<SpectreState, string>> = {
+  idle:        `${BASE}/gest_idle_c42825f6.png`,
+  welcoming:   `${BASE}/gest_greeting_c6b0cd78.png`,
+  presenting:  `${BASE}/gest_presenting_815af494.png`,
+  inviting_smiling: `${BASE}/gest_inviting_e161c876.png`,
+  thinking:    `${BASE}/gest_listening_d0fea5d1.png`,
+  typing:      `${BASE}/gest_typing_eb787c7b.png`,
+  determined:  `${BASE}/gest_confirming_1880203b.png`,
+  triumph:     `${BASE}/gest_celebrating_1eea94d3.png`,
+  pointing:    `${BASE}/gest_pointing_d7f58446.png`,
+  bow:         `${BASE}/gest_bow_d0e618c9.png`,
+};
+
 // ─── Still image registry ─────────────────────────────────────────────────────
 // High-quality PNG stills for use as poster frames, companion images, or
 // fallback display when video cannot autoplay.
@@ -324,6 +339,8 @@ interface SpectreVideoPlayerProps {
   style?: React.CSSProperties;
   /** Show a subtle dark radial glow beneath the character */
   glow?: boolean;
+  /** Show fallback still image on video error */
+  fallbackToStill?: boolean;
 }
 
 export function SpectreVideoPlayer({
@@ -334,6 +351,7 @@ export function SpectreVideoPlayer({
   className,
   style,
   glow = false,
+  fallbackToStill = true,
 }: SpectreVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [currentSrc, setCurrentSrc] = useState<string>(() => {
@@ -341,6 +359,12 @@ export function SpectreVideoPlayer({
     return clips[Math.floor(Math.random() * clips.length)];
   });
   const [visible, setVisible] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Get poster for current state
+  const posterSrc = POSTERS[state] ?? POSTERS.idle;
 
   // When state changes, crossfade to the new clip
   useEffect(() => {
@@ -355,6 +379,11 @@ export function SpectreVideoPlayer({
       }
       return;
     }
+
+    // Reset error state on state change
+    setHasError(false);
+    setIsLoading(true);
+    setRetryCount(0);
 
     // Fade out → swap src → fade in
     setVisible(false);
@@ -375,15 +404,44 @@ export function SpectreVideoPlayer({
 
   const sizeClass = SIZE_CLASSES[size] ?? size;
 
-  // Fallback: if the clip fails to load (network error, CDN miss), silently
-  // swap to the idle clip so the UI never shows a broken video element.
-  const handleVideoError = () => {
-    const idleClips = CLIPS.idle;
-    const fallback = idleClips[Math.floor(Math.random() * idleClips.length)];
-    if (currentSrc !== fallback) {
-      setCurrentSrc(fallback);
+  // Handle video errors with retry logic and fallback
+  const handleVideoError = useCallback(() => {
+    console.warn(`Video failed to load: ${currentSrc}`);
+    
+    if (retryCount < 2) {
+      // Retry with exponential backoff
+      setRetryCount(prev => prev + 1);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.load();
+          videoRef.current.play().catch(() => {});
+        }
+      }, 400 * (retryCount + 1));
+    } else {
+      // Max retries reached, show fallback
+      setHasError(true);
+      setIsLoading(false);
+      
+      // Try to fall back to idle state if not already idle
+      if (state !== "idle" && fallbackToStill) {
+        const idleClips = CLIPS.idle;
+        const fallback = idleClips[Math.floor(Math.random() * idleClips.length)];
+        if (currentSrc !== fallback) {
+          setCurrentSrc(fallback);
+          setHasError(false);
+          setRetryCount(0);
+        }
+      }
     }
-  };
+  }, [currentSrc, retryCount, state, fallbackToStill]);
+
+  const handleLoadedData = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  const handleLoadStart = useCallback(() => {
+    setIsLoading(true);
+  }, []);
 
   return (
     <div className={cn("relative flex items-end justify-center", sizeClass, className)} style={style}>
@@ -393,19 +451,47 @@ export function SpectreVideoPlayer({
           style={{ background: "radial-gradient(ellipse, #d4a843 0%, transparent 70%)" }}
         />
       )}
+      
+      {/* Loading placeholder with shimmer */}
+      {isLoading && !hasError && (
+        <div 
+          className="absolute inset-0 rounded-lg animate-pulse"
+          style={{ 
+            background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%)",
+            backgroundSize: "200% 200%",
+          }}
+        />
+      )}
+      
+      {/* Fallback still image on error */}
+      {hasError && fallbackToStill && posterSrc && (
+        <img
+          src={posterSrc}
+          alt="Specter"
+          className="absolute inset-0 w-full h-full object-contain opacity-80"
+        />
+      )}
+      
       <video
         ref={videoRef}
         src={currentSrc}
+        poster={posterSrc}
         loop={loop}
         muted
         playsInline
+        preload="auto"
         onEnded={onEnded}
         onError={handleVideoError}
+        onLoadedData={handleLoadedData}
+        onLoadStart={handleLoadStart}
         className={cn(
           "w-full h-full object-contain transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
         )}
-        style={{ mixBlendMode: (BLEND_MODES[state] ?? "screen") as React.CSSProperties["mixBlendMode"] }}
+        style={{ 
+          mixBlendMode: (BLEND_MODES[state] ?? "screen") as React.CSSProperties["mixBlendMode"],
+          display: hasError && !posterSrc ? "none" : "block"
+        }}
       />
     </div>
   );

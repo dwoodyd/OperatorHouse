@@ -4,7 +4,7 @@
    Mobile: hamburger overlay drawer; Desktop: collapsible sidebar
    Accessibility: ARIA landmarks, anchor-based nav, labeled buttons
    ============================================================================= */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Search, GitBranch, FileText, Archive,
@@ -86,6 +86,77 @@ interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
+}
+
+// Local SVG logo component as fallback for external CDN
+function OperatorHouseLogo({ size = 48 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Operator House Logo"
+    >
+      <defs>
+        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#c9a04a" />
+          <stop offset="50%" stopColor="#f5a623" />
+          <stop offset="100%" stopColor="#d4a843" />
+        </linearGradient>
+        <linearGradient id="goldGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b6914" />
+          <stop offset="50%" stopColor="#c9a04a" />
+          <stop offset="100%" stopColor="#a0822d" />
+        </linearGradient>
+      </defs>
+      {/* House frame */}
+      <path
+        d="M50 5 L95 40 L85 40 L85 90 L15 90 L15 40 L5 40 Z"
+        stroke="url(#goldGradient)"
+        strokeWidth="3"
+        fill="none"
+      />
+      {/* Inner house details */}
+      <path
+        d="M25 90 L25 50 L40 50 L40 90"
+        stroke="url(#goldGradientDark)"
+        strokeWidth="2"
+        fill="none"
+      />
+      <path
+        d="M60 90 L60 50 L75 50 L75 90"
+        stroke="url(#goldGradientDark)"
+        strokeWidth="2"
+        fill="none"
+      />
+      {/* Roof crossbar */}
+      <line
+        x1="30"
+        y1="60"
+        x2="70"
+        y2="60"
+        stroke="url(#goldGradient)"
+        strokeWidth="2"
+      />
+      {/* Central element - keyhole/circle representing the operator */}
+      <circle
+        cx="50"
+        cy="35"
+        r="12"
+        stroke="url(#goldGradient)"
+        strokeWidth="2"
+        fill="none"
+      />
+      <circle
+        cx="50"
+        cy="35"
+        r="4"
+        fill="url(#goldGradient)"
+      />
+    </svg>
+  );
 }
 
 function PaletteButton() {
@@ -171,6 +242,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandLineOpen, setCommandLineOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   // bellOpen state is now managed inside NotificationBell component
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
@@ -223,6 +295,10 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
     ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "OH";
 
+  const handleLogoError = useCallback(() => {
+    setLogoError(true);
+  }, []);
+
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <>
       {/* Logo */}
@@ -238,11 +314,16 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           className="flex-shrink-0 flex items-center justify-center relative"
           style={{ width: "48px", height: "48px", flexShrink: 0 }}
         >
-          <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
-            alt="Operator House"
-            style={{ width: "48px", height: "48px", objectFit: "contain", display: "block" }}
-          />
+          {logoError ? (
+            <OperatorHouseLogo size={48} />
+          ) : (
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
+              alt="Operator House"
+              style={{ width: "48px", height: "48px", objectFit: "contain", display: "block" }}
+              onError={handleLogoError}
+            />
+          )}
         </div>
         {(!collapsed || isMobile) && (
           <div style={{ overflow: "hidden", minWidth: 0, flex: 1 }}>
