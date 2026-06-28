@@ -42,12 +42,11 @@
       }
     </script>
     <script>
-      /* Analytics — only injected when both env vars are actually set at build time.
-         Vite does NOT substitute %VAR% syntax in HTML (that is a CRA convention).
-         Using import.meta.env inside a module script is the correct approach. */
+      /* Analytics — Vite substitutes %VITE_VAR% tokens in HTML at build time.
+         Plain <script> tags cannot use import.meta (ES modules only). */
       (function () {
-        var endpoint = import.meta && import.meta.env && import.meta.env.VITE_ANALYTICS_ENDPOINT;
-        var siteId   = import.meta && import.meta.env && import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+        var endpoint = "%VITE_ANALYTICS_ENDPOINT%";
+        var siteId   = "%VITE_ANALYTICS_WEBSITE_ID%";
         if (!endpoint || endpoint.indexOf('%') !== -1) return;
         if (!siteId   || siteId.indexOf('%')   !== -1) return;
         var s = document.createElement('script');
