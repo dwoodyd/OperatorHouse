@@ -716,20 +716,23 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
     console.warn(`Video failed to load: ${el.src}`);
-    
-    // Try to retry once
-    if (!el.dataset.retried) {
-      el.dataset.retried = "1";
-      setTimeout(() => {
-        try {
-          el.load();
-          el.play().catch(() => {});
-        } catch {}
-      }, 400);
-    } else {
-      setVideoError(true);
-    }
+    setVideoError(true);
   }, []);
+
+  // Explicitly play video when slide changes (browser autoplay is unreliable)
+  useEffect(() => {
+    if (videoRef.current && !currentSlide.noVideo) {
+      videoRef.current.load();
+      const playPromise = videoRef.current.play();
+      if (playPromise) {
+        playPromise.catch((err) => {
+          console.warn("Video autoplay blocked:", err);
+          // Show placeholder if autoplay fails
+          setVideoError(true);
+        });
+      }
+    }
+  }, [slideIdx, currentSlide.noVideo, currentSlide.id]);
 
   // handleEnter must be defined BEFORE advance so advance can reference it
   // without a stale closure. Using useCallback ensures the reference is stable.
@@ -862,7 +865,6 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
             key={currentSlide.id}
             ref={videoRef}
             src={CLIP_URLS[currentSlide.clip]}
-            autoPlay
             muted
             loop
             playsInline
