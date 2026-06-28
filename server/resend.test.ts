@@ -10,7 +10,7 @@ describe("Resend API key validation", () => {
     expect(process.env.RESEND_API_KEY, "RESEND_API_KEY is not set").toBeTruthy();
   });
 
-  it("should be accepted by the Resend API", async () => {
+  it("should be accepted by the Resend API", { timeout: 15000 }, async () => {
     const key = process.env.RESEND_API_KEY;
     if (!key) {
       console.warn("Skipping live check — RESEND_API_KEY not set");
