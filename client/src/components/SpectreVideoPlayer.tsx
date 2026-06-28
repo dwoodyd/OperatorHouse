@@ -298,7 +298,7 @@ export function SpectreVideoPlayer({
   const [isLoading, setIsLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // When state changes, crossfade to the new clip
+  // When state changes, swap to the new clip immediately (no fade)
   useEffect(() => {
     const clips = CLIPS[state] ?? CLIPS.idle;
     const newSrc = clips[Math.floor(Math.random() * clips.length)];
@@ -314,16 +314,10 @@ export function SpectreVideoPlayer({
 
     // Reset error state on state change
     setHasError(false);
-    setIsLoading(true);
+    setIsLoading(false);
     setRetryCount(0);
-
-    // Fade out → swap src → fade in
-    setVisible(false);
-    const timer = setTimeout(() => {
-      setCurrentSrc(newSrc);
-      setVisible(true);
-    }, 200);
-    return () => clearTimeout(timer);
+    setVisible(true);
+    setCurrentSrc(newSrc);
   }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When src changes, play the video
