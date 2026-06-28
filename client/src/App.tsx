@@ -51,6 +51,7 @@ import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Prospecting from "./pages/Prospecting";
 import ApolloSearch from "./pages/ApolloSearch";
+import LinkedInOutreach from "./pages/LinkedInOutreach";
 import PublicFunnel from "./pages/PublicFunnel";
 import { SpectreChatbot } from "./components/SpectreChatbot";
 import { trpc } from "./lib/trpc";
@@ -104,6 +105,7 @@ function Router() {
         <Route path="/integrations" component={Integrations} />
       <Route path="/prospecting" component={Prospecting} />
       <Route path="/apollo" component={ApolloSearch} />
+      <Route path="/linkedin" component={LinkedInOutreach} />
       <Route path="/join-team/:token" component={JoinTeam} />
       <Route path="/f/:slug" component={PublicFunnel} />
       <Route path="/audit" component={Audit} />

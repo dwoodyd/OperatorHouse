@@ -23,6 +23,7 @@ import { portalRouter } from './routers/portal';
 import { automationsRouter } from "./routers/automations";
 import { integrationsRouter } from "./routers/integrations";
 import { apolloRouter } from "./routers/apollo";
+import { linkedinRouter } from "./routers/linkedin";
 import { funnelRouter } from "./routers/funnel";
 import { pushRouter } from "./routers/push";
 import { prospectingRouter } from "./routers/prospecting";
@@ -1012,6 +1013,7 @@ HOW TO TEST IT: Put your draft in front of someone who fits your description and
   push: pushRouter,
   prospecting: prospectingRouter,
   apollo: apolloRouter,
+  linkedin: linkedinRouter,
 });
 
 export type AppRouter = typeof appRouter;

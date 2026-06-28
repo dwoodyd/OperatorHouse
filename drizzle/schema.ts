@@ -1190,3 +1190,82 @@ export const applications = mysqlTable("applications", {
 });
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = typeof applications.$inferInsert;
+
+// ─── Phase 18: LinkedIn Outreach ─────────────────────────────────────────────
+/**
+ * linkedin_campaigns — a named outreach campaign targeting a specific audience.
+ */
+export const linkedinCampaigns = mysqlTable("linkedin_campaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  targetAudience: text("targetAudience"),
+  status: mysqlEnum("status", ["draft", "active", "paused", "completed"]).default("draft").notNull(),
+  dailyLimit: int("dailyLimit").default(15).notNull(),
+  totalSent: int("totalSent").default(0).notNull(),
+  totalAccepted: int("totalAccepted").default(0).notNull(),
+  totalReplied: int("totalReplied").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LinkedinCampaign = typeof linkedinCampaigns.$inferSelect;
+export type InsertLinkedinCampaign = typeof linkedinCampaigns.$inferInsert;
+
+/**
+ * linkedin_sequence_steps — ordered message steps for a campaign.
+ * Step 1 = connection request note (max 300 chars). Steps 2+ = follow-up messages.
+ */
+export const linkedinSequenceSteps = mysqlTable("linkedin_sequence_steps", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull(),
+  stepOrder: int("stepOrder").notNull(),
+  stepType: mysqlEnum("stepType", ["connection_request", "message"]).default("message").notNull(),
+  delayDays: int("delayDays").default(0).notNull(),
+  messageTemplate: text("messageTemplate").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type LinkedinSequenceStep = typeof linkedinSequenceSteps.$inferSelect;
+export type InsertLinkedinSequenceStep = typeof linkedinSequenceSteps.$inferInsert;
+
+/**
+ * linkedin_connections — individual prospects tracked within a campaign.
+ */
+export const linkedinConnections = mysqlTable("linkedin_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  campaignId: int("campaignId").notNull(),
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  lastName: varchar("lastName", { length: 100 }),
+  title: varchar("title", { length: 255 }),
+  company: varchar("company", { length: 255 }),
+  linkedinUrl: varchar("linkedinUrl", { length: 500 }),
+  linkedClientId: int("linkedClientId"),
+  linkedProspectingLeadId: int("linkedProspectingLeadId"),
+  status: mysqlEnum("status", ["pending","requested","accepted","messaged","replied","converted","withdrawn"]).default("pending").notNull(),
+  currentStep: int("currentStep").default(0).notNull(),
+  requestSentAt: timestamp("requestSentAt"),
+  acceptedAt: timestamp("acceptedAt"),
+  lastMessagedAt: timestamp("lastMessagedAt"),
+  nextFollowUpAt: timestamp("nextFollowUpAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LinkedinConnection = typeof linkedinConnections.$inferSelect;
+export type InsertLinkedinConnection = typeof linkedinConnections.$inferInsert;
+
+/**
+ * linkedin_message_log — audit trail of every message sent per connection.
+ */
+export const linkedinMessageLog = mysqlTable("linkedin_message_log", {
+  id: int("id").autoincrement().primaryKey(),
+  connectionId: int("connectionId").notNull(),
+  stepId: int("stepId"),
+  stepOrder: int("stepOrder").notNull(),
+  messageText: text("messageText").notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  deliveryStatus: mysqlEnum("deliveryStatus", ["sent","delivered","read","replied"]).default("sent").notNull(),
+});
+export type LinkedinMessageLog = typeof linkedinMessageLog.$inferSelect;
+export type InsertLinkedinMessageLog = typeof linkedinMessageLog.$inferInsert;
