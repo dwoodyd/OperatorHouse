@@ -104,6 +104,11 @@ export function registerStorageProxy(app: Express) {
       if (contentRange) res.setHeader("Content-Range", contentRange);
       if (lastModified) res.setHeader("Last-Modified", lastModified);
 
+      // CORS: allow videos to play cross-origin
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Range");
+      
       // Cache for 55 minutes (just under the 60-minute presigned URL TTL)
       res.setHeader("Cache-Control", "public, max-age=3300");
       res.status(fileResp.status);

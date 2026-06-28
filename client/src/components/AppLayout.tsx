@@ -376,22 +376,8 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
           className="flex-shrink-0 flex items-center justify-center relative"
           style={{ width: "48px", height: "48px", flexShrink: 0 }}
         >
-          {logoError ? (
-            svgError ? (
-              <OperatorHouseLogoFallback size={48} />
-            ) : (
-              <div onError={handleSvgError}>
-                <OperatorHouseLogo size={48} />
-              </div>
-            )
-          ) : (
-            <img
-              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp"
-              alt="Operator House"
-              style={{ width: "48px", height: "48px", objectFit: "contain", display: "block" }}
-              onError={handleLogoError}
-            />
-          )}
+          {/* SVG logo — always works, never breaks */}
+          <OperatorHouseLogo size={48} />
         </div>
         {(!collapsed || isMobile) && (
           <div style={{ overflow: "hidden", minWidth: 0, flex: 1 }}>
