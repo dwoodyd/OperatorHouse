@@ -295,7 +295,7 @@ export function SpectreVideoPlayer({
   });
   const [visible, setVisible] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   // When state changes, crossfade to the new clip
@@ -414,6 +414,7 @@ export function SpectreVideoPlayer({
         onEnded={onEnded}
         onError={handleVideoError}
         onLoadedData={handleLoadedData}
+        autoPlay
         onLoadStart={handleLoadStart}
         className={cn(
           "w-full h-full object-contain transition-opacity duration-200",
