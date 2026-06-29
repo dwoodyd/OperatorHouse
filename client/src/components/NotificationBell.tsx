@@ -2,8 +2,10 @@
    Operator House — NotificationBell
    Bell icon with unread badge, inbox dropdown, and toast pop-ups.
    Polls unread count every 30s; fires toast on new arrivals.
+   Dropdown rendered via React portal to escape overflow-hidden containers.
    ============================================================================= */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { Bell, BellOff, CheckCheck, UserPlus, GitBranch, CreditCard, FileText, Info } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -20,17 +22,15 @@ const TYPE_ICON: Record<NotifType, React.ReactNode> = {
 };
 
 const TYPE_COLOR: Record<NotifType, string> = {
-  new_client:     "rgba(74,222,128,0.9)",   // green
-  deal_moved:     "rgba(96,165,250,0.9)",   // blue
-  payment:        "rgba(245,166,35,0.9)",   // amber
-  briefing_ready: "rgba(192,132,252,0.9)",  // purple
-  system:         "rgba(148,163,184,0.9)",  // slate
+  new_client:     "rgba(74,222,128,0.9)",
+  deal_moved:     "rgba(96,165,250,0.9)",
+  payment:        "rgba(245,166,35,0.9)",
+  briefing_ready: "rgba(192,132,252,0.9)",
+  system:         "rgba(148,163,184,0.9)",
 };
 
 interface NotificationBellProps {
-  /** Inline style overrides for the trigger button */
   buttonStyle?: React.CSSProperties;
-  /** Size of the bell icon in px */
   iconSize?: number;
 }
 
@@ -39,6 +39,7 @@ export default function NotificationBell({
   iconSize = 14,
 }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
+  const [panelPos, setPanelPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef   = useRef<HTMLButtonElement>(null);
 
@@ -67,16 +68,16 @@ export default function NotificationBell({
     },
   });
 
-  // ── Server-side notification preferences ────────────────────────────────────
+  // ── Server-side notification preferences ─────────────────────────────────
   const { data: notifPrefs } = trpc.notificationPreferences.get.useQuery();
-  // Map DB notification type keys to preference object keys
   const typeToPrefsKey: Record<string, keyof NonNullable<typeof notifPrefs>> = {
     new_client: "newClient",
     deal_moved: "dealMoved",
     payment: "payment",
     briefing_ready: "briefingReady",
   };
-  // ── Toast on new notifications (respects server-side prefs) ──────────────────
+
+  // ── Toast on new notifications ────────────────────────────────────────────
   const prevCountRef = useRef<number>(unreadCount);
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
@@ -97,6 +98,16 @@ export default function NotificationBell({
     prevCountRef.current = unreadCount;
   }, [unreadCount, utils, notifPrefs]);
 
+  // ── Position portal panel below the button ────────────────────────────────
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setPanelPos({
+      top: rect.bottom + 8,
+      right: window.innerWidth - rect.right,
+    });
+  }, [open]);
+
   // ── Close on outside click ────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
@@ -113,16 +124,12 @@ export default function NotificationBell({
   }, [open]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleMarkOne = (id: number) => {
-    markReadMut.mutate({ id });
-  };
-  const handleMarkAll = () => {
-    markAllReadMut.mutate();
-  };
+  const handleMarkOne = (id: number) => markReadMut.mutate({ id });
+  const handleMarkAll = () => markAllReadMut.mutate();
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ position: "relative" }}>
+    <>
       {/* Bell trigger */}
       <button
         ref={btnRef}
@@ -172,16 +179,16 @@ export default function NotificationBell({
         )}
       </button>
 
-      {/* Dropdown panel */}
-      {open && (
+      {/* Dropdown panel — rendered in a portal to escape overflow-hidden containers */}
+      {open && createPortal(
         <div
           ref={panelRef}
           role="dialog"
           aria-label="Notifications panel"
           style={{
-            position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 0,
+            position: "fixed",
+            top: panelPos.top,
+            right: panelPos.right,
             width: "320px",
             maxHeight: "480px",
             display: "flex",
@@ -190,7 +197,7 @@ export default function NotificationBell({
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "10px",
             boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-            zIndex: 200,
+            zIndex: 9999,
             overflow: "hidden",
           }}
         >
@@ -359,8 +366,9 @@ export default function NotificationBell({
               })
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }

@@ -566,7 +566,9 @@ Return JSON:
           `Lead statuses: ${leads.map(l => l.status).filter((v, i, a) => a.indexOf(v) === i).join(', ')}`,
           `Pipeline: ${activeDeals.length} active deals, ${staleDeals.length} stale (>7d no activity)`,
           `Pipeline value: $${activeDeals.reduce((s, d) => s + (d.value ?? 0), 0).toLocaleString()}`,
-          `Vault: ${vaultItems.length} items (${vaultItems.map(v => v.type).filter((v, i, a) => a.indexOf(v) === i).join(', ')})`,
+          vaultItems.length > 0
+            ? `Vault (${vaultItems.length} entries):\n${vaultItems.map(v => `  [${v.type}] ${v.title}${(v.content ?? v.textContent) ? ': ' + (v.content ?? v.textContent)!.slice(0, 600) : ''}`).join('\n')}`
+            : 'Vault: empty',
           activeDeals.length > 0 ? `Top deals: ${activeDeals.slice(0, 3).map(d => `${d.title} (${d.stage}, $${(d.value ?? 0).toLocaleString()})`).join('; ')}` : '',
         ].filter(Boolean).join('\n');
 

@@ -676,7 +676,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
       )}
 
       {/* ── Main Content ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col flex-1 overflow-hidden relative z-10 min-w-0">
+      <div className="flex flex-col flex-1 relative z-10 min-w-0" style={{ overflow: 'visible' }}>
         {/* Frosted topbar */}
         <header
           role="banner"
