@@ -1,6 +1,9 @@
 /**
- * Apollo.io REST API v2 client
+ * Apollo.io REST API v1 client
  * https://apolloio.github.io/apollo-api-docs/
+ *
+ * Auth: api_key sent in the POST body (not as a Bearer header — Apollo v1 uses body auth)
+ * Headers: Content-Type: application/json, Cache-Control: no-cache
  */
 
 const APOLLO_BASE_URL = "https://api.apollo.io/api/v1";
@@ -52,20 +55,24 @@ export class ApolloApiError extends Error {
   }
 }
 
+/**
+ * Low-level fetch wrapper.
+ * Apollo v1 uses body auth — api_key must be in the JSON body, not in headers.
+ */
 async function apolloFetch(
-  apiKey: string,
   endpoint: string,
-  options?: { method?: string; headers?: Record<string, string>; body?: Record<string, unknown> }
+  body: Record<string, unknown>
 ): Promise<any> {
-  const url = new URL(endpoint, APOLLO_BASE_URL);
-  const res = await fetch(url.toString(), {
-    method: options?.method ?? "GET",
+  // Build full URL by simple string concatenation — avoids URL constructor path-replacement issues
+  const url = `${APOLLO_BASE_URL}${endpoint}`;
+
+  const res = await fetch(url, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-cache",
-      ...(options?.headers ?? {}),
     },
-    body: options?.body ? JSON.stringify(options.body) : undefined,
+    body: JSON.stringify(body),
   });
 
   const data = await res.json().catch(() => null);
@@ -80,7 +87,7 @@ async function apolloFetch(
 
 /**
  * Search contacts via Apollo.io mixed-people-search
- * https://apolloio.github.io/apollo-api-docs/#mixed-people-search
+ * POST https://api.apollo.io/api/v1/mixed_people/search
  */
 export async function searchContacts(
   apiKey: string,
@@ -89,7 +96,7 @@ export async function searchContacts(
   const body: Record<string, unknown> = {
     api_key: apiKey,
     page: filter.page ?? 1,
-    per_page: Math.min(filter.limit ?? 10, 100), // Apollo max is 100
+    per_page: Math.min(filter.limit ?? 10, 100),
   };
 
   if (filter.q) body.q_keywords = filter.q;
@@ -99,12 +106,9 @@ export async function searchContacts(
   if (filter.location) body.person_locations = [filter.location];
   if (filter.technology) body.organization_technology_uids = [filter.technology];
 
-  const data = await apolloFetch(apiKey, "/mixed_people/search", {
-    method: "POST",
-    body,
-  });
+  const data = await apolloFetch("/mixed_people/search", body);
 
-  const contacts = (data?.contacts || []).map((c: any) => ({
+  const contacts = (data?.contacts || data?.people || []).map((c: any) => ({
     id: c.id,
     first_name: c.first_name || "",
     last_name: c.last_name || "",
@@ -137,19 +141,26 @@ export async function searchContacts(
 }
 
 /**
- * Verify an Apollo API key by calling the current-user endpoint.
+ * Verify an Apollo API key by calling the mixed_people/search endpoint
+ * with a minimal payload — the only reliable way to test a sending-only key.
+ * POST https://api.apollo.io/api/v1/mixed_people/search
  */
 export async function testApiKey(apiKey: string): Promise<{ valid: boolean; message: string }> {
   try {
-    await apolloFetch(apiKey, "/users/search", {
-      method: "POST",
-      body: { api_key: apiKey, per_page: 1 },
+    await apolloFetch("/mixed_people/search", {
+      api_key: apiKey,
+      per_page: 1,
+      page: 1,
     });
-    return { valid: true, message: "API key verified successfully" };
+    return { valid: true, message: "Apollo API key verified successfully" };
   } catch (err) {
-    return {
-      valid: false,
-      message: err instanceof ApolloApiError ? err.message : "Invalid API key",
-    };
+    if (err instanceof ApolloApiError) {
+      // 401 = bad key, 422 = key valid but bad params (still means key works)
+      if (err.statusCode === 422 || err.statusCode === 200) {
+        return { valid: true, message: "Apollo API key verified successfully" };
+      }
+      return { valid: false, message: err.message };
+    }
+    return { valid: false, message: "Could not connect to Apollo API" };
   }
 }
