@@ -38,6 +38,7 @@ import {
   Activity,
 } from "lucide-react";
 import { SkeletonCards } from "@/components/StateUI";
+import AppLayout from "@/components/AppLayout";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -388,6 +389,7 @@ export default function Automations() {
   };
 
   return (
+    <AppLayout>
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -448,5 +450,6 @@ export default function Automations() {
         </div>
       )}
     </div>
+    </AppLayout>
   );
 }

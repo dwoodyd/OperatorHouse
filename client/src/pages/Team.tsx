@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Role config ──────────────────────────────────────────────────────────────
 const ROLE_CONFIG = {
@@ -89,6 +90,7 @@ export default function Team() {
   const invites = data?.invites ?? [];
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-[#0e0c09] p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -307,5 +309,6 @@ export default function Team() {
         </DialogContent>
       </Dialog>
     </div>
+    </AppLayout>
   );
 }

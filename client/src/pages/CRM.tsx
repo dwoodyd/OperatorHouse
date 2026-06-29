@@ -21,6 +21,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SkeletonRows } from "@/components/StateUI";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = "contacts" | "companies" | "segments";
@@ -581,6 +582,7 @@ export default function CRM() {
   ];
 
   return (
+    <AppLayout>
     <div className="p-4 md:p-6 space-y-6 animate-[oh-fade-up_0.3s_ease-out]">
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -628,5 +630,6 @@ export default function CRM() {
       {activeTab === "companies" && <CompaniesTab />}
       {activeTab === "segments" && <SegmentsTab />}
     </div>
+    </AppLayout>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { SkeletonRows } from "@/components/StateUI";
 import { format } from "date-fns";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type MeetingType = {
@@ -572,6 +573,7 @@ function BookingRow({
   });
 
   return (
+    <AppLayout>
     <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
       <div className="w-10 h-10 rounded-full bg-[#f5c842]/10 flex items-center justify-center flex-shrink-0">
         <User className="w-5 h-5 text-[#f5c842]" />
@@ -625,5 +627,6 @@ function BookingRow({
         )}
       </div>
     </div>
+    </AppLayout>
   );
 }

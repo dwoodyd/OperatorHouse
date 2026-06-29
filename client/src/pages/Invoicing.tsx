@@ -22,6 +22,7 @@ import {
   Download, RefreshCw, X,
 } from "lucide-react";
 import { SkeletonRows } from "@/components/StateUI";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LineItem {
@@ -377,6 +378,7 @@ export default function Invoicing() {
     date ? new Date(date).toLocaleDateString() : "—";
 
   return (
+    <AppLayout>
     <div className="p-4 md:p-6 space-y-6 animate-[oh-fade-up_0.3s_ease-out]">
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -482,5 +484,6 @@ export default function Invoicing() {
 
       <InvoiceBuilderDialog open={builderOpen} onClose={() => setBuilderOpen(false)} />
     </div>
+    </AppLayout>
   );
 }

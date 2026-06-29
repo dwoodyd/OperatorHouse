@@ -16,6 +16,7 @@ import {
   Clock, Zap, BookOpen, Settings2, CheckCircle2, XCircle, Loader2,
   TestTube, Sparkles,
 } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type TriggerType = "manual" | "pipeline_stage_change" | "deal_closed" | "deal_stale" | "scheduled";
@@ -238,6 +239,7 @@ export default function EmailSequences() {
   };
 
   return (
+    <AppLayout>
     <TooltipProvider>
       <div className="flex h-full min-h-0">
         {/* ── Left Panel: Sequence List ── */}
@@ -677,5 +679,6 @@ export default function EmailSequences() {
         </DialogContent>
       </Dialog>
     </TooltipProvider>
+    </AppLayout>
   );
 }

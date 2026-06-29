@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SpectreEmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 import { Send, Plus, MessageSquare, FileText, Phone, CheckCheck, Clock, AlertCircle } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 
 function statusIcon(status: string) {
   if (status === "delivered" || status === "read") return <CheckCheck className="w-3 h-3 text-amber-400" />;
@@ -77,6 +78,7 @@ export default function SMS() {
   }
 
   return (
+    <AppLayout>
     <div className="flex h-[calc(100vh-4rem)] bg-zinc-950">
       {/* Conversation list */}
       <div className="w-72 border-r border-zinc-800 flex flex-col shrink-0">
@@ -311,5 +313,6 @@ export default function SMS() {
         </DialogContent>
       </Dialog>
     </div>
+    </AppLayout>
   );
 }

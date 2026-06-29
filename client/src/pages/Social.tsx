@@ -41,6 +41,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SkeletonRows } from "@/components/StateUI";
+import AppLayout from "@/components/AppLayout";
 
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   linkedin: <Linkedin className="w-4 h-4 text-blue-500" />,
@@ -610,6 +611,7 @@ export default function Social() {
         );
 
   return (
+    <AppLayout>
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -730,5 +732,6 @@ export default function Social() {
         </Card>
       )}
     </div>
+    </AppLayout>
   );
 }

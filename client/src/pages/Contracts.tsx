@@ -35,6 +35,7 @@ import {
   FileText,
 } from "lucide-react";
 import { SkeletonCards } from "@/components/StateUI";
+import AppLayout from "@/components/AppLayout";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "text-zinc-400 border-zinc-600 bg-zinc-800",
@@ -310,6 +311,7 @@ export default function ContractsPage() {
   };
 
   return (
+    <AppLayout>
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -351,5 +353,6 @@ export default function ContractsPage() {
         </div>
       )}
     </div>
+    </AppLayout>
   );
 }

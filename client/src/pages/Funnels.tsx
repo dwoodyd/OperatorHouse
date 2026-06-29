@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { SkeletonCards } from "@/components/StateUI";
 import { format } from "date-fns";
+import AppLayout from "@/components/AppLayout";
 
 type FunnelTemplate = {
   id: "lead_magnet" | "consultation" | "webinar" | "service" | "case_study" | "blank";
@@ -176,6 +177,7 @@ export default function FunnelsPage() {
   const liveCount = funnelList?.filter((f) => f.status === "published").length ?? 0;
 
   return (
+    <AppLayout>
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -331,5 +333,6 @@ export default function FunnelsPage() {
 
       <CreateFunnelDialog open={showCreate} onClose={() => setShowCreate(false)} />
     </div>
+    </AppLayout>
   );
 }

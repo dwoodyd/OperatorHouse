@@ -29,6 +29,7 @@ import {
   UserCheck,
   AlertCircle,
 } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
@@ -676,6 +677,7 @@ export default function LinkedInOutreach() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
 
   return (
+    <AppLayout>
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -722,5 +724,6 @@ export default function LinkedInOutreach() {
         <CampaignList onSelect={setSelectedCampaignId} />
       )}
     </div>
+    </AppLayout>
   );
 }

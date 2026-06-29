@@ -11,6 +11,7 @@ import { SkeletonRows } from "@/components/StateUI";
 import { Star, Send, Globe, Archive, Plus, TrendingUp, MessageSquare, BarChart3, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/_core/hooks/useAuth";
+import AppLayout from "@/components/AppLayout";
 
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
@@ -86,6 +87,7 @@ export default function Reputation() {
   const widgetUrl = user ? `${window.location.origin}/widget/${user.id}` : "";
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-[#0e0c09] p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -287,5 +289,6 @@ export default function Reputation() {
         </DialogContent>
       </Dialog>
     </div>
+    </AppLayout>
   );
 }

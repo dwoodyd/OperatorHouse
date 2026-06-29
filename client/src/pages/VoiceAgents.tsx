@@ -12,6 +12,7 @@ import {
   Bot, Plus, Zap, Mic, BookOpen, Phone, ChevronDown, ChevronUp,
   CheckCircle, XCircle, Clock, ThumbsUp, ThumbsDown, Minus, Trash2
 } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 
 const PERSONALITY_LABELS: Record<string, string> = {
   professional: "Professional",
@@ -109,6 +110,7 @@ export default function VoiceAgents() {
   const selectedAgent = agents.find((a) => a.id === selectedAgentId);
 
   return (
+    <AppLayout>
     <div className="flex h-[calc(100vh-4rem)] bg-zinc-950">
       {/* Agent list */}
       <div className="w-72 border-r border-zinc-800 flex flex-col shrink-0">
@@ -463,5 +465,6 @@ export default function VoiceAgents() {
         </DialogContent>
       </Dialog>
     </div>
+    </AppLayout>
   );
 }
