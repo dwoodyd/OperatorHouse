@@ -41,14 +41,13 @@
         });
       }
     </script>
-    <script>
-      /* Analytics — Vite substitutes %VITE_VAR% tokens in HTML at build time.
-         Plain <script> tags cannot use import.meta (ES modules only). */
+    <script type="module">
+      /* Analytics is deliberately a module: Vite resolves import.meta.env
+         values here and does not emit warnings for unset optional analytics. */
       (function () {
-        var endpoint = "%VITE_ANALYTICS_ENDPOINT%";
-        var siteId   = "%VITE_ANALYTICS_WEBSITE_ID%";
-        if (!endpoint || endpoint.indexOf('%') !== -1) return;
-        if (!siteId   || siteId.indexOf('%')   !== -1) return;
+        var endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
+        var siteId   = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+        if (!endpoint || !siteId) return;
         var s = document.createElement('script');
         s.defer = true;
         s.src = endpoint + '/umami';

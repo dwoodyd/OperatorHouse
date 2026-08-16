@@ -797,3 +797,4 @@
 - [x] Improve the first-run empty state to guide a new user to their first completed lead workflow
 - [x] Add prominent demo/audit, pricing, privacy, security, and data-handling conversion surfaces where relevant
 - [x] Verify landing-to-app, core hero loop, and PWA recovery flows with TypeScript checks, Vitest, and manual browser validation
+- [x] Remove optional-analytics environment placeholder warnings from public and recovery routes
