@@ -800,3 +800,4 @@
 - [x] Remove optional-analytics environment placeholder warnings from public and recovery routes
 - [x] Replace in-process email timers with durable Heartbeat callback routes; production schedules active: onboarding `hThNDdRvZLSYXBGwuixQN7`, sequences `nVgcXR9NQN8k4VmvKs9qHa`
 - [x] Make the offline PWA shell self-contained, safe-area aware, keyboard-accessible, and reduced-motion respectful
+- [x] Escape recipient names before interpolating scheduled email HTML templates

@@ -28,6 +28,13 @@ function formatDate(d: Date) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+/** Prevent user-provided names from becoming markup in generated email HTML. */
+function escapeHtml(value: string) {
+  return value.replace(/[&<>'"]/g, (character) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]!
+  );
+}
+
 async function getUserActivity(userId: number) {
   const db = await getDb();
   if (!db) return { leadCount: 0, strategyCount: 0, activityCount: 0, hasActivity: false };
@@ -52,6 +59,7 @@ async function getUserActivity(userId: number) {
 }
 
 async function sendTemplate5(user: { name: string; email: string }) {
+  const recipientName = escapeHtml(user.name);
   await resend.emails.send({
     from: FROM_SPECTER,
     to: user.email,
@@ -61,7 +69,7 @@ async function sendTemplate5(user: { name: string; email: string }) {
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">You're in. I'm in.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>Here's what we do first: add one lead. A current client, a prospect you've been chasing, a deal in motion — any lead with a company and a name. I'll run the audit, pull intent signals, and have a briefing ready before the hour's up.</p>
         <p>One lead. That's the whole onboarding.</p>
         <p style="margin: 32px 0;">
@@ -80,6 +88,7 @@ async function sendTemplate5(user: { name: string; email: string }) {
 }
 
 async function sendTemplate6(user: { name: string; email: string }) {
+  const recipientName = escapeHtml(user.name);
   await resend.emails.send({
     from: FROM_SPECTER,
     to: user.email,
@@ -89,7 +98,7 @@ async function sendTemplate6(user: { name: string; email: string }) {
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">Three days. Still quiet.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>You're three days in and I haven't had anything to work on yet.</p>
         <p>Two things I hear from operators who haven't started:</p>
         <p><strong>"I don't have a lead ready."</strong> Fair. Use a target — someone you'd like to work with someday. I'll do a cold audit. No commitment, no risk, genuinely useful.</p>
@@ -107,6 +116,7 @@ async function sendTemplate6(user: { name: string; email: string }) {
 }
 
 async function sendTemplate7A(user: { name: string; email: string }, activity: Awaited<ReturnType<typeof getUserActivity>>) {
+  const recipientName = escapeHtml(user.name);
   await resend.emails.send({
     from: FROM_SPECTER,
     to: user.email,
@@ -116,7 +126,7 @@ async function sendTemplate7A(user: { name: string; email: string }, activity: A
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">Week one.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>Seven days in. Here's where we are:</p>
         <ul>
           <li><strong>${activity.leadCount}</strong> lead${activity.leadCount !== 1 ? "s" : ""} audited</li>
@@ -136,6 +146,7 @@ async function sendTemplate7A(user: { name: string; email: string }, activity: A
 }
 
 async function sendTemplate7B(user: { name: string; email: string }) {
+  const recipientName = escapeHtml(user.name);
   await resend.emails.send({
     from: FROM_SPECTER,
     to: user.email,
@@ -145,7 +156,7 @@ async function sendTemplate7B(user: { name: string; email: string }) {
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">Still here.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>A week in. I've been on duty but haven't had anything to work on yet.</p>
         <p>No pressure — operators don't run on someone else's schedule. But here's a way to start that takes 90 seconds:</p>
         <p>Pick the deal you're most worried about right now. The one that's been quiet, or the one you're not sure how to position. Paste the company name into the lead form. I'll have a briefing in your inbox within the hour.</p>
@@ -163,6 +174,7 @@ async function sendTemplate7B(user: { name: string; email: string }) {
 }
 
 async function sendTemplate8(user: { name: string; email: string }, activity: Awaited<ReturnType<typeof getUserActivity>>) {
+  const recipientName = escapeHtml(user.name);
   await resend.emails.send({
     from: FROM_SPECTER,
     to: user.email,
@@ -172,7 +184,7 @@ async function sendTemplate8(user: { name: string; email: string }, activity: Aw
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">Month one.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>Thirty days in. Here's where we are:</p>
         <ul>
           <li><strong>${activity.leadCount}</strong> lead${activity.leadCount !== 1 ? "s" : ""} audited</li>
@@ -191,6 +203,7 @@ async function sendTemplate8(user: { name: string; email: string }, activity: Aw
 }
 
 async function sendTemplate3(user: { name: string; email: string; betaEndDate: Date }) {
+  const recipientName = escapeHtml(user.name);
   const betaEndStr = formatDate(user.betaEndDate);
   const chargeDate = new Date(user.betaEndDate);
   chargeDate.setDate(chargeDate.getDate() + 1);
@@ -205,7 +218,7 @@ async function sendTemplate3(user: { name: string; email: string; betaEndDate: D
       <div style="font-family: 'DM Sans', sans-serif; max-width: 560px; margin: 0 auto; color: #1a1a1a;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 24px;">Specter · Operator House</p>
         <h1 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 24px;">Fifteen days left in your beta.</h1>
-        <p>Hi ${user.name},</p>
+        <p>Hi ${recipientName},</p>
         <p>Your 90-day Operator House beta ends on <strong>${betaEndStr}</strong>. After that, your locked founding rate kicks in:</p>
         <ul>
           <li><strong>Operator</strong> founders pay $399/yr (vs. retail $797/yr — your locked rate, for life)</li>
