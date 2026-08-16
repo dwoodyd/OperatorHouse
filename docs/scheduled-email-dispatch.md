@@ -15,3 +15,12 @@ manus-heartbeat create --name operator-house-sequence-email --cron "0 0 * * * *"
 ```
 
 The platform will retry transient failures. The dispatch jobs use existing send-log records to avoid duplicate onboarding emails when retries occur. The project owner can inspect, pause, resume, and review job history in the project schedule controls after creation.
+
+## Active Production Jobs
+
+| Job | Task UID | Status |
+| --- | --- | --- |
+| `operator-house-onboarding-email` | `hThNDdRvZLSYXBGwuixQN7` | Enabled — daily at 08:00 UTC |
+| `operator-house-sequence-email` | `nVgcXR9NQN8k4VmvKs9qHa` | Enabled — hourly |
+
+Created on 2026-08-16 through the project owner identity. The schedule controls in the project management interface can pause, resume, run, and inspect either job using these identifiers.

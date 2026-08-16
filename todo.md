@@ -798,4 +798,4 @@
 - [x] Add prominent demo/audit, pricing, privacy, security, and data-handling conversion surfaces where relevant
 - [x] Verify landing-to-app, core hero loop, and PWA recovery flows with TypeScript checks, Vitest, and manual browser validation
 - [x] Remove optional-analytics environment placeholder warnings from public and recovery routes
-- [x] Replace in-process email timers with durable Heartbeat callback routes; create production schedules after publishing this checkpoint
+- [x] Replace in-process email timers with durable Heartbeat callback routes; production schedules active: onboarding `hThNDdRvZLSYXBGwuixQN7`, sequences `nVgcXR9NQN8k4VmvKs9qHa`
