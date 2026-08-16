@@ -11,7 +11,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { strictAiRateLimiter, aiRateLimiter, authRateLimiter, clientErrorRateLimiter } from "./rateLimiter";
-import { startEmailCron } from "../emailCron";
+import { registerScheduledEmailRoutes } from "./scheduledEmail";
 
 // Allowed origins: Manus preview domains + production domains
 const ALLOWED_ORIGINS = [
@@ -150,6 +150,7 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  registerScheduledEmailRoutes(app);
 
   // Rate limiting for expensive AI endpoints (strategy generation, lead audit)
   app.use("/api/trpc/leads.analyze", strictAiRateLimiter);
@@ -198,5 +199,3 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
-// Start daily email cron (Day-0 through Day-75 founding member emails)
-startEmailCron();

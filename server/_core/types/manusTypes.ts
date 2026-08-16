@@ -66,4 +66,6 @@ export interface GetUserInfoWithJwtResponse {
   email?: string | null;
   platform?: string | null;
   loginMethod?: string | null;
+  /** Present only for platform-managed scheduled callbacks. */
+  taskUid?: string | null;
 }

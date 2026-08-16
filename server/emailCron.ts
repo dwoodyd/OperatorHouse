@@ -1,6 +1,6 @@
 /**
  * Operator House — Scheduled Email Jobs
- * Runs daily at 8:00 AM UTC via node-cron.
+ * Runs through platform-managed scheduled callbacks in production.
  * Fires Templates 5–8 based on betaStartDate and activity.
  *
  * Template 5 — Day-0 Welcome         (first sign-in, fires once)
@@ -9,7 +9,6 @@
  * Template 8 — Day-30 Month Milestone (30 days after sign-in)
  * Template 3 — Day-75 Beta Reminder  (15 days before beta_end_date)
  */
-import cron from "node-cron";
 import { Resend } from "resend";
 import { getDb } from "./db.js";
 import { users, leads, strategies, activities } from "../drizzle/schema.js";
@@ -351,7 +350,7 @@ export async function runEmailCronJob() {
  * Process scheduled email sequences
  * Sends emails that are due based on delayDays and lastEmailSentAt
  */
-async function processScheduledSequences() {
+export async function processScheduledSequences() {
   const db = await getDb();
   if (!db) {
     console.error('[EmailCron] No DB connection for sequence processing');
@@ -492,21 +491,4 @@ async function processScheduledSequences() {
   }
 
   console.log(`[EmailCron] Sequence processing complete. Sent: ${sentCount}, Errors: ${errorCount}`);
-}
-
-/** Start the daily cron — runs at 8:00 AM UTC every day */
-export function startEmailCron() {
-  // Main daily job for onboarding emails
-  cron.schedule("0 8 * * *", async () => {
-    console.log("[EmailCron] Daily job starting...");
-    await runEmailCronJob();
-  });
-
-  // Sequence processing runs hourly to check for emails due
-  cron.schedule("0 * * * *", async () => {
-    console.log("[EmailCron] Sequence processing starting...");
-    await processScheduledSequences();
-  });
-
-  console.log("[EmailCron] Scheduled: daily onboarding at 08:00 UTC, sequences hourly");
 }
