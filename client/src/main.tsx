@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { CommandPaletteProvider } from "@/components/CommandPalette";
 import { SpectreProvider } from "@/contexts/SpectreContext";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
@@ -128,7 +129,9 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <SpectreProvider>
         <CommandPaletteProvider>
-          <App />
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
         </CommandPaletteProvider>
       </SpectreProvider>
     </QueryClientProvider>

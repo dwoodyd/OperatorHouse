@@ -10,7 +10,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { strictAiRateLimiter, aiRateLimiter, authRateLimiter } from "./rateLimiter";
+import { strictAiRateLimiter, aiRateLimiter, authRateLimiter, clientErrorRateLimiter } from "./rateLimiter";
 import { startEmailCron } from "../emailCron";
 
 // Allowed origins: Manus preview domains + production domains
@@ -101,6 +101,20 @@ async function startServer() {
     })
   );
 
+  // Lightweight API observability: retain only the method, path, status, and
+  // elapsed time. Request bodies and credentials are intentionally never logged.
+  app.use((req, res, next) => {
+    const startedAt = performance.now();
+    res.on("finish", () => {
+      if (!req.path.startsWith("/api/")) return;
+      const elapsedMs = Math.round(performance.now() - startedAt);
+      const record = `[API] ${req.method} ${req.path} ${res.statusCode} ${elapsedMs}ms`;
+      if (res.statusCode >= 400 || elapsedMs >= 1_000) console.warn(record);
+      else if (process.env.NODE_ENV !== "production") console.info(record);
+    });
+    next();
+  });
+
   // PayPal webhook — receives billing events (subscription activated, payment completed, cancelled)
   app.post("/api/paypal/webhook", express.json(), async (req, res) => {
     try {
@@ -118,6 +132,17 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Client-side render failures are reported without stack traces or request
+  // bodies, so operators can correlate the recovery reference in server logs.
+  app.post("/api/client-error", clientErrorRateLimiter, (req, res) => {
+    const body = req.body as Record<string, unknown> | undefined;
+    const reference = typeof body?.reference === "string" ? body.reference.slice(0, 64) : "OH-UNKNOWN";
+    const message = typeof body?.message === "string" ? body.message.slice(0, 500) : "Unknown client error";
+    const path = typeof body?.path === "string" ? body.path.slice(0, 300) : "unknown";
+    console.error(`[Client error ${reference}] ${message} @ ${path}`);
+    res.status(204).end();
+  });
 
   // Auth rate limiting — 5 attempts per 15 min per IP (brute-force protection)
   app.use("/api/oauth/callback", authRateLimiter);

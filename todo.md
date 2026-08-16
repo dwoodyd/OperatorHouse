@@ -501,9 +501,9 @@
 - [x] briefings.generate JSON.parse already in try/catch (confirmed — no change needed)
 
 ### Phase 4 — Observability
-- [ ] Add global React ErrorBoundary with error reporting (log to server via tRPC) — deferred
-- [ ] Add server-side error logging endpoint (trpc.system.logClientError) — deferred
-- [ ] Add API latency/error rate logging middleware on Express — deferred
+- [x] Add global React ErrorBoundary with server-side error reporting (branded recovery UI + rate-limited /api/client-error logging endpoint)
+- [x] Add server-side error logging endpoint (rate-limited /api/client-error endpoint; avoids exposing tRPC stack details)
+- [x] Add API latency/error rate logging middleware on Express (logs only method, path, status, and duration; never bodies or credentials)
 
 ## Desktop Command Center Hardening
 

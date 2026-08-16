@@ -92,3 +92,17 @@ export const strictAiRateLimiter = rateLimit({
   },
   ...redisStore,
 });
+
+/**
+ * Client-error reporting limiter — allows enough room for genuine recovery
+ * reports while preventing public log-ingestion abuse.
+ */
+export const clientErrorRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: () => !ENV.isProduction,
+  message: { error: { message: "Too many reports", code: "CLIENT_ERROR_RATE_LIMITED" } },
+  ...redisStore,
+});
