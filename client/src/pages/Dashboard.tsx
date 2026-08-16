@@ -10,6 +10,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import FirstMission from "@/components/FirstMission";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
+import { saveLeadInputPrefill } from "@/lib/heroWorkflow";
 import {
   TrendingUp, Clock, ArrowRight, Zap, Target, Brain,
   ChevronRight, AlertTriangle, Sparkles, RefreshCw,
@@ -143,7 +144,9 @@ function SpecterTerminalWidget({ deals, leads, staleCount }: {
 }
 function SpecterBriefingPanel() {
   const utils = trpc.useUtils();
+  const [, setLocation] = useLocation();
   const { data: latest } = trpc.briefings.latest.useQuery();
+  const { data: upcomingBookings } = trpc.booking.listBookings.useQuery({ upcoming: true });
   const [showTriumph, setShowTriumph] = useState(false);
   const generate = trpc.briefings.generate.useMutation({
     onSuccess: () => {
@@ -154,6 +157,19 @@ function SpecterBriefingPanel() {
     onError: () => toast.error("Briefing generation failed"),
   });
   const briefing = latest?.payload as { situation?: string; priority?: string; ghostNote?: string } | null ?? null;
+  const nextBooking = upcomingBookings?.find((booking) => booking.status === "confirmed");
+  const preparePreCallAudit = () => {
+    if (!nextBooking) return;
+    const when = new Date(nextBooking.startTime).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+    const context = [
+      nextBooking.bookedByName,
+      nextBooking.bookedByEmail,
+      nextBooking.meetingType?.name && `Upcoming ${nextBooking.meetingType.name}`,
+      `Scheduled ${when}`,
+    ].filter(Boolean).join(" — ");
+    saveLeadInputPrefill(context);
+    setLocation("/leads");
+  };
 
   return (
     <div className="glass-panel p-5 fade-in-up" style={{ borderLeft: '2px solid var(--amber)', background: 'linear-gradient(135deg, rgba(245,166,35,0.05) 0%, rgba(14,14,22,0.8) 60%)', animationDelay: '0.1s', opacity: 0, position: 'relative' }}>
@@ -196,7 +212,7 @@ function SpecterBriefingPanel() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Ghost size={13} style={{ color: 'var(--amber)' }} />
-          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Briefing</span>
+          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Morning Briefing</span>
           {latest && (
             <span className="ghost-badge" style={{ fontSize: 9 }}>
               {new Date(latest.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -215,6 +231,27 @@ function SpecterBriefingPanel() {
           {generate.isPending ? 'Generating…' : 'Refresh'}
         </button>
       </div>
+
+      {nextBooking && (
+        <div className="mb-4 rounded-md p-3" style={{ background: "rgba(96,165,250,0.07)", border: "1px solid rgba(96,165,250,0.24)" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="data-label mb-1" style={{ color: "#93C5FD" }}>NEXT CONVERSATION</div>
+              <p style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.45 }}>
+                {nextBooking.bookedByName || "Upcoming prospect"} · {new Date(nextBooking.startTime).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={preparePreCallAudit}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded"
+              style={{ background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.32)", color: "#BFDBFE", fontFamily: "DM Sans, sans-serif", fontSize: 11, fontWeight: 600 }}
+            >
+              <Target size={12} /> Prepare pre-call audit
+            </button>
+          </div>
+        </div>
+      )}
 
       {generate.isPending ? (
         <div className="space-y-2">
@@ -249,6 +286,17 @@ function SpecterBriefingPanel() {
           </button>
         </div>
       )}
+      <div className="mt-4 pt-3 flex items-center justify-between gap-3" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+        <span className="data-label" style={{ fontSize: 9 }}>NEXT MOVE</span>
+        <button
+          type="button"
+          onClick={() => setLocation("/leads")}
+          className="flex items-center gap-1.5"
+          style={{ background: "transparent", border: "none", color: "var(--amber)", padding: 0, fontFamily: "DM Sans, sans-serif", fontSize: 12, fontWeight: 600 }}
+        >
+          Audit a lead <ArrowRight size={13} />
+        </button>
+      </div>
     </div>
   );
 }

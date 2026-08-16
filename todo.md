@@ -779,3 +779,21 @@
 - [x] All existing /manus-storage/ paths in OnboardingFlow.tsx, SpectreChatbot.tsx, SpectreVideoPlayer.tsx, SpectreWidget.tsx unchanged — they now work permanently.
 - [x] Sidebar logo (AppLayout.tsx) uses d2xsxph8kpxj0f.cloudfront.net URL which returns 200 directly — not a presigned URL, no expiry issue.
 - [x] 0 TypeScript errors confirmed
+
+## Product Hardening Sprint — Conversion, Core Loop, and Trust
+- [x] Audit the complete landing → splash → onboarding → authentication → first-action path on desktop and mobile
+- [x] Decouple onboarding playback from legacy generated-asset paths by adding dedicated project-owned video uploads plus a resilient poster fallback for every onboarding clip
+- [x] Make onboarding text-first and video-enhanced: slides remain readable, navigable, and completable when video playback fails
+- [x] Add safe media loading states, playback timeouts, retry behavior, and reduced-motion support to onboarding
+- [x] Build a branded authentication recovery state for OAuth/login failures, slow responses, and return-path loss; prevent infinite login bounce loops
+- [x] Add automated tests for onboarding media fallback decisions and OAuth recovery routing
+- [x] Audit and document the Lead → Audit → Vault → Strategy → Outreach path using live, user-owned data only
+- [x] Add explicit contextual handoffs between Lead Intelligence, Vault-grounded Strategy, Pipeline, and Outreach
+- [x] Surface Vault citations and factual grounding in the hero workflow so users can inspect the source of strategy recommendations
+- [x] Add a high-signal Specter morning briefing with current priorities, pre-call audit cues, and next-best action links
+- [x] Add Specter action shortcuts for auditing a lead, generating a Vault-grounded strategy, preparing a briefing, and drafting outreach
+- [x] Standardize page-level empty, loading, error, and success states across the primary user journey
+- [x] Audit design tokens, typography, spacing, focus behavior, safe-area support, motion, and responsive PWA shell behavior
+- [x] Improve the first-run empty state to guide a new user to their first completed lead workflow
+- [x] Add prominent demo/audit, pricing, privacy, security, and data-handling conversion surfaces where relevant
+- [x] Verify landing-to-app, core hero loop, and PWA recovery flows with TypeScript checks, Vitest, and manual browser validation

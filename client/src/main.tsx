@@ -28,6 +28,28 @@ const queryClient = new QueryClient({
 
 const LOGIN_REDIRECT_KEY = "oh_last_login_redirect";
 const LOGIN_REDIRECT_COOLDOWN_MS = 15_000;
+const PUBLIC_ENTRY_PATHS = [
+  "/",
+  "/apply",
+  "/redeem",
+  "/billing-setup",
+  "/pricing",
+  "/about",
+  "/audit",
+  "/privacy",
+  "/terms",
+  "/auth/recovery",
+];
+
+function isPublicEntryPath(pathname: string) {
+  return PUBLIC_ENTRY_PATHS.includes(pathname)
+    || pathname.startsWith("/invite/")
+    || pathname.startsWith("/book/")
+    || pathname.startsWith("/f/")
+    || pathname.startsWith("/portal/")
+    || pathname.startsWith("/sign/")
+    || pathname.startsWith("/review/");
+}
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
@@ -35,6 +57,14 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
   if (!isUnauthorized) return;
+
+  // Marketing, legal, recovery, and public-booking pages are allowed to load
+  // in visitor mode. Redirecting because a background protected query happens
+  // to fire here turns a recoverable unauthenticated state into a login loop.
+  if (isPublicEntryPath(window.location.pathname)) {
+    console.info("[Auth] Visitor-mode unauthorized response suppressed on public route.");
+    return;
+  }
 
   // Loop guard: if we redirected to login very recently and STILL get an
   // unauthorized error, the session cookie isn't sticking (misconfigured
@@ -49,6 +79,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
         "[Auth] Suppressed repeat login redirect — session did not persist after sign-in. " +
         "Check server APP_ID/JWT_SECRET and that the cookie is being set on this origin."
       );
+      window.location.assign("/auth/recovery?reason=session");
       return;
     }
     sessionStorage.setItem(LOGIN_REDIRECT_KEY, String(Date.now()));
@@ -57,7 +88,8 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
     // through and redirect once.
   }
 
-  window.location.href = getLoginUrl();
+  const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.location.assign(getLoginUrl(returnPath));
 };
 
 queryClient.getQueryCache().subscribe(event => {

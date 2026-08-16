@@ -2,18 +2,20 @@
    Operator House — Lead Intelligence
    Obsidian Intelligence: AI-powered Specter lead audit — real AI
    ============================================================================= */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { leadInputSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import {
   Target, Loader2, Trash2, ChevronDown, ChevronUp,
-  Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2
+  Brain, AlertTriangle, Map, Star, Music, GitMerge, CheckCircle2, ArrowRight, Mail
 } from "lucide-react";
 import { SkeletonRows, SpectreEmptyState } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 import { toast } from "sonner";
+import { consumeLeadInputPrefill, saveHeroWorkflowHandoff } from "@/lib/heroWorkflow";
 
 const SCORE_COLOR = (score: number) => {
   if (score >= 8) return "#4ADE80";
@@ -31,6 +33,7 @@ const SECTION_META = [
 
 export default function LeadIntel() {
   const { spectreHidden } = useSpectre();
+  const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: leads, isLoading } = trpc.leads.list.useQuery();
 
@@ -81,6 +84,13 @@ export default function LeadIntel() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [pushedIds, setPushedIds] = useState<Set<number>>(new Set());
 
+  useEffect(() => {
+    const prefill = consumeLeadInputPrefill();
+    if (!prefill) return;
+    setInput(prefill);
+    toast.message("Upcoming-call context loaded — review it, then run the audit.");
+  }, []);
+
   const handlePushToPipeline = (lead: {
     id: number;
     intentScore: number | null;
@@ -113,6 +123,23 @@ export default function LeadIntel() {
         },
       }
     );
+  };
+
+  const prepareStrategy = (lead: { id: number; analysisJson: unknown }) => {
+    const audit = lead.analysisJson as Record<string, string> | null;
+    if (!audit) return toast.error("Run an audit before generating a strategy");
+    const clientName = audit.name || "Prospect";
+    const company = audit.company || "Unknown company";
+    const context = [
+      `Lead audit for ${clientName} at ${company}.`,
+      audit.vibeCheck && `Vibe check: ${audit.vibeCheck}`,
+      audit.painPoints && `Pain points: ${audit.painPoints}`,
+      audit.engineeringMap && `Engineering map: ${audit.engineeringMap}`,
+      audit.legacyPlay && `Legacy play: ${audit.legacyPlay}`,
+      audit.nextBeat && `Recommended next beat: ${audit.nextBeat}`,
+    ].filter(Boolean).join("\n\n");
+    saveHeroWorkflowHandoff({ source: "lead-audit", leadId: lead.id, clientName, company, industry: audit.industry, context });
+    setLocation("/strategy");
   };
 
   return (
@@ -384,7 +411,7 @@ export default function LeadIntel() {
                       })}
 
                       {/* Push to Pipeline CTA */}
-                      <div className="px-5 py-3 flex items-center justify-between">
+                      <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           {alreadyPushed ? (
                             <>
@@ -434,6 +461,25 @@ export default function LeadIntel() {
                               )}
                             </button>
                           )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); prepareStrategy(lead); }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded"
+                            style={{ background: "rgba(124,111,205,0.12)", border: "1px solid rgba(124,111,205,0.35)", color: "#C4B5FD", fontFamily: "DM Sans, sans-serif", fontSize: "12px", fontWeight: 600 }}
+                          >
+                            <ArrowRight size={12} /> Build Vault-grounded Strategy
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); prepareStrategy(lead); }}
+                            title="Audit first, then prepare outreach from the strategy"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded"
+                            style={{ background: "transparent", border: "1px solid var(--border-subtle)", color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", fontSize: "11px" }}
+                          >
+                            <Mail size={11} /> Outreach next
+                          </button>
                         </div>
                         {audit.nextBeat && (
                           <span

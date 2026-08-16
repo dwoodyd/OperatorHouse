@@ -14,6 +14,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import type { SpectreState } from "@/components/SpectreVideoPlayer";
+import { getOnboardingMedia, shouldRenderOnboardingVideo } from "@/lib/onboardingMedia";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -116,61 +117,6 @@ const SLIDES: SlideData[] = [
   },
 ];
 
-// CDN base — must match SpectreVideoPlayer
-// CDN base — must match SpectreVideoPlayer
-const BASE = "/manus-storage";
-
-// Map each clip state to its CDN URL (first URL from SpectreVideoPlayer CLIPS registry)
-const CLIP_URLS: Record<SpectreState, string> = {
-  idle:              `${BASE}/hf_20260503_000541_7cfe329e-91e6-41d4-8584-f98f722ef3da_6c095791.mp4`,
-  idle_neutral:      `${BASE}/hf_20260503_003626_b5c13543-ddb2-40ee-b19d-2c2371d16946_0308c250.mp4`,
-  idle_hologram:     `${BASE}/hf_20260502_211341_4ac80b83-1c05-4b01-a6ad-3da9c4301f83_b88dac25.mp4`,
-  idle_holding:      `${BASE}/hf_20260502_212916_e47ec533-68de-4ec9-894a-a8ac0b666b55_d7c6ce08.mp4`,
-  welcoming:         `${BASE}/hf_20260502_203044_dd378993-612b-426a-9361-ba88ac5cd9e2_22eb71c6.mp4`,
-  presenting:        `${BASE}/hf_20260502_203849_a8f8de64-ff0e-4ff9-b10a-bd9fa90f8fcf_2c81370b.mp4`,
-  pointing:          `${BASE}/hf_20260502_210103_006c0c69-eee5-42c3-a844-f5a0263262c5_545601c0.mp4`,
-  thinking:          `${BASE}/hf_20260502_235500_5e9803e2-9521-491c-963b-0239e50e2721_f5031812.mp4`,
-  typing:            `${BASE}/hf_20260502_210704_d39721a7-dbc8-47cc-84a1-6c7c64371d80_f84ef751.mp4`,
-  thoughtful:        `${BASE}/hf_20260503_003219_517286cd-52ec-44c7-b00a-12ec1ee7807a_4d573ab3.mp4`,
-  cast:              `${BASE}/hf_20260502_204413_0386e184-d326-433f-8ef6-2c6a23476aa0_3be547a5.mp4`,
-  hologram:          `${BASE}/hf_20260503_004223_02f6a896-5e88-4d9e-9b2d-2a82dc1d39c6_5769b801.mp4`,
-  hand_on_heart:     `${BASE}/hf_20260502_211821_a0046d06-816a-4584-8da1-ed990b173964_2729c527.mp4`,
-  bow:               `${BASE}/hf_20260502_205345_137b645e-3e27-46d2-b134-769ec6f03a25_6f86149d.mp4`,
-  wave:              `${BASE}/hf_20260502_214102_5c78de5f-a0aa-42de-a9a5-4605e13569e4_d6f014e7.mp4`,
-  determined:        `${BASE}/hf_20260502_234831_90ab3ebb-1d16-4ea3-b6b8-38a0f1c057f9_745f7c13.mp4`,
-  triumph:           `${BASE}/mp__3d1f90ea.mp4`,
-  power_up:          `${BASE}/Restrained_triumph_The_charac_6a346f6b.mp4`,
-  welcome_pleasant:  `${BASE}/specter_welcome_pleasant_51c6fad6.mp4`,
-  offering_pleasant: `${BASE}/specter_offering_pleasant_26f0d8dc.mp4`,
-  inviting_pleasant: `${BASE}/specter_inviting_pleasant_049a7dd1.mp4`,
-  search_hologram:   `${BASE}/specter_search_hologram_8e32bcda.mp4`,
-  gear_hologram:     `${BASE}/specter_gear_hologram_e6735037.mp4`,
-  sincere_pleasant:  `${BASE}/specter_sincere_pleasant_fd64bd09.mp4`,
-  bow_pleasant:      `${BASE}/specter_bow_nobg_1ec3bba7.webm`,
-  vault_lock:        `${BASE}/specter_vault_lock_16e573ea.mp4`,
-  inviting_smiling:  `${BASE}/SpectorInvitingSmiling_92a14245.mp4`,
-  talking:           `${BASE}/SpectorTalking_c166a610.mp4`,
-  this_way:          `${BASE}/SpectorThisWay_32888b15.mp4`,
-  heart_to_yours:    `${BASE}/SpectorHearttoYours_c1a0c2c6.mp4`,
-  bowing:            `${BASE}/specter_bowing_cropped_39485b8b.mp4`,
-  celebration:       `${BASE}/SpectorCelebration_195be803.mp4`,
-  approval:          `${BASE}/SpectorApproval_fdf9628b.mp4`,
-  approval_nod:      `${BASE}/SpectorApprovalNod_78496d10.mp4`,
-  happy:             `${BASE}/SpectorHappy_b40303f1.mp4`,
-  happy_greeting:    `${BASE}/SpectorHappyGreeting_2857a01f.mp4`,
-  gesturing:         `${BASE}/SpectorGesturing_e1ab809c.mp4`,
-  flipping_magic:    `${BASE}/SpectorFlippingMagic_f55402cd.mp4`,
-  digital_trails:    `${BASE}/SpectorDigitalTrails_a375c572.mp4`,
-  idol_breathing:    `${BASE}/SpectorIdolBreathing_ef95ba2b.mp4`,
-  majorly_confused:  `${BASE}/SpectorMajorlyConfused_27f15ceb.mp4`,
-  waiting_confused:  `${BASE}/SpectorWaitingConfused_305f40fa.mp4`,
-  waiting:           `${BASE}/SpectorWaiting2_3d7b5780.mp4`,
-  ui_loading:        `${BASE}/SpectorUILoading_85cd0594.mp4`,
-  data_video:        `${BASE}/specter_datavideo_cropped_e63779d0.mp4`,
-  ethereal_reveal:   `${BASE}/specter_ethereal_reveal_ac7f994c.mp4`,
-  holographic_typing:`${BASE}/specter_holographic_typing_7d89d984.mp4`,
-};
-
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
 const CSS = `
@@ -198,17 +144,51 @@ const CSS = `
     z-index: 1;
   }
   .oh3-video-layer video {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center bottom;
     display: block;
+    opacity: 0;
+    transition: opacity 360ms ease;
+  }
+  .oh3-video-layer.video-ready video {
+    opacity: 1;
+  }
+  .oh3-video-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    display: block;
+    filter: saturate(0.82) contrast(1.04);
   }
   /* Portrait clips: contain + bottom anchor so full body is always visible */
   .oh3-video-layer.portrait video {
     object-fit: contain;
     object-position: center bottom;
     background: #060504;
+  }
+  .oh3-video-layer.portrait .oh3-video-poster {
+    object-fit: contain;
+    object-position: center bottom;
+    background: #060504;
+  }
+  .oh3-media-status {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 4;
+    max-width: 240px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(242,234,214,0.52);
+    text-align: right;
   }
 
   /* ── Gradient overlay: text side is darker, Specter side is lighter ── */
@@ -618,6 +598,15 @@ const CSS = `
     40%  { transform: scale(0.88); }
     100% { transform: scale(1); }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .oh3-root *, .oh3-root *::before, .oh3-root *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 `;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -652,7 +641,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const [done, setDone] = useState(false);
   const [nextTapped, setNextTapped] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoSettledRef = useRef(false);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   // Only wire the protected mutation when the user is authenticated.
   // For unauthenticated visitors (marketing site), isReplay is always false
@@ -660,6 +652,10 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const completeOnboarding = trpc.onboarding.complete.useMutation();
 
   const currentSlide = activeSlides[slideIdx];
+  const media = getOnboardingMedia(currentSlide.id);
+  const clipUrl = media.clipUrl;
+  const mediaState = prefersReducedMotion ? "reduced-motion" : videoError ? "failed" : videoReady ? "ready" : "loading";
+  const canPlayVideo = !currentSlide.noVideo && shouldRenderOnboardingVideo(currentSlide.id, mediaState);
 
   // Inject CSS once with proper cleanup
   useEffect(() => {
@@ -677,10 +673,35 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     };
   }, []);
 
-  // Reset video error state when slide changes
+  // Respect device motion settings; the poster remains as a fully functional
+  // visual enhancement even when video playback is intentionally disabled.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    syncPreference();
+    mediaQuery.addEventListener("change", syncPreference);
+    return () => mediaQuery.removeEventListener("change", syncPreference);
+  }, []);
+
+  // Reset media state on every slide. Text and navigation never depend on it.
   useEffect(() => {
     setVideoError(false);
+    setVideoReady(false);
+    videoSettledRef.current = false;
   }, [slideIdx]);
+
+  // A slow or stalled clip must degrade to the still rather than holding up onboarding.
+  useEffect(() => {
+    if (!clipUrl || currentSlide.noVideo || prefersReducedMotion) return;
+    const timeout = window.setTimeout(() => {
+      if (!videoSettledRef.current) {
+        console.warn("[Onboarding] video timed out; continuing with poster fallback", clipUrl);
+        videoSettledRef.current = true;
+        setVideoError(true);
+      }
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [clipUrl, currentSlide.noVideo, prefersReducedMotion, slideIdx]);
 
   // Activate text after slide enters
   useEffect(() => {
@@ -716,11 +737,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
     console.warn(`Video failed to load: ${el.src}`);
+    videoSettledRef.current = true;
     setVideoError(true);
   }, []);
 
   // Play video once it's loaded (triggered by onLoadedData event)
   const handleVideoLoaded = useCallback(() => {
+    videoSettledRef.current = true;
+    setVideoReady(true);
     if (videoRef.current) {
       videoRef.current.play().catch((err) => {
         console.warn("Video play failed:", err);
@@ -731,14 +755,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
 
   // Backup: try to play when video element is available (for cached videos)
   useEffect(() => {
-    if (videoRef.current && !currentSlide.noVideo) {
+    if (videoRef.current && canPlayVideo) {
       // Small delay to ensure element is ready
       const timer = setTimeout(() => {
         videoRef.current?.play().catch(() => {});
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [currentSlide.clip, currentSlide.noVideo]);
+  }, [canPlayVideo, currentSlide.clip]);
 
   // handleEnter must be defined BEFORE advance so advance can reference it
   // without a stale closure. Using useCallback ensures the reference is stable.
@@ -757,7 +781,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
         if (isAuthenticated) {
           setLocation("/leads");
         } else {
-          window.location.href = getLoginUrl();
+          window.location.assign(getLoginUrl("/leads"));
         }
       }
     }, 900);
@@ -860,19 +884,29 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     >
       {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
       {!currentSlide.noVideo && (
-        <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}`}>
-          <video
-            key={currentSlide.clip}
-            ref={videoRef}
-            src={CLIP_URLS[currentSlide.clip]}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onError={handleVideoError}
-            onLoadedData={handleVideoLoaded}
-          />
+        <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}${videoReady ? " video-ready" : ""}`}>
+          <img className="oh3-video-poster" src={media.posterUrl} alt="" aria-hidden="true" />
+          {canPlayVideo && (
+            <video
+              key={currentSlide.id}
+              ref={videoRef}
+              src={clipUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              onError={handleVideoError}
+              onLoadedData={handleVideoLoaded}
+            />
+          )}
+          {(videoError || prefersReducedMotion) && (
+            <div className="oh3-media-status" role="status">
+              {prefersReducedMotion
+                ? "Motion is reduced. The House remains fully interactive."
+                : "Cinematic layer unavailable. The House remains fully interactive."}
+            </div>
+          )}
         </div>
       )}
 

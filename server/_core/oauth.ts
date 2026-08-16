@@ -9,13 +9,17 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function redirectToAuthRecovery(res: Response, reason: "missing" | "callback") {
+  res.redirect(302, `/auth/recovery?reason=${reason}`);
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+      redirectToAuthRecovery(res, "missing");
       return;
     }
 
@@ -24,7 +28,7 @@ export function registerOAuthRoutes(app: Express) {
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
 
       if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
+        redirectToAuthRecovery(res, "callback");
         return;
       }
 
@@ -47,7 +51,7 @@ export function registerOAuthRoutes(app: Express) {
       res.redirect(302, "/");
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      redirectToAuthRecovery(res, "callback");
     }
   });
 }

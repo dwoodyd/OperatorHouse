@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { SpectreEmptyState } from "@/components/StateUI";
 import { toast } from "sonner";
 import {
-  Mail, Plus, Trash2, Play, Pause, ChevronRight, Users, Send,
+  Mail, Plus, Trash2, Play, Pause, ChevronRight, Users, Send, Copy,
   Clock, Zap, BookOpen, Settings2, CheckCircle2, XCircle, Loader2,
   TestTube, Sparkles,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { consumeHeroWorkflowHandoff, type HeroWorkflowHandoff } from "@/lib/heroWorkflow";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type TriggerType = "manual" | "pipeline_stage_change" | "deal_closed" | "deal_stale" | "scheduled";
@@ -135,6 +136,12 @@ export default function EmailSequences() {
   const [enrollClientId, setEnrollClientId] = useState<string>("");
   const [testEmail, setTestEmail] = useState("");
   const [testType, setTestType] = useState<"text" | "html" | "template">("text");
+  const [strategyHandoff, setStrategyHandoff] = useState<HeroWorkflowHandoff | null>(null);
+
+  useEffect(() => {
+    const handoff = consumeHeroWorkflowHandoff();
+    if (handoff?.source === "strategy") setStrategyHandoff(handoff);
+  }, []);
 
   // Mutations
   const createSeq = trpc.emailSequences.create.useMutation({
@@ -241,6 +248,20 @@ export default function EmailSequences() {
   return (
     <AppLayout>
     <TooltipProvider>
+      {strategyHandoff && (
+        <div className="mx-4 mt-4 flex flex-col gap-3 rounded-lg p-4 md:mx-6 md:mt-6 md:flex-row md:items-center md:justify-between" style={{ background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.25)" }}>
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-4 h-4 mt-0.5 text-amber-400" />
+            <div>
+              <div className="text-sm font-medium text-foreground">Strategy ready for outreach</div>
+              <p className="text-xs text-muted-foreground mt-1">Use the strategy for <strong>{strategyHandoff.clientName}{strategyHandoff.company ? ` · ${strategyHandoff.company}` : ""}</strong> to tailor an existing sequence or build a new one in your voice.</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(strategyHandoff.context).then(() => toast.success("Strategy context copied"))}>
+            <Copy className="w-3.5 h-3.5 mr-1.5" />Copy strategy context
+          </Button>
+        </div>
+      )}
       <div className="flex h-full min-h-0">
         {/* ── Left Panel: Sequence List ── */}
         <div className="w-72 border-r border-border flex flex-col bg-card/30 shrink-0">

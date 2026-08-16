@@ -3,16 +3,18 @@
    Calls strategies.generate, renders structured output, saves to DB.
    No mock data. No simulated typewriter.
    ============================================================================= */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { generateStrategySchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
+import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { SpectreEmptyState } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
+import { consumeHeroWorkflowHandoff, saveHeroWorkflowHandoff } from "@/lib/heroWorkflow";
 
 const TEMPLATES = [
   { id: "full" as const, label: "Full Strategy Doc", desc: "Vibe Check + Engineering Map + Legacy Play + Next Beat" },
@@ -38,6 +40,7 @@ interface StrategyResult {
 
 export default function StrategyGen() {
   const { spectreHidden } = useSpectre();
+  const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: strategies, isLoading: strategiesLoading } = trpc.strategies.list.useQuery();
@@ -51,6 +54,17 @@ export default function StrategyGen() {
   const [result, setResult] = useState<StrategyResult | null>(null);
   const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
   const [showTriumph, setShowTriumph] = useState(false);
+  const [loadedFromAudit, setLoadedFromAudit] = useState(false);
+
+  useEffect(() => {
+    const handoff = consumeHeroWorkflowHandoff();
+    if (!handoff || handoff.source !== "lead-audit") return;
+    setClientName(handoff.clientName);
+    setCompany(handoff.company);
+    setIndustry(handoff.industry || "");
+    setContext(handoff.context);
+    setLoadedFromAudit(true);
+  }, []);
 
   const generateStrategy = trpc.strategies.generate.useMutation({
     onSuccess: (data) => {
@@ -97,6 +111,18 @@ export default function StrategyGen() {
     a.download = `${result.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.md`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const prepareOutreach = () => {
+    if (!result) return;
+    saveHeroWorkflowHandoff({
+      source: "strategy",
+      clientName,
+      company,
+      industry,
+      context: result.content.slice(0, 6000),
+    });
+    setLocation("/email-sequences");
   };
 
   const handleClientSelect = (clientId: string) => {
@@ -178,6 +204,15 @@ export default function StrategyGen() {
                   </div>
                 </div>
                 <div className="p-4 space-y-3">
+                  {loadedFromAudit && (
+                    <div className="flex items-start gap-2 rounded-md p-3" style={{ background: "rgba(124,111,205,0.1)", border: "1px solid rgba(124,111,205,0.28)" }}>
+                      <CheckCircle2 size={14} style={{ color: "#C4B5FD", flexShrink: 0, marginTop: 2 }} />
+                      <div>
+                        <div style={{ color: "#DDD6FE", fontSize: "12px", fontWeight: 600 }}>Lead audit loaded</div>
+                        <p style={{ color: "var(--text-muted)", fontSize: "11px", margin: "3px 0 0", lineHeight: 1.5 }}>Specter will combine this audit with your Vault before building the strategy.</p>
+                      </div>
+                    </div>
+                  )}
                   {clients && clients.length > 0 && (
                     <div>
                       <label className="data-label block mb-1">Load from Client Record</label>
@@ -371,11 +406,18 @@ export default function StrategyGen() {
                   </div>
 
                   <div className="px-5 py-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                    <button onClick={handleGenerate} disabled={generateStrategy.isPending}
-                      className="flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
-                      <RefreshCw size={12} />Regenerate
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button onClick={handleGenerate} disabled={generateStrategy.isPending}
+                        className="flex items-center gap-1.5 text-xs font-medium"
+                        style={{ color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+                        <RefreshCw size={12} />Regenerate
+                      </button>
+                      <button onClick={prepareOutreach}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded"
+                        style={{ color: 'var(--amber)', background: 'rgba(245,166,35,0.1)', border: '1px solid rgba(245,166,35,0.28)', fontFamily: 'DM Sans, sans-serif' }}>
+                        <Mail size={12} />Prepare outreach from this strategy <ArrowRight size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

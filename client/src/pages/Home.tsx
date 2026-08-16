@@ -5,8 +5,8 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
-import { Search, GitBranch, FileText, Archive, BarChart3, CheckSquare, ArrowRight, Zap, Shield, Brain } from "lucide-react";
+import { getLoginUrl, getStoredAuthReturnPath } from "@/const";
+import { Search, GitBranch, FileText, Archive, BarChart3, CheckSquare, ArrowRight, Zap, Shield, Brain, BookOpenCheck, Send } from "lucide-react";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 
@@ -29,7 +29,10 @@ export default function Home() {
 
   // Redirect authenticated users straight to dashboard
   useEffect(() => {
-    if (!loading && isAuthenticated) setLocation("/dashboard");
+    if (!loading && isAuthenticated) {
+      const returnPath = getStoredAuthReturnPath();
+      setLocation(returnPath !== "/" ? returnPath : "/dashboard");
+    }
   }, [loading, isAuthenticated, setLocation]);
 
   // Fade in after mount
@@ -218,12 +221,40 @@ export default function Home() {
 
         {/* Trust badges */}
         <div style={{ display: "flex", gap: "24px", marginTop: "48px", flexWrap: "wrap", justifyContent: "center" }}>
-          {[{ icon: Zap, label: "AI-Powered" }, { icon: Shield, label: "Private & Secure" }, { icon: Brain, label: "Context-Aware" }].map(({ icon: Icon, label }) => (
+          {[{ icon: Zap, label: "AI-Powered" }, { icon: Shield, label: "Private Workspace" }, { icon: Brain, label: "Vault-Grounded" }].map(({ icon: Icon, label }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <Icon size={13} style={{ color: "#F5A623" }} />
               <span style={{ fontSize: "12px", color: "rgba(232,228,217,0.45)", fontFamily: "Fira Code, monospace", letterSpacing: "0.08em" }}>{label}</span>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Trust & control ─────────────────────────────────────────────── */}
+      <section style={{ padding: "0 24px 80px", maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "clamp(28px, 5vw, 48px) 0" }}>
+          <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 28 }}>
+            <div>
+              <div style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(245,166,35,0.55)", marginBottom: 10 }}>Built for client work</div>
+              <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "clamp(22px, 3vw, 32px)", color: "#E8E4D9", margin: 0 }}>Trust should be visible in the workflow.</h2>
+            </div>
+            <button onClick={() => setLocation("/privacy")} style={{ background: "transparent", border: "1px solid rgba(245,166,35,0.28)", color: "rgba(245,166,35,0.85)", borderRadius: 6, padding: "10px 14px", cursor: "pointer", fontFamily: "Fira Code, monospace", fontSize: 11, letterSpacing: "0.05em" }}>
+              Read privacy & data handling →
+            </button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 16 }}>
+            {[
+              { icon: Shield, title: "Authenticated workspace", body: "Your Vault, client records, and operating history live inside your signed-in Operator House workspace." },
+              { icon: BookOpenCheck, title: "Visible grounding", body: "Strategy output surfaces the Vault sources Specter used, so recommendations are inspectable rather than black-box." },
+              { icon: Send, title: "Human-controlled outreach", body: "You decide when to activate a sequence, enroll a contact, and send a message. Automation supports your judgment." },
+            ].map(({ icon: Icon, title, body }) => (
+              <article key={title} style={{ padding: 20, background: "rgba(255,255,255,0.018)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8 }}>
+                <Icon size={16} style={{ color: "#F5A623", marginBottom: 14 }} aria-hidden="true" />
+                <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: 16, color: "#E8E4D9", margin: "0 0 8px" }}>{title}</h3>
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: "rgba(232,228,217,0.55)", margin: 0 }}>{body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

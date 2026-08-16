@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { useState, useEffect } from "react";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OHSplash from "./components/OHSplash";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -60,6 +60,8 @@ import Redeem from "./pages/Redeem";
 import InviteRedeem from "./pages/InviteRedeem";
 import BillingSetup from "./pages/BillingSetup";
 import AdminCodes from "./pages/AdminCodes";
+import AuthRecovery from "./pages/AuthRecovery";
+import { consumeAuthReturnPath } from "./const";
 
 function Router() {
   return (
@@ -69,6 +71,7 @@ function Router() {
       <Route path="/redeem" component={Redeem} />
       <Route path="/invite/:code" component={InviteRedeem} />
       <Route path="/billing-setup" component={BillingSetup} />
+      <Route path="/auth/recovery" component={AuthRecovery} />
       <Route path="/admin/codes" component={AdminCodes} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/leads" component={LeadIntel} />
@@ -115,6 +118,30 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
+}
+
+/** Restores the intended app route after a successful external sign-in. */
+function AuthReturnHandler() {
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
+  const [introReleased, setIntroReleased] = useState(false);
+
+  useEffect(() => {
+    const release = () => setIntroReleased(true);
+    window.addEventListener("oh:auth-return-ready", release);
+    return () => window.removeEventListener("oh:auth-return-ready", release);
+  }, []);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if ((user as any).needsIntro === true && !introReleased) return;
+    const returnPath = consumeAuthReturnPath();
+    if (returnPath !== "/" && window.location.pathname !== returnPath) {
+      setLocation(returnPath);
+    }
+  }, [introReleased, loading, setLocation, user]);
+
+  return null;
 }
 
 /**
@@ -246,6 +273,27 @@ function PWAInstallBanner() {
   );
 }
 
+function GlobalUtilityLayer() {
+  const [location] = useLocation();
+  const { user } = useAuth();
+  const onboardingIncomplete = (() => {
+    try {
+      return localStorage.getItem("oh_onboarding_complete") !== "true" || (user as any)?.needsIntro === true;
+    } catch {
+      return (user as any)?.needsIntro === true;
+    }
+  })();
+
+  // Keep recovery and first-run onboarding focused on their single task.
+  if (location.startsWith("/auth/recovery") || onboardingIncomplete) return null;
+  return (
+    <>
+      <PWAInstallBanner />
+      <SpectreChatbot />
+    </>
+  );
+}
+
 /**
  * Authenticated intro layer — only mounts when user is logged in.
  * Safe to call protectedProcedure mutations here.
@@ -273,6 +321,7 @@ function AuthenticatedIntroLayer({
   const handleOnboardingComplete = () => {
     localStorage.setItem("oh_onboarding_complete", "true");
     markIntroSeen.mutate();
+    window.dispatchEvent(new Event("oh:auth-return-ready"));
   };
   const handleSplashComplete = () => {
     sessionStorage.setItem("oh_splash_shown", "true");
@@ -359,6 +408,11 @@ function VisitorIntroLayer({
 function IntroLayer() {
   const { _replayPhase, _onSplashComplete, _onOnboardingComplete } = useIntroReplay();
   const { user, loading: authLoading } = useAuth();
+  const [location] = useLocation();
+
+  // Recovery is an actionable, branded route. It must never be covered by the
+  // splash/onboarding gate that is designed for the product entry experience.
+  if (location.startsWith("/auth/recovery")) return null;
 
   // Check localStorage immediately — no auth wait needed
   const onboardingAlreadyDone = (() => {
@@ -424,9 +478,9 @@ function App() {
               }}
             />
             <IntroLayer />
-            <PWAInstallBanner />
+            <AuthReturnHandler />
+            <GlobalUtilityLayer />
             <Router />
-            <SpectreChatbot />
           </TooltipProvider>
         </IntroReplayProvider>
       </ThemeProvider>
