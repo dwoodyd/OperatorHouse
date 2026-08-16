@@ -16,11 +16,15 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 2rem;
+      padding: max(2rem, env(safe-area-inset-top)) max(2rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(2rem, env(safe-area-inset-left));
     }
     canvas { position: fixed; inset: 0; pointer-events: none; opacity: 0.4; z-index: 0; }
     .content { position: relative; z-index: 1; }
-    img { width: 72px; height: 72px; object-fit: contain; margin-bottom: 2rem; opacity: 0.85; }
+    .mark {
+      width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 2rem;
+      border: 1px solid rgba(216,168,90,0.55); color: #d8a85a; font-family: Georgia, serif;
+      font-size: 1.55rem; letter-spacing: -0.12em; transform: rotate(-3deg);
+    }
     h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.8rem; }
     p {
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
@@ -38,13 +42,15 @@
       transition: background 200ms, transform 200ms;
     }
     button:hover { background: #f4c87a; transform: translateY(-1px); }
+    button:focus-visible { outline: 3px solid #f4c87a; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { canvas { display: none; } button { transition: none; } }
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
   <div class="content">
-    <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270045694/UYrVyz2BYHYzFAx4PneEpK/oh-symbol-gold_7639fe83.webp" alt="Operator House" />
+    <div class="mark" aria-label="Operator House">OH</div>
     <h1>You're offline.</h1>
     <p>Reconnect to continue operating.</p>
     <button onclick="window.location.reload()">Try again</button>
@@ -72,7 +78,7 @@
       });
       raf = requestAnimationFrame(draw);
     }
-    draw();
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
   </script>
 </body>
 </html>
