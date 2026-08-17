@@ -433,7 +433,8 @@
 - [x] Tour auto-starts on first visit, replayable via "Take a Tour" button
 
 ## Bug Fix — Onboarding Sample Data
-- [ ] Fix "Load Sample Data" button in onboarding — currently does nothing
+- [x] Retire stale sample-data onboarding task: no sample-data action remains; the first-win route guides operators to a real lead audit
+- [x] Distinguish transient PayPal Sandbox edge denials from credential failures in the external readiness test
 
 ## Bug Audit Fixes
 
@@ -812,4 +813,4 @@
 - [x] Add regression coverage ensuring legal routes, footer links, and the settings legal links remain reachable
 - [x] Audit the primary desktop and mobile user journey for navigation escape routes, CTA clarity, actionable empty states, loading/error recovery, focus states, and responsive overflow
 - [x] Apply focused UX fixes found in the audit without changing protected AI prompt, Vault context, onboarding, or routing logic
-- [ ] Validate the refreshed payment, legal, and UX paths with TypeScript, Vitest, production build, and browser verification
+- [x] Validate the refreshed payment, legal, and UX paths with TypeScript, Vitest, production build, and browser verification
