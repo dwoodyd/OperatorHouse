@@ -57,9 +57,9 @@ async function startServer() {
       contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://manus-analytics.com"],
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
           // Allow images from self, data URIs, and CloudFront CDN distributions
           imgSrc: [
             "'self'",
@@ -75,7 +75,7 @@ async function startServer() {
             "https://d2xsxph8kpxj0f.cloudfront.net",
             "https://d36hbw14aib5lz.cloudfront.net",
           ],
-          connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+          connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://manus-analytics.com"],
           frameSrc: ["'none'"],
           objectSrc: ["'none'"],
           upgradeInsecureRequests: [],

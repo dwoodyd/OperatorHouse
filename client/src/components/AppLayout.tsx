@@ -765,7 +765,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                   color: "var(--amber)",
                 }}
               >
-                Specter HQ
+                Operator House
               </span>
             </div>
 

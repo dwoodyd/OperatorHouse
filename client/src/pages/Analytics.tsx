@@ -214,7 +214,7 @@ export default function Analytics() {
               {/* Weekly Activity */}
               <div className="glass-panel">
                 <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>Specter Activity — This Week</div>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>AI Operator Activity — This Week</div>
                   <div className="data-label mt-0.5">Strategies, leads, and briefings generated</div>
                 </div>
                 <div className="p-5">

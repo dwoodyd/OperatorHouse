@@ -11,6 +11,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface SpectreContextValue {
   /** When true, Specter is hidden from all UI contexts except the chatbot */
@@ -34,8 +35,10 @@ const SpectreContext = createContext<SpectreContextValue>({
 });
 
 export function SpectreProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { data: profile, isLoading } = trpc.profile.get.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // 5 min
+    enabled: isAuthenticated,
   });
 
   const [spectreHidden, setSpectreHiddenLocal] = useState(false);
@@ -73,7 +76,7 @@ export function SpectreProvider({ children }: { children: ReactNode }) {
       value={{
         spectreHidden,
         spectreChatbotEnabled,
-        loading: isLoading,
+        loading: authLoading || (isAuthenticated && isLoading),
         setSpectreHidden,
         setSpectreChatbotEnabled,
       }}

@@ -436,6 +436,16 @@
 - [x] Retire stale sample-data onboarding task: no sample-data action remains; the first-win route guides operators to a real lead audit
 - [x] Distinguish transient PayPal Sandbox edge denials from credential failures in the external readiness test
 
+## Conversion Audit — Fonts, Analytics, Identity, and Client Deliverables
+- [x] Verify and correct production CSP directives for self-hosted/data-URI fonts and optional analytics delivery
+- [x] Restore analytics loading with a configuration-safe script source and validate that event delivery is not blocked by CSP
+- [x] Add visible, keyboard-accessible focus states to every field on the public application form
+- [x] Prevent anonymous visitors from issuing protected profile queries and generating avoidable 401 error noise
+- [x] Clarify brand language so Operator House is the product and Specter is consistently the AI intelligence operator
+- [x] Define a shareable, client-branded Vault-source trail for strategy deliverables, including permissions, revocation, and attribution constraints
+- [x] Sequence the resulting client-ready deliverables, Vault ingestion, and close-reason capture work after the shareable source trail
+- [ ] Validate the conversion audit fixes with browser checks, TypeScript, Vitest, production build, and CSP-specific regression tests
+
 ## Bug Audit Fixes
 
 ### Critical

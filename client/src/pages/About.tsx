@@ -177,7 +177,7 @@ export default function About() {
               position: "relative",
             }}
           >
-            Your Specter HQ
+            Your Operator House
           </h1>
           <p style={{
             fontSize: "16px",

@@ -224,6 +224,7 @@ export default function Apply() {
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="Your name"
                   required
+                  className="oh-apply-field"
                   style={inputStyle}
                 />
               </div>
@@ -237,6 +238,7 @@ export default function Apply() {
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   placeholder="you@example.com"
                   required
+                  className="oh-apply-field"
                   style={inputStyle}
                 />
               </div>
@@ -250,6 +252,7 @@ export default function Apply() {
                   placeholder="Tell us about your consulting practice, who you serve, and what you're trying to build."
                   required
                   rows={5}
+                  className="oh-apply-field"
                   style={{
                     ...inputStyle,
                     resize: "vertical",

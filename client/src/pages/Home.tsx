@@ -122,7 +122,7 @@ export default function Home() {
           letterSpacing: "0.3em", textTransform: "uppercase",
           color: "rgba(245,166,35,0.6)", marginBottom: "20px",
         }}>
-          Your Specter HQ
+          Your Operator House
         </div>
 
         <h1 style={{

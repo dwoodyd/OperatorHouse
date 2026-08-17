@@ -428,7 +428,7 @@ export default function Dashboard() {
   return (
     <AppLayout
       title="Command Center"
-      subtitle={`${greeting()}, ${user?.name?.split(' ')[0] ?? 'Specter'} — ${currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
+      subtitle={`${greeting()}, ${user?.name?.split(' ')[0] ?? 'Operator'} — ${currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
     >
       <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
         {/* Beta trial status banner */}
@@ -488,11 +488,11 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', boxShadow: '0 0 8px rgba(74,222,128,0.7)', animation: 'statusPulse 2s ease-in-out infinite' }} />
                 <span style={{ fontFamily: 'Fira Code, monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-                  Specter on duty
+                  AI intelligence on duty
                 </span>
               </div>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-                Specter is working.<br />
+                Your AI operator is working.<br />
                 <span className="text-amber-gradient">90% done before you start.</span>
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 10, maxWidth: 420, lineHeight: 1.6 }}>
@@ -592,7 +592,7 @@ export default function Dashboard() {
         <div className="glass-panel fade-in-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Activity Log</div>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>AI Operator Activity</div>
               <div className="data-label mt-0.5">Recent autonomous actions</div>
             </div>
             <button onClick={() => setLocation('/analytics')} className="flex items-center gap-1" style={{ color: 'var(--amber)', fontSize: 12 }}>
@@ -651,11 +651,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Specter Framework Pillars */}
+        {/* Operator House framework pillars */}
         <div className="glass-panel fade-in-up" style={{ animationDelay: '0.35s', opacity: 0 }}>
           <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Specter Framework — Active Pillars</div>
-            <div className="data-label mt-0.5">Specter works through these three lenses</div>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Operator House Framework — Active Pillars</div>
+            <div className="data-label mt-0.5">Specter applies these three operating lenses</div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3">
             {[

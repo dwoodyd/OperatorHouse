@@ -145,7 +145,7 @@ export default function OHSplash({ onComplete, userName }: OHSplashProps) {
           transform: (phase === "open" || phase === "shine") ? "translateY(0)" : "translateY(6px)",
           transition: "opacity 500ms ease 200ms, transform 500ms ease 200ms",
         }}>
-          Your Specter HQ
+          Your Operator House
         </div>
       </div>
 
