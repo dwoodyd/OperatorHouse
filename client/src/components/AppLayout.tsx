@@ -77,6 +77,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "INTEL",
     items: [
       { icon: BarChart3, label: "Analytics",       path: "/analytics" },
+      { icon: CalendarDays, label: "Book an Audit", path: "/audit" },
       { icon: Info,      label: "About & Features", path: "/about" },
       { icon: CreditCard,label: "Pricing",          path: "/pricing" },
     ],

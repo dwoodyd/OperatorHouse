@@ -267,7 +267,7 @@
 - [x] Add Ghost Efficiency tooltip explaining the 90% target metric (hover GHOST EFF: 90% in Ghost Terminal)
 - [x] Add ⌘K keyboard shortcut hint to CMD button in header (visible on md+ screens)
 - [ ] Analytics time-series chart (pipeline velocity / deal trend)
-- [ ] Accessibility contrast pass on secondary stat-card labels
+- [x] Accessibility contrast pass on secondary stat-card labels
 
 ## Outreach Suite — Phase 1: Foundation (2026-04-30)
 - [ ] Update Pricing page: add Operator Pro tier at $197/mo / $1,997/yr
@@ -527,7 +527,7 @@
 ## Next Steps (Session 3)
 - [ ] Configure STRIPE_MONTHLY_PRICE_ID and STRIPE_ANNUAL_PRICE_ID secrets
 - [ ] Build observability layer: trpc.system.logClientError + wire into ErrorBoundary
-- [ ] Add "Book Audit" link to AppLayout sidebar INTEL section
+- [x] Add "Book Audit" link to AppLayout sidebar INTEL section
 
 ## Specter Character Video Integration (21 MP4 clips) — COMPLETE
 - [x] Upload all 21 Specter MP4 clips to CDN via manus-upload-file --webdev
