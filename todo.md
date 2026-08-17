@@ -801,3 +801,15 @@
 - [x] Replace in-process email timers with durable Heartbeat callback routes; production schedules active: onboarding `hThNDdRvZLSYXBGwuixQN7`, sequences `nVgcXR9NQN8k4VmvKs9qHa`
 - [x] Make the offline PWA shell self-contained, safe-area aware, keyboard-accessible, and reduced-motion respectful
 - [x] Escape recipient names before interpolating scheduled email HTML templates
+
+## Launch Readiness — Signup, Legal, and UX
+- [ ] Audit the full application, invite redemption, OAuth return, pricing, billing-setup, and subscription-status path without charging a live customer
+- [x] Add automated regression coverage for plan selection, checkout handoff, return/cancel recovery, and subscription-state messaging
+- [x] Resolve or clearly surface every external prerequisite that prevents a production payment test, including unavailable plans and the owner-run sandbox approval check
+- [ ] Owner-run manual check: approve one PayPal Sandbox $0 trial subscription in a normal browser, confirm the in-app activation state, then cancel the test subscription
+- [x] Review and update Privacy Policy, Terms of Service, and linked data-handling copy against implemented authentication, storage, AI, notification, and email behavior
+- [x] Add clear effective-date, contact, data-rights, third-party-processor, and payment-provider disclosures where factual and applicable
+- [x] Add regression coverage ensuring legal routes, footer links, and the settings legal links remain reachable
+- [x] Audit the primary desktop and mobile user journey for navigation escape routes, CTA clarity, actionable empty states, loading/error recovery, focus states, and responsive overflow
+- [x] Apply focused UX fixes found in the audit without changing protected AI prompt, Vault context, onboarding, or routing logic
+- [ ] Validate the refreshed payment, legal, and UX paths with TypeScript, Vitest, production build, and browser verification

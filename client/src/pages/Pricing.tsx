@@ -5,11 +5,9 @@
    ============================================================================= */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { toast } from "sonner";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
 
@@ -28,30 +26,14 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
   const [billing, setBilling] = useState<"operator" | "operator_pro">("operator");
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const { data: paypalData } = trpc.paypal.plans.useQuery();
 
   const handleCheckout = async (tier: "operator" | "operator_pro") => {
+    const setupPath = `/billing-setup?tier=${tier}`;
     if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
+      window.location.href = getLoginUrl(setupPath);
       return;
     }
-    const planId = tier === "operator"
-      ? paypalData?.plans.operator.planId
-      : paypalData?.plans.operator_pro.planId;
-    if (!planId) {
-      toast.error("Payment plans not yet configured. Please try again shortly.");
-      return;
-    }
-    setLoading(tier);
-    toast.info("Opening PayPal checkout…");
-    const clientId = paypalData?.clientId ?? "";
-    const returnUrl = encodeURIComponent(`${window.location.origin}/dashboard?subscribed=1`);
-    const cancelUrl = encodeURIComponent(`${window.location.origin}/pricing?cancelled=1`);
-    const paypalUrl = `https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=${planId}&client_id=${clientId}&return_url=${returnUrl}&cancel_url=${cancelUrl}`;
-    window.open(paypalUrl, "_blank");
-    setLoading(null);
+    setLocation(setupPath);
   };
 
   return (
@@ -183,6 +165,8 @@ export default function Pricing() {
             <button
               key={t}
               onClick={() => setBilling(t)}
+              aria-pressed={billing === t}
+              aria-label={`Select ${t === "operator" ? "Operator" : "Operator Pro"} plan`}
               style={{
                 padding: "8px 18px",
                 borderRadius: 20,
@@ -262,72 +246,30 @@ export default function Pricing() {
               </div>
               <button
                 onClick={() => handleCheckout("operator_pro")}
-                disabled={loading !== null}
+                aria-label="Continue to billing for Operator Pro"
                 style={{
                   padding: "12px 28px",
-                  background: loading ? "rgba(212,168,83,0.5)" : "#d4a853",
+                  background: "#d4a853",
                   border: "none", borderRadius: 6,
                   color: "#0e0e0e",
                   fontFamily: "DM Sans, sans-serif",
                   fontSize: 13, fontWeight: 700,
-                  cursor: loading ? "default" : "pointer",
+                  cursor: "pointer",
                   boxShadow: "0 0 20px rgba(212,168,83,0.3)",
                   whiteSpace: "nowrap",
                   alignSelf: "center",
                   display: "flex", alignItems: "center", gap: 6,
                 }}
               >
-                {loading === "operator_pro" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Operator Pro"}
+                Continue to billing
               </button>
             </div>
           </div>
         </div>
-        {/* Operator House base tier — founding rates */}
+        {/* Operator House base tier — annual founding rate */}
         <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(212,168,83,0.3)", textAlign: "center", marginBottom: 12 }}>Operator House — Core Intelligence Suite</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
-          {/* Monthly — $99/mo founding */}
-          <div
-            style={{
-              position: "relative",
-              background: billing === "operator_pro" ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.02)",
-              border: `1px solid ${billing === "operator" ? "rgba(212,168,83,0.4)" : "rgba(255,255,255,0.08)"}`,
-              borderRadius: 10,
-              padding: "28px 24px",
-              transition: "border-color 200ms ease",
-              cursor: "pointer",
-            }}
-            onClick={() => setBilling("operator")}
-          >
-            <p style={{ fontFamily: "Fira Code, monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,240,232,0.35)", marginBottom: 12 }}>Monthly</p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-              <span style={{ fontFamily: "Playfair Display, serif", fontSize: 38, fontWeight: 700, color: "#f5f0e8", lineHeight: 1 }}>$99</span>
-              <span style={{ fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "rgba(245,240,232,0.35)" }}>/mo</span>
-            </div>
-            <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 11, color: "rgba(245,240,232,0.3)", marginBottom: 4 }}>
-              <span style={{ textDecoration: "line-through", color: "rgba(245,240,232,0.2)" }}>$197/mo retail</span>
-            </p>
-            <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, color: "#4ADE80", letterSpacing: "0.1em", marginBottom: 16 }}>FOUNDING RATE · LOCKED FOR LIFE</p>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleCheckout("operator"); }}
-              disabled={loading !== null}
-              style={{
-                width: "100%", padding: "10px 0",
-                background: billing === "operator" ? "#d4a853" : "rgba(212,168,83,0.08)",
-                border: `1px solid ${billing === "operator" ? "transparent" : "rgba(212,168,83,0.2)"}`,
-                borderRadius: 6,
-                color: billing === "operator" ? "#0e0e0e" : "#d4a853",
-                fontFamily: "DM Sans, sans-serif",
-                fontSize: 13, fontWeight: 700,
-                cursor: loading ? "default" : "pointer",
-                transition: "all 200ms ease",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              }}
-            >
-              {loading === "operator" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Get Access"}
-            </button>
-          </div>
-
-          {/* Annual — $399/yr founding, recommended */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16, marginBottom: 32 }}>
+          {/* Annual — $399/yr founding */}
           <div
             style={{
               position: "relative",
@@ -363,7 +305,7 @@ export default function Pricing() {
             <p style={{ fontFamily: "Fira Code, monospace", fontSize: 9, color: "#4ADE80", letterSpacing: "0.1em", marginBottom: 16 }}>FOUNDING RATE · LOCKED FOR LIFE</p>
             <button
               onClick={(e) => { e.stopPropagation(); handleCheckout("operator"); }}
-              disabled={loading !== null}
+              aria-label="Continue to billing for Operator"
               style={{
                 width: "100%", padding: "10px 0",
                 background: "#d4a853",
@@ -371,7 +313,7 @@ export default function Pricing() {
                 color: "#0e0e0e",
                 fontFamily: "DM Sans, sans-serif",
                 fontSize: 13, fontWeight: 700,
-                cursor: loading ? "default" : "pointer",
+                cursor: "pointer",
                 boxShadow: "0 0 20px rgba(212,168,83,0.3)",
                 transition: "box-shadow 200ms ease",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
@@ -379,7 +321,7 @@ export default function Pricing() {
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 32px rgba(212,168,83,0.5)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 20px rgba(212,168,83,0.3)"; }}
             >
-              {loading === "operator" ? <><Loader2 size={13} className="animate-spin" /> Opening…</> : "Claim Your Seat"}
+              Continue to billing
             </button>
           </div>
         </div>

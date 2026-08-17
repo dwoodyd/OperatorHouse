@@ -20,9 +20,11 @@ declare global {
 }
 
 export default function BillingSetup() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { user } = useAuth();
-  const [selectedTier, setSelectedTier] = useState<"operator" | "operator_pro">("operator");
+  const [selectedTier, setSelectedTier] = useState<"operator" | "operator_pro">(() =>
+    new URLSearchParams(location.split("?")[1]).get("tier") === "operator_pro" ? "operator_pro" : "operator"
+  );
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [subscriptionDone, setSubscriptionDone] = useState(false);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
@@ -51,6 +53,11 @@ export default function BillingSetup() {
     script.onerror = () => toast.error("Could not load PayPal. Please refresh.");
     document.head.appendChild(script);
   }, [plansQuery.data?.clientId]);
+
+  useEffect(() => {
+    const requestedTier = new URLSearchParams(location.split("?")[1]).get("tier");
+    if (requestedTier === "operator" || requestedTier === "operator_pro") setSelectedTier(requestedTier);
+  }, [location]);
 
   // Render PayPal button when SDK ready and tier selected
   useEffect(() => {
@@ -93,10 +100,14 @@ export default function BillingSetup() {
         });
       },
       onApprove: async (data: { subscriptionID: string }) => {
-        await captureSubscription.mutateAsync({
-          subscriptionId: data.subscriptionID,
-          tier: selectedTier,
-        });
+        try {
+          await captureSubscription.mutateAsync({
+            subscriptionId: data.subscriptionID,
+            tier: selectedTier,
+          });
+        } catch {
+          // The mutation callback provides the branded recovery toast.
+        }
       },
       onError: (err: any) => {
         console.error("[PayPal] Subscription error:", err);
@@ -134,10 +145,11 @@ export default function BillingSetup() {
     <div style={pageStyle}>
       {/* Nav */}
       <nav style={navStyle}>
-        <img src={OH_SYMBOL} alt="Operator House" style={{ height: 32, width: 32 }} />
-        <span style={{ fontFamily: "Fira Code, monospace", fontSize: 11, letterSpacing: "0.15em", color: "rgba(245,166,35,0.7)", textTransform: "uppercase" }}>
-          Operator House
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img src={OH_SYMBOL} alt="Operator House" style={{ height: 32, width: 32 }} />
+          <span style={{ fontFamily: "Fira Code, monospace", fontSize: 11, letterSpacing: "0.15em", color: "rgba(245,166,35,0.7)", textTransform: "uppercase" }}>Operator House</span>
+        </div>
+        <button onClick={() => navigate("/pricing")} style={{ background: "none", border: "none", color: "rgba(232,228,217,0.58)", cursor: "pointer", fontSize: 12, textDecoration: "underline" }}>Back to pricing</button>
       </nav>
 
       <main style={mainStyle}>
@@ -156,7 +168,7 @@ export default function BillingSetup() {
           </div>
 
           {/* Tier selector */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+          <div role="radiogroup" aria-label="Founding subscription tier" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 12, marginBottom: 24 }}>
             {(["operator", "operator_pro"] as const).map((tier) => {
               const plan = plansQuery.data?.plans[tier];
               const isSelected = selectedTier === tier;
@@ -164,6 +176,8 @@ export default function BillingSetup() {
                 <button
                   key={tier}
                   onClick={() => setSelectedTier(tier)}
+                  role="radio"
+                  aria-checked={isSelected}
                   style={{
                     padding: "20px 16px",
                     background: isSelected ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.02)",
@@ -196,7 +210,11 @@ export default function BillingSetup() {
 
           {/* PayPal button */}
           <div style={{ marginBottom: 16 }}>
-            {!sdkLoaded ? (
+            {plansQuery.isError ? (
+              <div role="alert" style={{ padding: "16px", border: "1px solid rgba(248,113,113,0.35)", borderRadius: 8, color: "rgba(254,202,202,0.9)", fontSize: 13, textAlign: "center" }}>
+                Billing plans are temporarily unavailable. Please retry, or contact support if the issue continues.
+              </div>
+            ) : !sdkLoaded ? (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px", color: "rgba(232,228,217,0.4)", fontSize: 13 }}>
                 <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
                 Loading PayPal…
@@ -220,6 +238,7 @@ export default function BillingSetup() {
             >
               Skip for now — set up billing in Settings later
             </button>
+            <p style={{ margin: "12px 0 0", fontSize: 11, color: "rgba(232,228,217,0.3)" }}>By continuing, you can review the <a href="/terms" style={{ color: "inherit" }}>Terms</a> and <a href="/privacy" style={{ color: "inherit" }}>Privacy Policy</a>.</p>
           </div>
         </div>
       </main>

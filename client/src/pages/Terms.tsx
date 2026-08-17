@@ -1,107 +1,36 @@
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
-const EFFECTIVE_DATE = "April 10, 2026";
-const CONTACT_EMAIL = "legal@operatorhousehq.com";
+const EFFECTIVE_DATE = "August 16, 2026";
+const CONTACT_EMAIL = "hello@mail.operatorhouse.click";
+
+const sections = [
+  ["1. Agreement", "These Terms govern your use of Operator House. By creating an account, accessing the application, or using a booking or billing flow, you agree to these Terms. If you do not agree, do not use the service."],
+  ["2. The service", "Operator House provides software for sales operations, including lead intelligence, pipeline management, Vault-grounded strategy work, client briefings, outreach tools, and related features. Features may change as the product evolves, and some features may be marked beta or require an external provider to be configured."],
+  ["3. Accounts and eligibility", "You must be at least 18 and able to enter into a binding agreement. You are responsible for activity under your account and for keeping your access credentials secure. Do not share access in a way that bypasses the plan, permission, or invitation controls made available to you."],
+  ["4. Your content and permissions", "You retain your rights in content you submit, including lead records, client information, Vault entries, strategies, and outreach drafts. You grant Operator House the limited permission needed to store, process, transmit to the configured service providers, and display that content solely to operate and support the service."],
+  ["5. AI-assisted output and outreach", "Specter’s audits, strategies, briefings, and drafts are productivity tools, not legal, financial, tax, employment, or other professional advice. You are responsible for reviewing output, validating claims, securing required permissions, and deciding whether to send any outreach. Operator House does not automatically send LinkedIn connection requests or messages on your behalf."],
+  ["6. Acceptable use", "Do not use the service to break the law, infringe others’ rights, transmit malicious code, access another account without permission, misrepresent AI output as verified fact, scrape or overload the service, or send unlawful, deceptive, or unsolicited communications. You must comply with applicable privacy, marketing, and communications laws when using outreach features."],
+  ["7. Trials, subscriptions, and billing", "Where offered, a founding subscription may include a 90-day no-charge trial followed by the plan and price displayed in the billing flow. Subscription setup and payment processing are handled by PayPal under its terms. You can review plan details before approval and manage or cancel an eligible subscription through the billing controls. Taxes, refunds, and payment disputes are handled according to the applicable billing terms and law."],
+  ["8. Availability and support", "We work to provide a reliable service but do not promise uninterrupted or error-free availability. We may maintain, modify, suspend, or retire features when reasonably necessary for security, reliability, legal compliance, or product operations."],
+  ["9. Disclaimers and liability", "The service is provided on an “as available” basis. To the extent permitted by law, Operator House disclaims implied warranties and is not liable for indirect, incidental, special, consequential, or punitive losses arising from use of the service. Nothing in these Terms limits liability that cannot lawfully be limited."],
+  ["10. Termination and deletion", "You may stop using the service or request account deletion through Settings. We may suspend or terminate access for a material breach, security risk, or legal requirement. The privacy notice explains how application data is handled after a deletion request."],
+  ["11. Governing law and updates", "These Terms are governed by the laws of California, excluding conflict-of-law rules, unless applicable law requires otherwise. We may update these Terms by posting a revised effective date and providing additional notice when required for a material change."],
+  ["12. Contact", "For questions about these Terms, email hello@mail.operatorhouse.click."],
+] as const;
 
 export default function Terms() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--obsidian)", color: "var(--text-primary)" }}>
-      {/* Nav */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 px-6 py-4" style={{ background: "var(--obsidian)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <Link href="/" className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)", textDecoration: "none" }}>
-          <ArrowLeft size={14} />
-          Back
-        </Link>
-        <span style={{ color: "var(--border-subtle)" }}>|</span>
-        <span style={{ fontSize: "13px", fontFamily: "Fira Code, monospace", color: "var(--amber)" }}>Terms of Service</span>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-2xl mx-auto px-6 py-12 space-y-8">
-        <div>
-          <h1 style={{ fontFamily: "Playfair Display, serif", fontSize: "32px", fontWeight: 700, color: "var(--ivory)" }}>
-            Terms of Service
-          </h1>
-          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "8px", fontFamily: "DM Sans, sans-serif" }}>
-            Effective date: {EFFECTIVE_DATE}
-          </p>
-        </div>
-
-        {[
-          {
-            title: "1. Acceptance of Terms",
-            body: "By accessing or using Operator House, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the service. These terms apply to all users of the application.",
-          },
-          {
-            title: "2. Description of Service",
-            body: "Operator House is an AI-powered consulting command center that provides lead intelligence, pipeline management, strategy generation, knowledge vault storage, analytics, and an AI assistant. The service is provided on an \"as is\" and \"as available\" basis.",
-          },
-          {
-            title: "3. Eligibility",
-            body: "You must be at least 18 years old and capable of forming a binding contract to use this service. By using Operator House, you represent that you meet these requirements.",
-          },
-          {
-            title: "4. User Accounts",
-            body: "You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You agree to notify us immediately of any unauthorized use of your account. We reserve the right to terminate accounts that violate these terms.",
-          },
-          {
-            title: "5. Acceptable Use",
-            body: "You agree not to use Operator House to: (a) violate any applicable law or regulation; (b) transmit any content that is unlawful, harmful, or fraudulent; (c) attempt to gain unauthorized access to any part of the service; (d) use automated tools to scrape or abuse the AI endpoints beyond normal use; or (e) resell or sublicense access to the service without written permission.",
-          },
-          {
-            title: "6. Content Ownership",
-            body: "You retain full ownership of all content you create or upload to Operator House, including leads, vault items, strategies, and pipeline data. By using the service, you grant us a limited license to process and store your content solely for the purpose of providing the service to you. We do not claim ownership of your content.",
-          },
-          {
-            title: "7. AI-Generated Content",
-            body: "Content generated by the AI features of Operator House (lead audits, strategies, briefings, chat responses) is provided for informational and productivity purposes only. It does not constitute legal, financial, or professional advice. You are solely responsible for how you use AI-generated content in your business.",
-          },
-          {
-            title: "8. Service Availability",
-            body: "We do not guarantee uninterrupted or error-free access to the service. We may suspend or discontinue the service at any time with reasonable notice. We are not liable for any losses resulting from service interruptions.",
-          },
-          {
-            title: "9. Limitation of Liability",
-            body: "To the maximum extent permitted by law, Operator House and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service, including loss of data, loss of revenue, or loss of business opportunities.",
-          },
-          {
-            title: "10. Indemnification",
-            body: "You agree to indemnify and hold harmless Operator House and its operators from any claims, damages, or expenses (including reasonable legal fees) arising from your use of the service, your violation of these terms, or your violation of any third-party rights.",
-          },
-          {
-            title: "11. Termination",
-            body: "You may terminate your account at any time by using the Delete Account feature in Settings. We may terminate or suspend your account for violations of these terms. Upon termination, your right to use the service ceases immediately and your data will be deleted in accordance with our Privacy Policy.",
-          },
-          {
-            title: "12. Changes to Terms",
-            body: "We may update these Terms of Service as the service evolves. We will notify you of material changes by updating the effective date at the top of this page. Continued use of the service after changes constitutes acceptance of the updated terms.",
-          },
-          {
-            title: "13. Governing Law",
-            body: "These terms are governed by the laws of the United States. Any disputes arising from these terms or your use of the service shall be resolved through binding arbitration in accordance with the American Arbitration Association rules.",
-          },
-          {
-            title: "14. Contact",
-            body: `For questions about these Terms of Service, contact us at ${CONTACT_EMAIL}.`,
-          },
-        ].map(({ title, body }) => (
-          <div key={title}>
-            <h2 style={{ fontFamily: "DM Sans, sans-serif", fontSize: "15px", fontWeight: 700, color: "var(--ivory)", marginBottom: "8px" }}>
-              {title}
-            </h2>
-            <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-              {body}
-            </p>
-          </div>
-        ))}
-
-        <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "24px" }}>
-          <Link href="/privacy" style={{ fontSize: "13px", color: "var(--amber)", textDecoration: "none", fontFamily: "DM Sans, sans-serif" }}>
-            View Privacy Policy →
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[var(--obsidian)] text-[var(--text-primary)]">
+      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--obsidian)]/95 px-6 py-4 backdrop-blur">
+        <Link href="/" className="flex items-center gap-2 text-sm text-[var(--text-muted)] no-underline hover:text-[var(--ivory)]"><ArrowLeft size={14} />Back</Link>
+        <span className="text-[var(--border-subtle)]">|</span><span className="font-mono text-xs text-[var(--amber)]">Terms of Service</span>
+      </header>
+      <main className="mx-auto max-w-3xl space-y-8 px-6 py-12">
+        <div><h1 className="font-serif text-4xl font-bold text-[var(--ivory)]">Terms of Service</h1><p className="mt-2 font-mono text-xs text-[var(--text-muted)]">Effective date: {EFFECTIVE_DATE}</p><p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">This is a product-facing working draft that should be reviewed by California-qualified counsel before public legal reliance.</p></div>
+        {sections.map(([title, body]) => <section key={title}><h2 className="mb-2 text-[15px] font-bold text-[var(--ivory)]">{title}</h2><p className="text-sm leading-7 text-[var(--text-secondary)]">{body}</p></section>)}
+        <div className="border-t border-[var(--border-subtle)] pt-6 text-sm"><Link href="/privacy" className="text-[var(--amber)] no-underline">View Privacy Policy →</Link><a href={`mailto:${CONTACT_EMAIL}`} className="ml-6 inline-flex items-center gap-1 text-[var(--text-secondary)] no-underline hover:text-[var(--ivory)]">Contact us <ExternalLink size={12} /></a></div>
+      </main>
     </div>
   );
 }

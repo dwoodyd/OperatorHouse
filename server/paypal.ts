@@ -201,6 +201,18 @@ export async function activateFoundingMember(
 
   const db = await getDb();
   if (db) {
+    const [existing] = await db
+      .select({ paypalSubscriptionId: users.paypalSubscriptionId, betaStartDate: users.betaStartDate, betaEndDate: users.betaEndDate })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    if (existing?.paypalSubscriptionId === subscriptionId && existing.betaStartDate && existing.betaEndDate) {
+      return { betaStartDate: new Date(existing.betaStartDate), betaEndDate: new Date(existing.betaEndDate) };
+    }
+    if (existing?.paypalSubscriptionId && existing.paypalSubscriptionId !== subscriptionId) {
+      throw new Error("A different subscription is already associated with this account");
+    }
+
     await db
       .update(users)
       .set({
