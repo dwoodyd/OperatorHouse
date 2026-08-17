@@ -22,6 +22,12 @@ Operator House should turn the existing Vault-grounded strategy citations into a
 
 Public delivery must look up only an active, unexpired, non-revoked token. It must load through a narrow public procedure that returns no account, pipeline, or raw Vault fields beyond the frozen source fields selected for that deliverable. Every mutation remains owner-authenticated and workspace-scoped.
 
+The public route is deliberately distraction-free: it excludes the authenticated workspace chatbot, onboarding overlay, and app-install banner. The client sees the consultant’s document—not an Operator House workspace shell.
+
+## Preview Verification
+
+The preview route was opened with an invalid 32-character token. It displayed only the controlled “strategy link unavailable” state and no workspace chatbot, onboarding overlay, app-install banner, strategy content, or source data. This confirms the public error path is isolated from authenticated product utilities.
+
 ### Release Criteria
 
 The feature is ready for customer use when an operator can create, preview, share, expire, and revoke a branded document; a recipient can open it without authentication; the recipient cannot enumerate or access other content; and the operator can see a straightforward access record. The first version should intentionally exclude commenting, downloads, client login, and automatic source selection.

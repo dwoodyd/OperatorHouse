@@ -147,6 +147,45 @@ export const strategies = mysqlTable("strategies", {
 export type Strategy = typeof strategies.$inferSelect;
 export type InsertStrategy = typeof strategies.$inferInsert;
 
+// ─── Shareable Client Deliverables ───────────────────────────────────────────
+// A deliverable freezes only owner-selected strategy and source fields for a
+// client-facing link. It never grants raw Vault or workspace access.
+export const sharedDeliverables = mysqlTable("shared_deliverables", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  strategyId: int("strategyId").notNull(),
+  clientId: int("clientId"),
+  status: mysqlEnum("status", ["active", "revoked"]).default("active").notNull(),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  strategyContent: text("strategyContent").notNull(),
+  clientName: varchar("clientName", { length: 255 }),
+  consultantName: varchar("consultantName", { length: 255 }).notNull(),
+  consultantLogoUrl: varchar("consultantLogoUrl", { length: 1000 }),
+  accentColor: varchar("accentColor", { length: 16 }).default("#F5A623").notNull(),
+  expiresAt: timestamp("expiresAt"),
+  revokedAt: timestamp("revokedAt"),
+  lastOpenedAt: timestamp("lastOpenedAt"),
+  openCount: int("openCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SharedDeliverable = typeof sharedDeliverables.$inferSelect;
+export type InsertSharedDeliverable = typeof sharedDeliverables.$inferInsert;
+
+export const sharedDeliverableSources = mysqlTable("shared_deliverable_sources", {
+  id: int("id").autoincrement().primaryKey(),
+  deliverableId: int("deliverableId").notNull(),
+  vaultItemId: int("vaultItemId"),
+  sourceTitle: varchar("sourceTitle", { length: 255 }).notNull(),
+  sourceExcerpt: text("sourceExcerpt").notNull(),
+  rationale: text("rationale"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SharedDeliverableSource = typeof sharedDeliverableSources.$inferSelect;
+export type InsertSharedDeliverableSource = typeof sharedDeliverableSources.$inferInsert;
+
 // ─── Activities ───────────────────────────────────────────────────────────────
 export const activities = mysqlTable("activities", {
   id: int("id").autoincrement().primaryKey(),

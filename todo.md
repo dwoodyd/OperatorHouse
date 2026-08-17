@@ -446,6 +446,13 @@
 - [x] Sequence the resulting client-ready deliverables, Vault ingestion, and close-reason capture work after the shareable source trail
 - [ ] Validate the conversion audit fixes with browser checks, TypeScript, Vitest, production build, and CSP-specific regression tests
 
+## Client-Shareable Source Trail — Implementation
+- [x] Add schema and migration for shareable strategy deliverables and frozen selected-source excerpts
+- [x] Add owner-scoped create, list, revoke, and public read procedures with hashed tokens, expiry, and attribution safeguards
+- [x] Add a Strategy Generator sharing workflow with client branding, selected source references, expiry, and revocation controls
+- [x] Add a read-only public branded deliverable route that exposes only approved, frozen strategy and source fields
+- [x] Add regression tests for token hashing, owner isolation, expiry/revocation, and public payload minimization
+
 ## Bug Audit Fixes
 
 ### Critical

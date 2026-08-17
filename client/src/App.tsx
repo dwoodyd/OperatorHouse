@@ -61,6 +61,7 @@ import InviteRedeem from "./pages/InviteRedeem";
 import BillingSetup from "./pages/BillingSetup";
 import AdminCodes from "./pages/AdminCodes";
 import AuthRecovery from "./pages/AuthRecovery";
+import PublicDeliverable from "./pages/PublicDeliverable";
 import { consumeAuthReturnPath } from "./const";
 
 function Router() {
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/automations/:id/edit" component={WorkflowEditor} />
       <Route path="/portal" component={ClientPortalPage} />
       <Route path="/portal/:token" component={PublicPortal} />
+      <Route path="/shared/:token" component={PublicDeliverable} />
       <Route path="/contracts" component={ContractsPage} />
       <Route path="/sign/:token" component={SignContract} />
       <Route path="/reputation" component={Reputation} />
@@ -285,7 +287,7 @@ function GlobalUtilityLayer() {
   })();
 
   // Keep recovery and first-run onboarding focused on their single task.
-  if (location.startsWith("/auth/recovery") || onboardingIncomplete) return null;
+  if (location.startsWith("/auth/recovery") || location.startsWith("/shared/") || onboardingIncomplete) return null;
   return (
     <>
       <PWAInstallBanner />

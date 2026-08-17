@@ -162,6 +162,13 @@
       "when": 1782700000000,
       "tag": "0022_linkedin_outreach",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1786927800000,
+      "tag": "0023_shared_deliverables",
+      "breakpoints": true
     }
   ]
 }

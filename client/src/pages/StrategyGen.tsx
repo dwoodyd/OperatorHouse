@@ -3,12 +3,12 @@
    Calls strategies.generate, renders structured output, saves to DB.
    No mock data. No simulated typewriter.
    ============================================================================= */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { generateStrategySchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight } from "lucide-react";
+import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight, Share2, X, Link2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { SpectreEmptyState } from "@/components/StateUI";
@@ -38,12 +38,22 @@ interface StrategyResult {
   missingContext: string | null;
 }
 
+type ShareTarget = {
+  id: number;
+  title: string;
+  content: string;
+  citations: Array<{ type: string; id: number; title: string }>;
+  clientName: string;
+};
+
 export default function StrategyGen() {
   const { spectreHidden } = useSpectre();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: clients } = trpc.clients.list.useQuery();
   const { data: strategies, isLoading: strategiesLoading } = trpc.strategies.list.useQuery();
+  const { data: vaultItems } = trpc.vault.list.useQuery();
+  const { data: sharedDeliverables } = trpc.sharedDeliverables.list.useQuery();
 
   const [selectedTemplate, setSelectedTemplate] = useState<OutputType>("full");
   const [clientName, setClientName] = useState("");
@@ -55,6 +65,29 @@ export default function StrategyGen() {
   const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
   const [showTriumph, setShowTriumph] = useState(false);
   const [loadedFromAudit, setLoadedFromAudit] = useState(false);
+  const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null);
+  const [selectedSourceIds, setSelectedSourceIds] = useState<number[]>([]);
+  const [shareClientName, setShareClientName] = useState("");
+  const [consultantName, setConsultantName] = useState("Operator House");
+  const [shareExpiryDays, setShareExpiryDays] = useState("30");
+  const [shareLink, setShareLink] = useState<string | null>(null);
+
+  const createDeliverable = trpc.sharedDeliverables.create.useMutation({
+    onSuccess: (data) => {
+      const link = `${window.location.origin}/shared/${data.token}`;
+      setShareLink(link);
+      navigator.clipboard.writeText(link).catch(() => undefined);
+      toast.success("Private client link created and copied");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const revokeDeliverable = trpc.sharedDeliverables.revoke.useMutation({
+    onSuccess: () => {
+      utils.sharedDeliverables.list.invalidate();
+      toast.success("Client link revoked");
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   useEffect(() => {
     const handoff = consumeHeroWorkflowHandoff();
@@ -123,6 +156,29 @@ export default function StrategyGen() {
       context: result.content.slice(0, 6000),
     });
     setLocation("/email-sequences");
+  };
+
+  const openShare = (target: ShareTarget) => {
+    setShareTarget(target);
+    setSelectedSourceIds(target.citations.filter((citation) => citation.type === "vault").map((citation) => citation.id));
+    setShareClientName(target.clientName);
+    setShareLink(null);
+  };
+
+  const selectedSources = useMemo(() => (vaultItems ?? []).filter((item) => selectedSourceIds.includes(item.id)), [selectedSourceIds, vaultItems]);
+  const targetShares = useMemo(() => (sharedDeliverables ?? []).filter((deliverable) => deliverable.strategyId === shareTarget?.id), [shareTarget?.id, sharedDeliverables]);
+
+  const submitShare = () => {
+    if (!shareTarget) return;
+    if (!selectedSourceIds.length) return toast.error("Select at least one Vault source to make the strategy inspectable.");
+    createDeliverable.mutate({
+      strategyId: shareTarget.id,
+      title: shareTarget.title,
+      clientName: shareClientName.trim() || undefined,
+      consultantName: consultantName.trim() || "Operator House",
+      expiresInDays: Number(shareExpiryDays),
+      sources: selectedSourceIds.map((vaultItemId) => ({ vaultItemId })),
+    });
   };
 
   const handleClientSelect = (clientId: string) => {
@@ -471,6 +527,13 @@ export default function StrategyGen() {
                           style={{ color: 'var(--amber)', border: '1px solid var(--border-amber)', fontFamily: 'DM Sans, sans-serif' }}>
                           View
                         </button>
+                        <button
+                          onClick={() => openShare({ id: s.id, title: `${ctx?.clientName ?? "Client"} — ${s.outputType} strategy`, content: s.content ?? "", citations: (s.citations as Array<{ type: string; id: number; title: string }>) ?? [], clientName: ctx?.clientName ?? "" })}
+                          disabled={!s.content}
+                          className="text-xs px-3 py-1.5 ml-2 flex-shrink-0 flex items-center gap-1.5"
+                          style={{ color: 'var(--amber)', border: '1px solid var(--border-amber)', fontFamily: 'DM Sans, sans-serif', opacity: s.content ? 1 : 0.5 }}>
+                          <Share2 size={12} />Share
+                        </button>
                       </div>
                     </div>
                   );
@@ -480,6 +543,21 @@ export default function StrategyGen() {
           </div>
         )}
       </div>
+      {shareTarget && (
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Share client strategy">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)', boxShadow: '0 24px 90px rgba(0,0,0,0.5)' }}>
+            <div className="flex justify-between gap-4 mb-2"><div><p className="data-label">CLIENT-READY DELIVERY</p><h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--text-primary)' }}>Share an inspectable strategy</h2></div><button onClick={() => setShareTarget(null)} aria-label="Close sharing dialog" style={{ color: 'var(--text-muted)' }}><X size={18} /></button></div>
+            <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>The client sees only this strategy and the Vault excerpts you select—never your private workspace.</p>
+            {shareLink ? <div className="p-4" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid var(--border-amber)' }}><div className="flex items-center gap-2 mb-2" style={{ color: 'var(--amber)' }}><Link2 size={15} />Private link ready</div><p className="text-xs break-all" style={{ color: 'var(--text-primary)' }}>{shareLink}</p><button onClick={() => navigator.clipboard.writeText(shareLink).then(() => toast.success("Link copied"))} className="mt-3 text-xs font-semibold" style={{ color: 'var(--amber)' }}>Copy link</button></div> : <>
+              <div className="grid sm:grid-cols-2 gap-3 mb-5"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Client name<input value={shareClientName} onChange={(e) => setShareClientName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="Client or company" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your brand name<input value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} /></label></div>
+              <label className="text-xs block mb-5" style={{ color: 'var(--text-muted)' }}>Link expires<select value={shareExpiryDays} onChange={(e) => setShareExpiryDays(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}><option value="7">In 7 days</option><option value="30">In 30 days</option><option value="90">In 90 days</option></select></label>
+              <div className="mb-5"><div className="flex items-center gap-2 mb-2"><BookOpen size={14} style={{ color: 'var(--amber)' }} /><span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Select client-visible source excerpts</span></div>{selectedSources.length ? selectedSources.map((source) => <label key={source.id} className="flex items-start gap-2 p-3 mb-2 cursor-pointer" style={{ border: '1px solid var(--border-subtle)' }}><input type="checkbox" checked={selectedSourceIds.includes(source.id)} onChange={(e) => setSelectedSourceIds((ids) => e.target.checked ? [...ids, source.id] : ids.filter((id) => id !== source.id))} /><span><span className="block text-sm" style={{ color: 'var(--text-primary)' }}>{source.title}</span><span className="block text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Excerpt only; private Vault access is not shared.</span></span></label>) : <p className="text-xs p-3" style={{ color: 'var(--text-muted)', border: '1px dashed var(--border-subtle)' }}>This strategy has no matching Vault sources. Generate a Vault-grounded strategy before sharing.</p>}</div>
+              <button onClick={submitShare} disabled={createDeliverable.isPending || !selectedSources.length} className="w-full flex items-center justify-center gap-2 py-3 font-semibold" style={{ background: 'var(--amber)', color: '#120f0a', opacity: createDeliverable.isPending || !selectedSources.length ? 0.55 : 1 }}><ShieldCheck size={15} />{createDeliverable.isPending ? 'Creating private link…' : 'Create client-ready link'}</button>
+            </>}
+            {targetShares.length > 0 && <div className="mt-5 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}><p className="data-label mb-2">EXISTING CLIENT LINKS</p>{targetShares.map((deliverable) => <div key={deliverable.id} className="flex items-center justify-between gap-3 py-2 text-xs" style={{ color: 'var(--text-muted)' }}><span>{deliverable.status === 'active' ? `Active · ${deliverable.openCount} opens` : 'Revoked'}{deliverable.expiresAt ? ` · expires ${new Date(deliverable.expiresAt).toLocaleDateString()}` : ''}</span>{deliverable.status === 'active' && <button onClick={() => revokeDeliverable.mutate({ id: deliverable.id })} disabled={revokeDeliverable.isPending} style={{ color: '#f59e9e' }}>Revoke</button>}</div>)}</div>}
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
