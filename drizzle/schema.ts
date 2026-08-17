@@ -9,6 +9,7 @@ import {
   float,
   boolean,
   tinyint,
+  uniqueIndex,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -104,6 +105,9 @@ export const pipelineDeals = mysqlTable("pipeline_deals", {
   notes: text("notes"),
   closeProbability: float("closeProbability"),
   expectedCloseDate: timestamp("expectedCloseDate"),
+  closeOutcome: mysqlEnum("closeOutcome", ["won", "lost"]),
+  closeReason: varchar("closeReason", { length: 100 }),
+  closedAt: timestamp("closedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -122,9 +126,12 @@ export const vaultItems = mysqlTable("vault_items", {
   filePath: varchar("filePath", { length: 1000 }),
   tags: json("tags").$type<string[]>(),
   metadata: json("metadata"),
+  sourceStrategyId: int("sourceStrategyId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  uniqueDerivedStrategy: uniqueIndex("vault_items_user_source_strategy_unique").on(table.userId, table.sourceStrategyId),
+}));
 export type VaultItem = typeof vaultItems.$inferSelect;
 export type InsertVaultItem = typeof vaultItems.$inferInsert;
 

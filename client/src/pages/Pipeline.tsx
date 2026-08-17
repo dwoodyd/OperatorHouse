@@ -7,7 +7,7 @@ import { useState } from "react";
 import { createDealSchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { Plus, DollarSign, Loader2, X, Trash2 } from "lucide-react";
+import { Plus, DollarSign, Loader2, X, Trash2, Trophy, CircleOff, BarChart3 } from "lucide-react";
 import { SkeletonKanban } from "@/components/StateUI";
 import { SpectreVideoPlayer } from "@/components/SpectreVideoPlayer";
 import { useSpectre } from "@/contexts/SpectreContext";
@@ -28,11 +28,15 @@ type Deal = {
   notes: string | null;
   closeProbability: number | null;
   expectedCloseDate: Date | null;
+  closeOutcome: "won" | "lost" | null;
+  closeReason: string | null;
+  closedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 const STAGES: Stage[] = ["Discovery", "Analysis", "Strategy", "Proposal", "Closed"];
+const LOSS_REASONS = [["budget", "Budget"], ["timing", "Timing"], ["priority", "Not a priority"], ["fit", "Not the right fit"], ["competitor", "Chose another option"], ["no_response", "No response"], ["other", "Other"]] as const;
 
 const STAGE_COLORS: Record<Stage, string> = {
   Discovery: "#6B6B7A",
@@ -59,6 +63,7 @@ export default function Pipeline() {
   const { spectreHidden } = useSpectre();
   const utils = trpc.useUtils();
   const { data: deals, isLoading } = trpc.pipeline.list.useQuery();
+  const { data: closeReasonInsights } = trpc.operatorLearning.closeReasonInsights.useQuery();
 
   const createDeal = trpc.pipeline.create.useMutation({
     onSuccess: () => {
@@ -73,6 +78,17 @@ export default function Pipeline() {
 
   // Auto-enroll in email sequences when stage changes
   const triggerPipelineEnroll = trpc.emailSequences.autoEnrollOnPipelineChange.useMutation();
+  const recordDealClose = trpc.operatorLearning.recordDealClose.useMutation({
+    onSuccess: () => {
+      utils.pipeline.list.invalidate();
+      utils.dashboard.metrics.invalidate();
+      utils.operatorLearning.closeReasonInsights.invalidate();
+      toast.success("Deal outcome recorded");
+      setPendingCloseDeal(null);
+      setSelectedLossReason("");
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   // Optimistic update: stage change via drag-and-drop
   const updateDeal = trpc.pipeline.update.useMutation({
@@ -127,6 +143,8 @@ export default function Pipeline() {
   const [dragId, setDragId] = useState<number | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showTriumph, setShowTriumph] = useState(false);
+  const [pendingCloseDeal, setPendingCloseDeal] = useState<{ id: number; title: string } | null>(null);
+  const [selectedLossReason, setSelectedLossReason] = useState("");
 
   const dealsByStage = (stage: Stage) => deals?.filter((d) => d.stage === stage) ?? [];
   const totalValue = deals?.reduce((sum, d) => sum + (d.value ?? 0), 0) ?? 0;
@@ -135,14 +153,15 @@ export default function Pipeline() {
     if (dragId == null) return;
     const deal = deals?.find((d) => d.id === dragId);
     const fromStage = deal?.stage ?? "Discovery";
+    if (stage === "Closed" && deal) {
+      setPendingCloseDeal({ id: deal.id, title: deal.title });
+      setDragId(null);
+      return;
+    }
     updateDeal.mutate({ id: dragId, stage });
     // Auto-enroll in matching email sequences for this stage transition
     if (deal?.clientId) {
       triggerPipelineEnroll.mutate({ clientId: deal.clientId, fromStage, toStage: stage });
-    }
-    if (stage === "Closed") {
-      setShowTriumph(true);
-      setTimeout(() => setShowTriumph(false), 4500);
     }
     setDragId(null);
   };
@@ -185,7 +204,18 @@ export default function Pipeline() {
           </div>
         </div>
       )}
+      {pendingCloseDeal && (
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Record deal outcome">
+          <div className="w-full max-w-md p-6" style={{ background: "var(--surface)", border: "1px solid var(--border-amber)" }}>
+            <div className="flex justify-between gap-3"><div><p className="data-label">PIPELINE LEARNING</p><h2 style={{ fontFamily: "Playfair Display, serif", fontSize: 23, color: "var(--text-primary)" }}>How did “{pendingCloseDeal.title}” close?</h2></div><button onClick={() => setPendingCloseDeal(null)} aria-label="Close outcome dialog"><X size={17} style={{ color: "var(--text-muted)" }} /></button></div>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>A ten-second note makes future pipeline decisions clearer. A reason is only needed for a deal you lost.</p>
+            <div className="grid grid-cols-2 gap-3 mt-5"><button onClick={() => { recordDealClose.mutate({ dealId: pendingCloseDeal.id, outcome: "won" }); setShowTriumph(true); setTimeout(() => setShowTriumph(false), 4500); }} disabled={recordDealClose.isPending} className="p-4 text-left" style={{ border: "1px solid rgba(74,222,128,0.45)", background: "rgba(74,222,128,0.08)", color: "#4ADE80" }}><Trophy size={17} /><span className="block mt-2 text-sm font-semibold">Closed Won</span><span className="block mt-1 text-xs opacity-70">Celebrate and archive the outcome.</span></button><button onClick={() => setSelectedLossReason(selectedLossReason ? "" : "budget")} className="p-4 text-left" style={{ border: "1px solid rgba(244,114,182,0.42)", background: "rgba(244,114,182,0.06)", color: "#F472B6" }}><CircleOff size={17} /><span className="block mt-2 text-sm font-semibold">Closed Lost</span><span className="block mt-1 text-xs opacity-70">Capture one reason, then move on.</span></button></div>
+            {selectedLossReason && <div className="mt-4"><label className="text-xs" style={{ color: "var(--text-muted)" }}>Primary reason<select value={selectedLossReason} onChange={(e) => setSelectedLossReason(e.target.value)} className="w-full mt-1.5 p-2.5 bg-transparent" style={{ border: "1px solid var(--border-subtle)", color: "var(--text-primary)" }}>{LOSS_REASONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><button onClick={() => recordDealClose.mutate({ dealId: pendingCloseDeal.id, outcome: "lost", reason: selectedLossReason as typeof LOSS_REASONS[number][0] })} disabled={recordDealClose.isPending} className="w-full mt-3 py-2.5 text-sm font-semibold" style={{ background: "var(--amber)", color: "#0A0A0F" }}>Record Closed Lost</button></div>}
+          </div>
+        </div>
+      )}
       <div className="p-6 space-y-4">
+        {closeReasonInsights?.length ? <div className="p-3 flex items-center gap-3 flex-wrap" style={{ background: "var(--surface)", border: "1px solid var(--border-subtle)" }}><BarChart3 size={15} style={{ color: "var(--amber)" }} /><span className="data-label">CLOSE-LOST SIGNALS</span>{closeReasonInsights.map((insight) => <span key={insight.reason ?? "unspecified"} className="text-xs" style={{ color: "var(--text-muted)" }}>{LOSS_REASONS.find(([value]) => value === insight.reason)?.[1] ?? "Unspecified"}: <strong style={{ color: "var(--text-primary)" }}>{insight.count}</strong></span>)}</div> : null}
         {/* Header Row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

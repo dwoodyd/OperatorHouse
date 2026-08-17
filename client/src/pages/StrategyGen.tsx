@@ -8,7 +8,7 @@ import { useLocation } from "wouter";
 import { generateStrategySchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight, Share2, X, Link2, ShieldCheck } from "lucide-react";
+import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight, Share2, X, Link2, ShieldCheck, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { SpectreEmptyState } from "@/components/StateUI";
@@ -87,6 +87,13 @@ export default function StrategyGen() {
     onSuccess: () => {
       utils.sharedDeliverables.list.invalidate();
       toast.success("Client link revoked");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const captureStrategy = trpc.operatorLearning.captureStrategyToVault.useMutation({
+    onSuccess: (data) => {
+      utils.vault.list.invalidate();
+      toast.success(data.created ? "Approved strategy saved to your Vault" : "This strategy is already saved in your Vault");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -539,6 +546,13 @@ export default function StrategyGen() {
                           className="text-xs px-3 py-1.5 ml-2 flex-shrink-0 flex items-center gap-1.5"
                           style={{ color: 'var(--amber)', border: '1px solid var(--border-amber)', fontFamily: 'DM Sans, sans-serif', opacity: s.content ? 1 : 0.5 }}>
                           <Share2 size={12} />Share
+                        </button>
+                        <button
+                          onClick={() => captureStrategy.mutate({ strategyId: s.id })}
+                          disabled={!s.content || captureStrategy.isPending}
+                          className="text-xs px-3 py-1.5 ml-2 flex-shrink-0 flex items-center gap-1.5"
+                          style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', fontFamily: 'DM Sans, sans-serif', opacity: s.content ? 1 : 0.5 }}>
+                          <Archive size={12} />Save to Vault
                         </button>
                       </div>
                     </div>

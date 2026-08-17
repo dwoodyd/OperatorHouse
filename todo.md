@@ -454,6 +454,14 @@
 - [x] Add regression tests for token hashing, owner isolation, expiry/revocation, and public payload minimization
 - [x] Expose consultant brand name, optional logo URL, and accent color in the share-link workflow
 
+## Operator Learning — Approved Work and Close Reasons
+- [x] Audit current Vault creation, strategy history, and pipeline closed-lost state patterns
+- [x] Add an explicit operator-approved action to save a completed strategy as a Vault item with source provenance
+- [x] Ensure strategy-to-Vault capture never writes automatically and avoids duplicate derived entries
+- [x] Add a brief close-reason capture only when a deal is moved to Closed Lost
+- [x] Surface structured close-reason counts as a simple pipeline learning signal without inventing CRM activity
+- [x] Add regression coverage for approved capture, duplicate prevention, close-reason ownership, and no-reason optionality
+
 ## Bug Audit Fixes
 
 ### Critical

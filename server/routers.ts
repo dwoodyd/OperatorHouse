@@ -28,6 +28,7 @@ import { funnelRouter } from "./routers/funnel";
 import { pushRouter } from "./routers/push";
 import { prospectingRouter } from "./routers/prospecting";
 import { sharedDeliverablesRouter } from "./routers/sharedDeliverables";
+import { operatorLearningRouter } from "./routers/operatorLearning";
 import {
   createBriefing, createClient, createDeal, createLead, createNotification, createStrategy, createTask,
   createVaultItem, deleteAllUserData, deleteClient, deleteDeal, deleteLead, deleteTask,
@@ -1009,6 +1010,7 @@ HOW TO TEST IT: Put your draft in front of someone who fits your description and
   automations: automationsRouter,
   portal: portalRouter,
   sharedDeliverables: sharedDeliverablesRouter,
+  operatorLearning: operatorLearningRouter,
   contracts: contractsRouter,
   reviews: reviewsRouter,
   team: teamRouter,
