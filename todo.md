@@ -452,6 +452,7 @@
 - [x] Add a Strategy Generator sharing workflow with client branding, selected source references, expiry, and revocation controls
 - [x] Add a read-only public branded deliverable route that exposes only approved, frozen strategy and source fields
 - [x] Add regression tests for token hashing, owner isolation, expiry/revocation, and public payload minimization
+- [x] Expose consultant brand name, optional logo URL, and accent color in the share-link workflow
 
 ## Bug Audit Fixes
 

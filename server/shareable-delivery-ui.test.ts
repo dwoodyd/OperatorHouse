@@ -11,6 +11,9 @@ describe("shareable client delivery UI", () => {
     expect(strategy).toContain("sharedDeliverables.create.useMutation");
     expect(strategy).toContain("sharedDeliverables.revoke.useMutation");
     expect(strategy).toContain("Select client-visible source excerpts");
+    expect(strategy).toContain("Your logo URL");
+    expect(strategy).toContain("Deliverable accent color");
+    expect(strategy).toContain("consultantLogoUrl: consultantLogoUrl.trim()");
     expect(strategy).toContain("Client link revoked");
     expect(publicPage).toContain("Private strategy deliverable");
     expect(publicPage).toContain("Evidence selected for this strategy");

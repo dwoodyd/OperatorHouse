@@ -69,6 +69,8 @@ export default function StrategyGen() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<number[]>([]);
   const [shareClientName, setShareClientName] = useState("");
   const [consultantName, setConsultantName] = useState("Operator House");
+  const [consultantLogoUrl, setConsultantLogoUrl] = useState("");
+  const [shareAccentColor, setShareAccentColor] = useState("#F5A623");
   const [shareExpiryDays, setShareExpiryDays] = useState("30");
   const [shareLink, setShareLink] = useState<string | null>(null);
 
@@ -162,6 +164,8 @@ export default function StrategyGen() {
     setShareTarget(target);
     setSelectedSourceIds(target.citations.filter((citation) => citation.type === "vault").map((citation) => citation.id));
     setShareClientName(target.clientName);
+    setConsultantLogoUrl("");
+    setShareAccentColor("#F5A623");
     setShareLink(null);
   };
 
@@ -176,6 +180,8 @@ export default function StrategyGen() {
       title: shareTarget.title,
       clientName: shareClientName.trim() || undefined,
       consultantName: consultantName.trim() || "Operator House",
+      consultantLogoUrl: consultantLogoUrl.trim() || undefined,
+      accentColor: shareAccentColor,
       expiresInDays: Number(shareExpiryDays),
       sources: selectedSourceIds.map((vaultItemId) => ({ vaultItemId })),
     });
@@ -549,7 +555,8 @@ export default function StrategyGen() {
             <div className="flex justify-between gap-4 mb-2"><div><p className="data-label">CLIENT-READY DELIVERY</p><h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--text-primary)' }}>Share an inspectable strategy</h2></div><button onClick={() => setShareTarget(null)} aria-label="Close sharing dialog" style={{ color: 'var(--text-muted)' }}><X size={18} /></button></div>
             <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>The client sees only this strategy and the Vault excerpts you select—never your private workspace.</p>
             {shareLink ? <div className="p-4" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid var(--border-amber)' }}><div className="flex items-center gap-2 mb-2" style={{ color: 'var(--amber)' }}><Link2 size={15} />Private link ready</div><p className="text-xs break-all" style={{ color: 'var(--text-primary)' }}>{shareLink}</p><button onClick={() => navigator.clipboard.writeText(shareLink).then(() => toast.success("Link copied"))} className="mt-3 text-xs font-semibold" style={{ color: 'var(--amber)' }}>Copy link</button></div> : <>
-              <div className="grid sm:grid-cols-2 gap-3 mb-5"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Client name<input value={shareClientName} onChange={(e) => setShareClientName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="Client or company" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your brand name<input value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} /></label></div>
+              <div className="grid sm:grid-cols-2 gap-3 mb-3"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Client name<input value={shareClientName} onChange={(e) => setShareClientName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="Client or company" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your brand name<input value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} /></label></div>
+              <div className="grid sm:grid-cols-[1fr_auto] gap-3 mb-5"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your logo URL <span style={{ color: 'var(--text-muted)' }}>(optional)</span><input value={consultantLogoUrl} onChange={(e) => setConsultantLogoUrl(e.target.value)} type="url" className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="https://…/your-logo.png" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Accent color<input value={shareAccentColor} onChange={(e) => setShareAccentColor(e.target.value)} type="color" className="mt-1.5 block w-12 h-10 cursor-pointer bg-transparent" aria-label="Deliverable accent color" /></label></div>
               <label className="text-xs block mb-5" style={{ color: 'var(--text-muted)' }}>Link expires<select value={shareExpiryDays} onChange={(e) => setShareExpiryDays(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}><option value="7">In 7 days</option><option value="30">In 30 days</option><option value="90">In 90 days</option></select></label>
               <div className="mb-5"><div className="flex items-center gap-2 mb-2"><BookOpen size={14} style={{ color: 'var(--amber)' }} /><span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Select client-visible source excerpts</span></div>{selectedSources.length ? selectedSources.map((source) => <label key={source.id} className="flex items-start gap-2 p-3 mb-2 cursor-pointer" style={{ border: '1px solid var(--border-subtle)' }}><input type="checkbox" checked={selectedSourceIds.includes(source.id)} onChange={(e) => setSelectedSourceIds((ids) => e.target.checked ? [...ids, source.id] : ids.filter((id) => id !== source.id))} /><span><span className="block text-sm" style={{ color: 'var(--text-primary)' }}>{source.title}</span><span className="block text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Excerpt only; private Vault access is not shared.</span></span></label>) : <p className="text-xs p-3" style={{ color: 'var(--text-muted)', border: '1px dashed var(--border-subtle)' }}>This strategy has no matching Vault sources. Generate a Vault-grounded strategy before sharing.</p>}</div>
               <button onClick={submitShare} disabled={createDeliverable.isPending || !selectedSources.length} className="w-full flex items-center justify-center gap-2 py-3 font-semibold" style={{ background: 'var(--amber)', color: '#120f0a', opacity: createDeliverable.isPending || !selectedSources.length ? 0.55 : 1 }}><ShieldCheck size={15} />{createDeliverable.isPending ? 'Creating private link…' : 'Create client-ready link'}</button>
