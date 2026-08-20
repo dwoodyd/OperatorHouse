@@ -474,6 +474,12 @@
 - [x] Add a safe, operator-approved client delivery-note helper; notes are copied for review and never sent automatically
 - [x] Add regression coverage and validate the continued deliverable and assistance workflow changes
 
+## Client Deliverable Export
+- [x] Audit the public branded deliverable page for print and PDF export requirements
+- [x] Add a branded print and save-as-PDF control that preserves selected source trails
+- [x] Add print-specific styling that removes workspace controls and keeps client content legible on paper
+- [x] Add regression coverage and validate the public deliverable export path
+
 ## Bug Audit Fixes
 
 ### Critical
