@@ -63,7 +63,7 @@ const SLIDES: SlideData[] = [
     portrait: true,
     eyebrow: "The Operator",
     headline: "Meet Specter.",
-    body: "Specter is the room. Built to do the work that doesn't need you — so you can do the work that does.",
+    body: "Specter is your AI operator inside Operator House — built to handle the work that doesn't need you, so you can do the work that does.",
     cta: "What does Specter actually do? →",
     textDelay: 500,
     mobile: false,
@@ -167,6 +167,14 @@ const CSS = `
     display: block;
     filter: saturate(0.82) contrast(1.04);
   }
+  .oh3-video-poster.poster-ambient {
+    animation: oh3-poster-drift 8s ease-in-out infinite alternate;
+    transform-origin: center bottom;
+  }
+  @keyframes oh3-poster-drift {
+    from { transform: scale(1.01) translate3d(-0.4%, 0, 0); filter: saturate(0.78) contrast(1.02) brightness(0.82); }
+    to { transform: scale(1.07) translate3d(0.7%, -0.4%, 0); filter: saturate(0.96) contrast(1.08) brightness(0.98); }
+  }
   /* Portrait clips: contain + bottom anchor so full body is always visible */
   .oh3-video-layer.portrait video {
     object-fit: contain;
@@ -189,6 +197,24 @@ const CSS = `
     line-height: 1.45;
     color: rgba(242,234,214,0.52);
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+  }
+  .oh3-media-retry {
+    appearance: none;
+    border: 1px solid rgba(201,160,74,0.45);
+    background: rgba(6,5,4,0.62);
+    color: #d8b66d;
+    padding: 5px 8px;
+    cursor: pointer;
+    font: inherit;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .oh3-media-retry:focus-visible { outline: 2px solid #e8c06a; outline-offset: 3px; }
   }
 
   /* ── Gradient overlay: text side is darker, Specter side is lighter ── */
@@ -631,7 +657,13 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const activeSlides = isMobile ? SLIDES.filter(s => s.mobile !== false) : SLIDES;
   const TOTAL = activeSlides.length;
 
-  const [slideIdx, setSlideIdx] = useState(0);
+  const [slideIdx, setSlideIdx] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const retrySlideId = Number(sessionStorage.getItem("oh_onboarding_retry_slide"));
+    sessionStorage.removeItem("oh_onboarding_retry_slide");
+    const retryIndex = activeSlides.findIndex((slide) => slide.id === retrySlideId);
+    return retryIndex >= 0 ? retryIndex : 0;
+  });
   const [phase, setPhase] = useState<"idle" | "exiting" | "entering">("idle");
   const [textActive, setTextActive] = useState(false);
   const [showCalibration, setShowCalibration] = useState(false);
@@ -642,9 +674,11 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   const [nextTapped, setNextTapped] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [videoRetryNonce, setVideoRetryNonce] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoSettledRef = useRef(false);
+  const activeVideoRetryRef = useRef(0);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   // Only wire the protected mutation when the user is authenticated.
   // For unauthenticated visitors (marketing site), isReplay is always false
@@ -688,20 +722,25 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
     setVideoError(false);
     setVideoReady(false);
     videoSettledRef.current = false;
+    activeVideoRetryRef.current = videoRetryNonce;
   }, [slideIdx]);
+
+  useEffect(() => {
+    activeVideoRetryRef.current = videoRetryNonce;
+  }, [videoRetryNonce]);
 
   // A slow or stalled clip must degrade to the still rather than holding up onboarding.
   useEffect(() => {
     if (!clipUrl || currentSlide.noVideo || prefersReducedMotion) return;
     const timeout = window.setTimeout(() => {
-      if (!videoSettledRef.current) {
+      if (activeVideoRetryRef.current === videoRetryNonce && !videoSettledRef.current) {
         console.warn("[Onboarding] video timed out; continuing with poster fallback", clipUrl);
         videoSettledRef.current = true;
         setVideoError(true);
       }
-    }, 5000);
+    }, 15000);
     return () => window.clearTimeout(timeout);
-  }, [clipUrl, currentSlide.noVideo, prefersReducedMotion, slideIdx]);
+  }, [clipUrl, currentSlide.noVideo, prefersReducedMotion, slideIdx, videoRetryNonce]);
 
   // Activate text after slide enters
   useEffect(() => {
@@ -736,6 +775,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
   // Handle video errors with fallback
   const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
+    if (Number(el.dataset.retryNonce) !== activeVideoRetryRef.current) return;
     console.warn(`Video failed to load: ${el.src}`);
     videoSettledRef.current = true;
     setVideoError(true);
@@ -743,6 +783,7 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
 
   // Play video once it's loaded (triggered by onLoadedData event)
   const handleVideoLoaded = useCallback(() => {
+    if (Number(videoRef.current?.dataset.retryNonce) !== activeVideoRetryRef.current) return;
     videoSettledRef.current = true;
     setVideoReady(true);
     if (videoRef.current) {
@@ -752,6 +793,14 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       });
     }
   }, []);
+
+  const retryCinematicLayer = useCallback(() => {
+    // Browsers may retain a failed media element at the network layer even
+    // after React remounts it. Preserve the current slide and reload only this
+    // anonymous onboarding session to request a genuinely fresh clip.
+    sessionStorage.setItem("oh_onboarding_retry_slide", String(currentSlide.id));
+    window.location.reload();
+  }, [currentSlide.id]);
 
   // Backup: try to play when video element is available (for cached videos)
   useEffect(() => {
@@ -885,26 +934,28 @@ export default function OnboardingFlow({ onComplete, isReplay = false, isAuthent
       {/* ── Video layer: Specter IS the background (hidden on noVideo slides) ── */}
       {!currentSlide.noVideo && (
         <div className={`oh3-video-layer${currentSlide.portrait !== false ? " portrait" : ""}${videoFading ? " fading" : ""}${videoReady ? " video-ready" : ""}`}>
-          <img className="oh3-video-poster" src={media.posterUrl} alt="" aria-hidden="true" />
+          <img className={`oh3-video-poster${(videoError || !videoReady) && !prefersReducedMotion ? " poster-ambient" : ""}`} src={media.posterUrl} alt="" aria-hidden="true" />
           {canPlayVideo && (
             <video
-              key={currentSlide.id}
+              key={`${currentSlide.id}-${videoRetryNonce}`}
               ref={videoRef}
+              data-retry-nonce={videoRetryNonce}
               src={clipUrl}
               autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               onError={handleVideoError}
               onLoadedData={handleVideoLoaded}
             />
           )}
           {(videoError || prefersReducedMotion) && (
             <div className="oh3-media-status" role="status">
-              {prefersReducedMotion
+              <span>{prefersReducedMotion
                 ? "Motion is reduced. The House remains fully interactive."
-                : "Cinematic layer unavailable. The House remains fully interactive."}
+                : "Cinematic stream paused. The House remains fully interactive."}</span>
+              {!prefersReducedMotion && <button type="button" className="oh3-media-retry" onClick={retryCinematicLayer}>Retry motion</button>}
             </div>
           )}
         </div>

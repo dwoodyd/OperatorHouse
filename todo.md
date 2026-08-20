@@ -462,6 +462,12 @@
 - [x] Surface structured close-reason counts as a simple pipeline learning signal without inventing CRM activity
 - [x] Add regression coverage for approved capture, duplicate prevention, close-reason ownership, and no-reason optionality
 
+## Onboarding Cinematic Recovery
+- [x] Audit the published "Cinematic layer unavailable" path: the five-second fallback with metadata-only preload prematurely treated slow proxy/video startup as a permanent failure
+- [x] Ensure fallback onboarding remains visually alive with deliberate ambient motion and an explicit retry action while video is unavailable
+- [x] Verify the primary video path, fallback path, reduced-motion path, and text-only progression without blocking entry
+- [x] Provide operator-friendly step-by-step validation instructions for strategy Vault capture, branded client sharing, and pipeline close outcomes
+
 ## Bug Audit Fixes
 
 ### Critical
