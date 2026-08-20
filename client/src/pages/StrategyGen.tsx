@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { generateStrategySchema } from "@/lib/schemas";
 import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
+import { buildClientDeliveryNote } from "@/lib/deliverableNote";
 import { FileText, Zap, Copy, Download, RefreshCw, BookOpen, AlertCircle, CheckCircle2, Mail, ArrowRight, Share2, X, Link2, ShieldCheck, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
@@ -73,11 +74,13 @@ export default function StrategyGen() {
   const [shareAccentColor, setShareAccentColor] = useState("#F5A623");
   const [shareExpiryDays, setShareExpiryDays] = useState("30");
   const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareExpiresAt, setShareExpiresAt] = useState<Date | null>(null);
 
   const createDeliverable = trpc.sharedDeliverables.create.useMutation({
     onSuccess: (data) => {
       const link = `${window.location.origin}/shared/${data.token}`;
       setShareLink(link);
+      setShareExpiresAt(data.expiresAt);
       navigator.clipboard.writeText(link).catch(() => undefined);
       toast.success("Private client link created and copied");
     },
@@ -568,7 +571,7 @@ export default function StrategyGen() {
           <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border-amber)', boxShadow: '0 24px 90px rgba(0,0,0,0.5)' }}>
             <div className="flex justify-between gap-4 mb-2"><div><p className="data-label">CLIENT-READY DELIVERY</p><h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'var(--text-primary)' }}>Share an inspectable strategy</h2></div><button onClick={() => setShareTarget(null)} aria-label="Close sharing dialog" style={{ color: 'var(--text-muted)' }}><X size={18} /></button></div>
             <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>The client sees only this strategy and the Vault excerpts you select—never your private workspace.</p>
-            {shareLink ? <div className="p-4" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid var(--border-amber)' }}><div className="flex items-center gap-2 mb-2" style={{ color: 'var(--amber)' }}><Link2 size={15} />Private link ready</div><p className="text-xs break-all" style={{ color: 'var(--text-primary)' }}>{shareLink}</p><button onClick={() => navigator.clipboard.writeText(shareLink).then(() => toast.success("Link copied"))} className="mt-3 text-xs font-semibold" style={{ color: 'var(--amber)' }}>Copy link</button></div> : <>
+            {shareLink ? <div className="p-4" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid var(--border-amber)' }}><div className="flex items-center gap-2 mb-2" style={{ color: 'var(--amber)' }}><Link2 size={15} />Private link ready</div><p className="text-xs break-all" style={{ color: 'var(--text-primary)' }}>{shareLink}</p><div className="flex gap-4 mt-3"><button onClick={() => navigator.clipboard.writeText(shareLink).then(() => toast.success("Link copied"))} className="text-xs font-semibold" style={{ color: 'var(--amber)' }}>Copy link</button><button onClick={() => navigator.clipboard.writeText(buildClientDeliveryNote({ clientName: shareClientName, title: shareTarget?.title ?? "your strategy", url: shareLink, expiresAt: shareExpiresAt })).then(() => toast.success("Client note copied — review before sending"))} className="text-xs font-semibold" style={{ color: 'var(--amber)' }}>Copy client note</button></div></div> : <>
               <div className="grid sm:grid-cols-2 gap-3 mb-3"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Client name<input value={shareClientName} onChange={(e) => setShareClientName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="Client or company" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your brand name<input value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} /></label></div>
               <div className="grid sm:grid-cols-[1fr_auto] gap-3 mb-5"><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Your logo URL <span style={{ color: 'var(--text-muted)' }}>(optional)</span><input value={consultantLogoUrl} onChange={(e) => setConsultantLogoUrl(e.target.value)} type="url" className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} placeholder="https://…/your-logo.png" /></label><label className="text-xs" style={{ color: 'var(--text-muted)' }}>Accent color<input value={shareAccentColor} onChange={(e) => setShareAccentColor(e.target.value)} type="color" className="mt-1.5 block w-12 h-10 cursor-pointer bg-transparent" aria-label="Deliverable accent color" /></label></div>
               <label className="text-xs block mb-5" style={{ color: 'var(--text-muted)' }}>Link expires<select value={shareExpiryDays} onChange={(e) => setShareExpiryDays(e.target.value)} className="mt-1.5 w-full p-2.5 bg-transparent" style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}><option value="7">In 7 days</option><option value="30">In 30 days</option><option value="90">In 90 days</option></select></label>

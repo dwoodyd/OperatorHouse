@@ -468,6 +468,12 @@
 - [x] Verify the primary video path, fallback path, reduced-motion path, and text-only progression without blocking entry
 - [x] Provide operator-friendly step-by-step validation instructions for strategy Vault capture, branded client sharing, and pipeline close outcomes
 
+## Continued Operator Workflow
+- [x] Audit client-deliverable management, public-link operational controls, and adjacent operator workflow gaps
+- [x] Add a dedicated operator view for managing active, expired, and revoked client deliverables
+- [x] Add a safe, operator-approved client delivery-note helper; notes are copied for review and never sent automatically
+- [x] Add regression coverage and validate the continued deliverable and assistance workflow changes
+
 ## Bug Audit Fixes
 
 ### Critical

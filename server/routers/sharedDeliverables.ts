@@ -126,6 +126,50 @@ export const sharedDeliverablesRouter = router({
       return { ok: true };
     }),
 
+  reissue: protectedProcedure
+    .input(z.object({ id: z.number(), expiresInDays: z.number().int().min(1).max(365).default(30) }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      const [existing] = await db.select().from(sharedDeliverables)
+        .where(and(eq(sharedDeliverables.id, input.id), eq(sharedDeliverables.userId, ctx.user.id)))
+        .limit(1);
+      if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Deliverable not found" });
+
+      const frozenSources = await db.select().from(sharedDeliverableSources)
+        .where(eq(sharedDeliverableSources.deliverableId, existing.id))
+        .orderBy(sharedDeliverableSources.sortOrder);
+      const token = createPublicToken();
+      const expiresAt = new Date(Date.now() + input.expiresInDays * 86_400_000);
+      const [result] = await db.insert(sharedDeliverables).values({
+        userId: ctx.user.id,
+        strategyId: existing.strategyId,
+        clientId: existing.clientId ?? undefined,
+        tokenHash: hashToken(token),
+        title: existing.title,
+        strategyContent: existing.strategyContent,
+        clientName: existing.clientName ?? undefined,
+        consultantName: existing.consultantName,
+        consultantLogoUrl: existing.consultantLogoUrl ?? undefined,
+        accentColor: existing.accentColor,
+        expiresAt,
+      });
+      const deliverableId = Number((result as { insertId: number }).insertId);
+      if (frozenSources.length) {
+        await db.insert(sharedDeliverableSources).values(frozenSources.map((source) => ({
+          deliverableId,
+          vaultItemId: source.vaultItemId,
+          sourceTitle: source.sourceTitle,
+          sourceExcerpt: source.sourceExcerpt,
+          rationale: source.rationale ?? undefined,
+          sortOrder: source.sortOrder,
+        })));
+      }
+      await db.update(sharedDeliverables).set({ status: "revoked", revokedAt: new Date() })
+        .where(and(eq(sharedDeliverables.id, existing.id), eq(sharedDeliverables.userId, ctx.user.id)));
+      return { id: deliverableId, token, expiresAt };
+    }),
+
   getPublic: publicProcedure
     .input(z.object({ token: tokenSchema }))
     .query(async ({ input }) => {

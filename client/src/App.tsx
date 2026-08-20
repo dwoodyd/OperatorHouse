@@ -62,6 +62,7 @@ import BillingSetup from "./pages/BillingSetup";
 import AdminCodes from "./pages/AdminCodes";
 import AuthRecovery from "./pages/AuthRecovery";
 import PublicDeliverable from "./pages/PublicDeliverable";
+import Deliverables from "./pages/Deliverables";
 import { consumeAuthReturnPath } from "./const";
 
 function Router() {
@@ -102,6 +103,7 @@ function Router() {
       <Route path="/portal" component={ClientPortalPage} />
       <Route path="/portal/:token" component={PublicPortal} />
       <Route path="/shared/:token" component={PublicDeliverable} />
+      <Route path="/deliverables" component={Deliverables} />
       <Route path="/contracts" component={ContractsPage} />
       <Route path="/sign/:token" component={SignContract} />
       <Route path="/reputation" component={Reputation} />

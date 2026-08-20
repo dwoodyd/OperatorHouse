@@ -32,6 +32,7 @@ const NAV_SECTIONS: NavSection[] = [
       { icon: Linkedin,           label: "LinkedIn Outreach",   path: "/linkedin", pro: true },
       { icon: GitBranch,       label: "Client Pipeline",    path: "/pipeline" },
       { icon: FileText,        label: "Strategy Generator", path: "/strategy" },
+      { icon: Share2,          label: "Client Deliverables", path: "/deliverables" },
       { icon: Archive,         label: "The Vault",          path: "/vault" },
       { icon: CheckSquare,     label: "Tasks",              path: "/tasks" },
     ],
